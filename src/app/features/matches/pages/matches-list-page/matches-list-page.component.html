@@ -1,0 +1,30 @@
+<ui-page-header [eyebrow]="'matches.eyebrow' | translate" [title]="'matches.title' | translate" [lead]="'matches.lead' | translate" />
+
+<section class="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="124" [label]="'stats.matches' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="67" [label]="'stats.wins' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="54%" [label]="'matches.winRate' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="28" [label]="'matches.longestRally' | translate" /></div>
+</section>
+
+<section class="mb-14">
+  <ui-section-header [eyebrow]="'matches.bookedEyebrow' | translate" [title]="'matches.upcoming' | translate" />
+  @if (matches.upcoming().length) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (m of matches.upcoming(); track m.id) {
+        <app-match-card [match]="m" />
+      }
+    </div>
+  } @else {
+    <ui-empty-state [title]="'matches.emptyTitle' | translate" [body]="'matches.emptyBody' | translate" [action]="'matches.findGame' | translate" />
+  }
+</section>
+
+<section>
+  <ui-section-header [eyebrow]="'matches.resultsEyebrow' | translate" [title]="'matches.played' | translate" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (m of matches.completed(); track m.id) {
+      <app-match-card [match]="m" />
+    }
+  </div>
+</section>

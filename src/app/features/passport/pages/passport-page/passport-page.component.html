@@ -1,0 +1,60 @@
+<section class="mb-10 overflow-hidden rounded-3xl border border-border bg-ink text-bone">
+  <div class="court-grid-ink p-6 sm:p-10">
+    <p class="text-eyebrow text-bone/60">{{ 'passport.eyebrow' | translate }}</p>
+    <h1 class="text-display mt-3 text-5xl sm:text-7xl">{{ 'passport.titleLine1' | translate }}<br /><span class="text-lime">{{ 'passport.titleLine2' | translate }}</span></h1>
+    <div class="mt-10 grid grid-cols-3 gap-6 border-t border-bone/15 pt-8">
+      <ui-stat size="lg" [value]="passport.visitedCountries().length" [label]="'stats.countries' | translate" />
+      <ui-stat size="lg" value="23" [label]="'stats.courts' | translate" />
+      <ui-stat size="lg" value="48" [label]="'stats.playersMet' | translate" />
+    </div>
+  </div>
+</section>
+
+<app-rally-map class="mb-12 h-[300px] sm:h-[420px]" [markers]="markers()" />
+
+<section class="mb-14">
+  <ui-section-header [eyebrow]="'passport.stampedEyebrow' | translate" [title]="'passport.countriesPlayed' | translate" />
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    @for (c of passport.visitedCountries(); track c.name) {
+      <div class="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <span class="text-3xl">{{ c.flag }}</span>
+        <div class="flex-1">
+          <p class="font-display text-base font-extrabold tracking-tight uppercase">{{ c.name }}</p>
+          <p class="text-xs text-muted-foreground">{{ 'passport.firstPlayed' | translate:{ courts: c.courts, date: c.firstPlayed ?? '' } }}</p>
+        </div>
+        <span class="text-eyebrow text-win">✓</span>
+      </div>
+    }
+  </div>
+</section>
+
+<section class="mb-14">
+  <ui-section-header [eyebrow]="'passport.lockedEyebrow' | translate" [title]="'passport.stillToPlay' | translate" />
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    @for (c of passport.lockedCountries(); track c.name) {
+      <div class="flex items-center gap-4 rounded-2xl border border-dashed border-border p-4">
+        <span class="text-3xl opacity-40 grayscale">{{ c.flag }}</span>
+        <div class="flex-1">
+          <p class="font-display text-base font-extrabold tracking-tight text-muted-foreground uppercase">{{ c.name }}</p>
+          <p class="text-xs text-muted-foreground">{{ 'passport.oneMatchUnlocks' | translate }}</p>
+        </div>
+        <span class="text-eyebrow text-muted-foreground">🔒</span>
+      </div>
+    }
+  </div>
+</section>
+
+<section>
+  <ui-section-header [eyebrow]="'passport.collectionEyebrow' | translate" [title]="'passport.courtsInPassport' | translate" [action]="'passport.allCourts' | translate" to="/courts" />
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    @for (c of passport.visitedCourts(); track c.id) {
+      <div class="overflow-hidden rounded-2xl border border-border bg-card">
+        <img [src]="c.image" [alt]="c.name" loading="lazy" class="aspect-16/8 w-full object-cover" />
+        <div class="p-4">
+          <p class="font-display text-sm font-extrabold tracking-tight uppercase">{{ c.name }}</p>
+          <p class="mt-1 text-xs text-muted-foreground">{{ c.flag }} {{ c.city }} · {{ ('enums.surface.' + c.surface) | translate }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>

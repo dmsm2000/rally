@@ -1,0 +1,15 @@
+<div class="mb-4 flex items-end justify-between gap-4">
+  <div>
+    @if (eyebrow()) {
+      <p class="text-eyebrow mb-1.5 text-muted-foreground">{{ eyebrow() }}</p>
+    }
+    <h2 class="text-display text-2xl sm:text-3xl">{{ title() }}</h2>
+  </div>
+  @if (action()) {
+    @if (to()) {
+      <a [routerLink]="to()" class="text-eyebrow shrink-0 border-b-2 border-lime pb-0.5 hover:border-foreground">{{ action() }}</a>
+    } @else {
+      <span class="text-eyebrow shrink-0 border-b-2 border-lime pb-0.5">{{ action() }}</span>
+    }
+  }
+</div>

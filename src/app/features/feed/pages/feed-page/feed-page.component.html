@@ -1,0 +1,41 @@
+<ui-page-header [eyebrow]="'feed.eyebrow' | translate" [title]="'feed.title' | translate" [lead]="'feed.lead' | translate" />
+
+<div class="mb-8 flex gap-2 border-b border-border">
+  @for (t of feed.tabs; track t) {
+    <button
+      type="button"
+      (click)="feed.selectTab(t)"
+      class="px-1 pb-3 text-sm font-semibold transition-colors"
+      [class]="feed.activeTab() === t ? 'border-b-2 border-lime-deep text-foreground' : 'text-muted-foreground hover:text-foreground'"
+    >
+      {{ t | translate }}
+    </button>
+  }
+</div>
+
+<div class="grid gap-10 lg:grid-cols-[1fr_320px]">
+  <div class="space-y-5">
+    @for (f of feed.items(); track f.id) {
+      <app-feed-card [item]="f" />
+    }
+  </div>
+  <aside class="space-y-8">
+    <div>
+      <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'feed.suggestedPlayers' | translate }}</p>
+      <div class="space-y-4">
+        @for (p of feed.suggestedPlayers(); track p.id) {
+          <app-player-card [player]="p" />
+        }
+      </div>
+    </div>
+    <div>
+      <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'feed.trending' | translate }}</p>
+      <div class="flex flex-wrap gap-2">
+        <ui-chip tone="clay">#claySeason</ui-chip>
+        <ui-chip tone="lime">#courtsDiscovered</ui-chip>
+        <ui-chip tone="cobalt">#tennisTrip</ui-chip>
+        <ui-chip>#firstMatch</ui-chip>
+      </div>
+    </div>
+  </aside>
+</div>

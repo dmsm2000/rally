@@ -1,0 +1,72 @@
+// @ts-check
+const eslint = require('@eslint/js');
+const tseslint = require('typescript-eslint');
+const angular = require('angular-eslint');
+const prettierConfig = require('eslint-config-prettier');
+
+module.exports = tseslint.config(
+  {
+    files: ['**/*.ts'],
+    extends: [eslint.configs.recommended, ...tseslint.configs.recommended, ...angular.configs.tsRecommended, prettierConfig],
+    processor: angular.processInlineTemplates,
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: __dirname,
+      },
+    },
+    rules: {
+      '@angular-eslint/component-selector': ['warn', { type: 'element', prefix: ['app', 'ui'], style: 'kebab-case' }],
+      '@angular-eslint/directive-selector': ['warn', { type: 'attribute', prefix: ['app', 'ui'], style: 'camelCase' }],
+      '@angular-eslint/component-class-suffix': 'warn',
+      '@angular-eslint/directive-class-suffix': 'warn',
+      '@angular-eslint/no-inputs-metadata-property': 'warn',
+      '@angular-eslint/no-outputs-metadata-property': 'warn',
+      '@angular-eslint/use-lifecycle-interface': 'warn',
+      '@angular-eslint/use-pipe-transform-interface': 'warn',
+      '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/await-thenable': 'warn',
+      '@typescript-eslint/consistent-type-definitions': 'warn',
+      '@typescript-eslint/explicit-member-accessibility': ['warn', { accessibility: 'no-public' }],
+      '@typescript-eslint/member-ordering': 'warn',
+      '@typescript-eslint/no-empty-function': 'warn',
+      '@typescript-eslint/no-misused-new': 'warn',
+      '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/no-shadow': 'warn',
+      '@typescript-eslint/no-unused-expressions': ['warn', { allowShortCircuit: true }],
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/prefer-function-type': 'warn',
+      '@typescript-eslint/prefer-readonly': 'warn',
+      '@typescript-eslint/promise-function-async': 'warn',
+      '@typescript-eslint/require-await': 'warn',
+      '@typescript-eslint/unified-signatures': 'warn',
+      'arrow-body-style': 'warn',
+      'brace-style': ['warn', '1tbs'],
+      curly: 'warn',
+      'eol-last': 'warn',
+      eqeqeq: ['warn', 'smart'],
+      'id-denylist': ['warn', 'any', 'Number', 'number', 'String', 'Boolean', 'boolean', 'Undefined', 'undefined'],
+      'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],
+      'no-bitwise': 'warn',
+      'no-caller': 'warn',
+      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+      'no-debugger': 'error',
+      'no-duplicate-imports': 'warn',
+      'no-eval': 'warn',
+      'no-new-wrappers': 'warn',
+      'no-throw-literal': 'warn',
+      'no-trailing-spaces': 'warn',
+      'no-undef-init': 'warn',
+      'no-unused-labels': 'warn',
+      'no-void': 'warn',
+      'prefer-const': 'warn',
+      radix: 'warn',
+    },
+  },
+  {
+    files: ['**/*.html'],
+    extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
+    rules: {},
+  },
+);

@@ -1,0 +1,30 @@
+<div class="relative overflow-hidden rounded-2xl border border-border bg-muted" [class]="className()">
+  <svg viewBox="0 0 100 60" preserveAspectRatio="none" class="absolute inset-0 size-full">
+    <g fill="var(--card)" stroke="var(--line)" stroke-width="0.25">
+      <path d="M8 22 L18 14 L30 16 L34 26 L28 34 L30 44 L22 52 L16 40 L10 34 Z" />
+      <path d="M26 52 L34 48 L40 56 L36 60 L28 58 Z" />
+      <path d="M42 20 L52 15 L58 18 L56 26 L60 30 L54 36 L46 34 L41 27 Z" />
+      <path d="M44 36 L54 34 L58 42 L52 52 L44 48 Z" />
+      <path d="M60 18 L78 12 L92 20 L90 34 L78 44 L66 40 L62 30 Z" />
+      <path d="M80 62 L92 58 L96 66 L86 70 Z" />
+    </g>
+  </svg>
+  @for (m of markers(); track m.id) {
+    <button
+      type="button"
+      (click)="markerSelect.emit(m.id)"
+      class="group absolute -translate-x-1/2 -translate-y-1/2"
+      [style.left.%]="m.x"
+      [style.top.%]="m.y"
+      [attr.aria-label]="m.label ?? m.kind"
+    >
+      <span class="block size-3 rounded-full border-2 shadow-lg transition-transform" [class]="markerClass(m)"></span>
+      @if (m.label) {
+        <span class="text-eyebrow absolute top-4 left-1/2 -translate-x-1/2 rounded-full border border-border bg-card px-2 py-0.5 whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100">
+          {{ m.label }}
+        </span>
+      }
+    </button>
+  }
+  <ng-content />
+</div>

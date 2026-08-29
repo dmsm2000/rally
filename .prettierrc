@@ -1,12 +1,10 @@
 {
-  "printWidth": 100,
+  "printWidth": 120,
+  "tabWidth": 2,
+  "jsxSingleQuote": true,
   "singleQuote": true,
-  "overrides": [
-    {
-      "files": "*.html",
-      "options": {
-        "parser": "angular"
-      }
-    }
-  ]
+  "trailingComma": "none",
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "endOfLine": "lf"
 }

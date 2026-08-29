@@ -1,0 +1,13 @@
+<button
+  type="button"
+  (click)="theme.toggle()"
+  [attr.aria-label]="'nav.toggleTheme' | translate"
+  [attr.aria-pressed]="theme.theme() === 'dark'"
+  class="flex size-10 items-center justify-center rounded-full border border-border bg-card hover:border-foreground"
+>
+  @if (theme.theme() === 'dark') {
+    <span aria-hidden="true">☀️</span>
+  } @else {
+    <span aria-hidden="true">🌙</span>
+  }
+</button>

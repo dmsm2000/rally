@@ -1,0 +1,76 @@
+@if (tournament(); as t) {
+  <section class="relative mb-10 overflow-hidden rounded-3xl border border-border">
+    <img [src]="t.image" [alt]="t.name" class="aspect-16/9 w-full object-cover sm:aspect-21/9" />
+    <div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-ink via-ink/70 to-transparent p-6 sm:p-10">
+      <p class="text-eyebrow text-bone/70">{{ t.dates }} · {{ t.flag }} {{ t.city }}, {{ t.country }}</p>
+      <h1 class="text-display mt-2 max-w-2xl text-3xl text-bone sm:text-5xl">{{ t.name }}</h1>
+      <p class="mt-2 text-sm text-bone/70">{{ 'tournaments.organisedBy' | translate:{ organizer: t.organizer } }}</p>
+    </div>
+  </section>
+
+  <div class="grid gap-10 lg:grid-cols-[1fr_340px]">
+    <div class="space-y-12">
+      <section class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" [value]="t.participants" [label]="'tournaments.playersIn' | translate" /></div>
+        <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" [value]="t.capacity" [label]="'tournaments.drawSize' | translate" /></div>
+        <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" [value]="t.fee" [label]="'tournaments.entryFee' | translate" /></div>
+        <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" [value]="(('enums.surface.' + t.surface) | translate)" [label]="'tournaments.surfaceLabel' | translate" /></div>
+      </section>
+
+      <section>
+        <ui-section-header [eyebrow]="'tournaments.formatEyebrow' | translate" [title]="'tournaments.howItRuns' | translate" />
+        <div class="flex flex-wrap gap-2">
+          <ui-chip tone="cobalt">{{ t.level }}</ui-chip>
+          <ui-chip>{{ t.format }}</ui-chip>
+          <ui-chip>{{ ('enums.surface.' + t.surface) | translate }}</ui-chip>
+          <ui-chip tone="lime">{{ ('enums.tournamentStatus.' + t.status) | translate }}</ui-chip>
+        </div>
+        <p class="mt-5 max-w-2xl text-sm text-muted-foreground">
+          {{ 'tournaments.formatDescription' | translate }}
+        </p>
+      </section>
+
+      <section>
+        <ui-section-header [eyebrow]="'tournaments.drawEyebrow' | translate" [title]="'tournaments.bracket' | translate" />
+        <div class="no-scrollbar overflow-x-auto">
+          <div class="flex min-w-max gap-6">
+            @for (round of bracket; track round.round) {
+              <div class="w-64 space-y-4">
+                <p class="text-eyebrow text-muted-foreground">{{ round.round }}</p>
+                @for (m of round.matches; track $index) {
+                  <div class="rounded-xl border border-border bg-card p-3 text-sm shadow-sm">
+                    <div class="flex justify-between" [class.font-bold]="m.winner === 'a'">
+                      <span>{{ m.a }}</span>
+                      <span class="text-muted-foreground">{{ m.scoreA ?? '–' }}</span>
+                    </div>
+                    <div class="my-2 h-px bg-border"></div>
+                    <div class="flex justify-between" [class.font-bold]="m.winner === 'b'" [class.text-muted-foreground]="m.b === 'TBD'">
+                      <span>{{ m.b }}</span>
+                      <span class="text-muted-foreground">{{ m.scoreB || '' }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start">
+      <div class="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <p class="text-eyebrow text-muted-foreground">{{ ('enums.tournamentStatus.' + t.status) | translate }}</p>
+        <p class="text-display mt-2 text-2xl">{{ t.fee }} {{ 'tournaments.entrySuffix' | translate }}</p>
+        <div class="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+          <div class="h-full rounded-full bg-lime-deep" [style.width.%]="pct()"></div>
+        </div>
+        <p class="mt-2 text-xs text-muted-foreground">{{ 'tournaments.placesFilled' | translate:{ participants: t.participants, capacity: t.capacity } }}</p>
+        <button type="button" class="mt-5 w-full rounded-full bg-lime px-6 py-4 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5">{{ 'tournaments.register' | translate }}</button>
+        <button type="button" class="mt-3 w-full rounded-full border border-border px-6 py-3.5 text-xs font-extrabold tracking-wide uppercase hover:border-foreground">{{ 'tournaments.addToCalendar' | translate }}</button>
+      </div>
+    </aside>
+  </div>
+} @else {
+  <p class="text-muted-foreground">{{ 'tournaments.notFound' | translate }}</p>
+  <a routerLink="/tournaments" class="text-sm font-bold uppercase hover:underline">{{ 'tournaments.backToTournaments' | translate }}</a>
+}

@@ -1,0 +1,29 @@
+<a
+  [routerLink]="['/courts', court().id]"
+  class="group block overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+  [class.w-72]="compact()"
+  [class.shrink-0]="compact()"
+>
+  <div class="relative aspect-16/10 overflow-hidden">
+    <img [src]="court().image" [alt]="court().name + ', ' + court().city" loading="lazy" class="size-full object-cover transition-transform duration-500 group-hover:scale-105" />
+    <span class="text-eyebrow absolute top-3 left-3 rounded-full bg-background/90 px-2.5 py-1">
+      {{ ('enums.surface.' + court().surface) | translate }} · {{ (court().indoor ? 'enums.indoor' : 'enums.outdoor') | translate }}
+    </span>
+    @if (court().visited) {
+      <span class="text-eyebrow absolute top-3 right-3 rounded-full bg-lime px-2.5 py-1 text-ink">{{ 'courts.collected' | translate }}</span>
+    }
+  </div>
+  <div class="p-4">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="truncate font-display text-base font-extrabold tracking-tight">{{ court().name }}</p>
+        <p class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">{{ court().flag }} {{ court().city }}</p>
+      </div>
+      <span class="flex shrink-0 items-center gap-1 text-sm font-bold">★ {{ court().rating }}</span>
+    </div>
+    <div class="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+      <span>{{ court().courts }} courts</span>
+      <span class="font-semibold text-foreground">{{ court().price }}</span>
+    </div>
+  </div>
+</a>

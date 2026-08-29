@@ -1,0 +1,78 @@
+<ui-page-header [eyebrow]="'world.eyebrow' | translate" [title]="'world.title' | translate" [lead]="'world.lead' | translate" />
+
+<div class="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+  <app-rally-map class="h-[320px] lg:h-[520px]" [markers]="world.markers()" [selected]="world.selectedId()" (markerSelect)="world.select($event)">
+    <div class="absolute inset-x-4 bottom-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/90 px-4 py-3 backdrop-blur">
+      <div class="flex flex-wrap items-center gap-4">
+        <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 bg-lime border-lime-deep"></span>{{ 'world.legendPlayers' | translate }}</span>
+        <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 bg-clay border-clay"></span>{{ 'world.legendCourts' | translate }}</span>
+        <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 bg-cobalt border-cobalt"></span>{{ 'world.legendTournaments' | translate }}</span>
+      </div>
+      <span class="text-eyebrow text-muted-foreground">{{ 'world.countriesUnlocked' | translate }}</span>
+    </div>
+  </app-rally-map>
+
+  @if (world.selectedDestination(); as city) {
+    <div class="rounded-2xl border border-border bg-card shadow-sm">
+      <img [src]="city.image" [alt]="city.city" class="aspect-16/9 w-full rounded-t-2xl object-cover" />
+      <div class="p-6">
+        <h2 class="text-display text-3xl">{{ city.city }} {{ city.flag }}</h2>
+        <p class="mt-2 text-sm text-muted-foreground">{{ city.note }}</p>
+        <div class="mt-6 grid grid-cols-3 gap-4">
+          <ui-stat size="sm" [value]="city.players" [label]="'world.legendPlayers' | translate" />
+          <ui-stat size="sm" [value]="city.courts" [label]="'world.legendCourts' | translate" />
+          <ui-stat size="sm" [value]="city.tournaments" [label]="'world.legendTournaments' | translate" />
+        </div>
+        <div class="mt-6 flex flex-wrap gap-2">
+          @for (d of world.destinations(); track d.id) {
+            <ui-chip [clickable]="true" [active]="d.id === world.selectedId()" (toggled)="world.select(d.id)">{{ d.flag }} {{ d.city }}</ui-chip>
+          }
+        </div>
+        <a routerLink="/players" class="mt-6 inline-flex rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'world.playersInCity' | translate:{ city: city.city } }}</a>
+      </div>
+    </div>
+  }
+</div>
+
+<section class="mt-14">
+  <ui-section-header [eyebrow]="'world.nearbyPlacesEyebrow' | translate" [title]="'world.citiesToPlay' | translate" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (d of world.destinations(); track d.id) {
+      <button type="button" (click)="world.select(d.id)" class="overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-transform hover:-translate-y-0.5">
+        <img [src]="d.image" [alt]="d.city" class="aspect-16/9 w-full object-cover" />
+        <div class="p-4">
+          <p class="font-display text-lg font-extrabold tracking-tight uppercase">{{ d.city }} {{ d.flag }}</p>
+          <p class="mt-2 text-xs text-muted-foreground">{{ 'world.playersLookingForGames' | translate:{ players: d.players, courts: d.courts, tournaments: d.tournaments } }}</p>
+        </div>
+      </button>
+    }
+  </div>
+</section>
+
+<section class="mt-14">
+  <ui-section-header [eyebrow]="'world.courtsMapEyebrow' | translate" [title]="'world.courtsWorthTravelling' | translate" [action]="'world.allCourts' | translate" to="/courts" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (c of world.featuredCourts(); track c.id) {
+      <app-court-card [court]="c" />
+    }
+  </div>
+</section>
+
+<section class="mt-14">
+  <ui-section-header [eyebrow]="'world.abroadEyebrow' | translate" [title]="'world.playersOtherCountries' | translate" [action]="'world.playerDiscovery' | translate" to="/players" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (p of world.abroadPlayers(); track p.id) {
+      <app-player-card [player]="p" />
+    }
+  </div>
+</section>
+
+<section class="mt-14">
+  <ui-section-header [eyebrow]="'world.tripsEyebrow' | translate" [title]="'world.tournamentsAbroad' | translate" [action]="'world.allTournaments' | translate" to="/tournaments" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (t of world.abroadTournaments(); track t.id) {
+      <app-tournament-card [tournament]="t" />
+    }
+  </div>
+  <p class="text-eyebrow mt-6 text-muted-foreground">{{ 'world.suggestion' | translate }}</p>
+</section>

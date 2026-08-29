@@ -1,0 +1,26 @@
+<a
+  [routerLink]="['/matches', match().id]"
+  class="block rounded-2xl border border-border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+  [class.w-72]="compact()"
+  [class.shrink-0]="compact()"
+>
+  <div class="flex items-center justify-between">
+    <span class="text-eyebrow text-muted-foreground">{{ match().date }} · {{ match().time }}</span>
+    <span class="text-eyebrow rounded-full px-2 py-0.5" [class]="statusClasses()">{{ statusLabel() | translate }}</span>
+  </div>
+  <div class="mt-3 flex items-center gap-3">
+    <ui-avatar [initials]="playerA()?.initials ?? ''" [accent]="playerA()?.accent ?? 'ink'" size="sm" />
+    <div class="min-w-0 flex-1">
+      <p class="truncate text-sm font-bold">{{ playerA()?.name }} <span class="text-muted-foreground">vs</span> {{ playerB()?.name }}</p>
+      <p class="truncate text-xs text-muted-foreground">{{ court()?.flag }} {{ court()?.name }} · {{ match().format }}</p>
+    </div>
+    <ui-avatar [initials]="playerB()?.initials ?? ''" [accent]="playerB()?.accent ?? 'ink'" size="sm" />
+  </div>
+  @if (match().sets) {
+    <div class="mt-3 flex gap-2">
+      @for (s of match().sets; track $index) {
+        <span class="text-stat rounded-lg border border-border px-2.5 py-1 text-sm">{{ s[0] }}-{{ s[1] }}</span>
+      }
+    </div>
+  }
+</a>

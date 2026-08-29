@@ -1,0 +1,15 @@
+<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-md lg:hidden">
+  <div class="mx-auto grid max-w-md grid-cols-5">
+    @for (item of items; track item.path) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="text-foreground"
+        [routerLinkActiveOptions]="{ exact: !!item.exact }"
+        class="flex flex-col items-center gap-1 py-3 text-muted-foreground"
+      >
+        <span class="text-[10px] font-bold tracking-wide uppercase">{{ item.label | translate }}</span>
+        <span class="h-0.5 w-6 rounded-full bg-lime-deep opacity-0"></span>
+      </a>
+    }
+  </div>
+</nav>

@@ -1,0 +1,21 @@
+<a
+  [routerLink]="['/players', player().id]"
+  class="group block rounded-2xl border border-border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+  [class.w-64]="compact()"
+  [class.shrink-0]="compact()"
+>
+  <div class="flex items-start gap-3">
+    <ui-avatar [initials]="player().initials" [accent]="player().accent" size="md" />
+    <div class="min-w-0 flex-1">
+      <p class="truncate font-display text-base font-extrabold tracking-tight">{{ player().name }}</p>
+      <p class="text-xs text-muted-foreground">{{ player().flag }} {{ player().city }} · {{ player().distanceKm | distanceKm }}</p>
+    </div>
+    <ui-match-score [value]="player().matchScore" [size]="46" />
+  </div>
+  <div class="mt-3 flex flex-wrap gap-1.5">
+    <ui-chip tone="lime">{{ ('enums.level.' + player().level) | translate }}</ui-chip>
+    <ui-chip>{{ ('enums.format.' + player().format) | translate }}</ui-chip>
+    <ui-chip>{{ ('enums.surface.' + player().surface) | translate }}</ui-chip>
+  </div>
+  <p class="mt-3 text-sm text-muted-foreground" [class.line-clamp-2]="compact()" [class.text-xs]="compact()">{{ player().matchReason }}</p>
+</a>

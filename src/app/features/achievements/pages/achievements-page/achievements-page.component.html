@@ -1,0 +1,27 @@
+<ui-page-header [eyebrow]="'achievements.eyebrow' | translate" [title]="'achievements.title' | translate" [lead]="'achievements.lead' | translate" />
+
+<section class="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" [value]="achievements.unlocked().length + '/' + achievements.all().length" [label]="'achievements.unlockedStat' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="7" [label]="'stats.countries' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="23" [label]="'stats.courts' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="48" [label]="'stats.playersMet' | translate" /></div>
+</section>
+
+<section class="mb-14">
+  <ui-section-header [eyebrow]="'achievements.earnedEyebrow' | translate" [title]="'achievements.unlockedTitle' | translate" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (a of achievements.unlocked(); track a.id) {
+      <app-achievement-card [achievement]="a" />
+    }
+  </div>
+</section>
+
+<section>
+  <ui-section-header [eyebrow]="'achievements.inProgressEyebrow' | translate" [title]="'achievements.nextUp' | translate" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (a of achievements.locked(); track a.id) {
+      <app-achievement-card [achievement]="a" />
+    }
+  </div>
+  <p class="text-eyebrow mt-6 text-muted-foreground">{{ 'achievements.progressNote' | translate }}</p>
+</section>

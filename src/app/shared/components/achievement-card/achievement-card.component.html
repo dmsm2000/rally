@@ -1,0 +1,25 @@
+<div class="relative overflow-hidden rounded-2xl border p-5" [class]="achievement().unlocked ? 'border-border bg-card shadow-sm' : 'border-dashed border-border bg-transparent'">
+  <div class="flex items-start gap-3">
+    <span
+      class="flex size-11 items-center justify-center rounded-xl border text-lg"
+      [class]="achievement().unlocked ? 'border-achievement/40 bg-achievement/15' : 'border-border bg-muted grayscale'"
+    >
+      {{ achievement().unlocked ? achievement().icon : '🔒' }}
+    </span>
+    <div class="min-w-0 flex-1">
+      <p class="font-display text-sm font-extrabold tracking-tight uppercase">{{ achievement().name }}</p>
+      <p class="mt-1 text-xs text-muted-foreground">{{ achievement().description }}</p>
+    </div>
+  </div>
+  @if (!achievement().unlocked && achievement().goal) {
+    <div class="mt-4">
+      <div class="h-1.5 overflow-hidden rounded-full bg-muted">
+        <div class="h-full rounded-full bg-achievement" [style.width.%]="pct()"></div>
+      </div>
+      <p class="text-eyebrow mt-2 text-muted-foreground">{{ achievement().progress }} / {{ achievement().goal }}</p>
+    </div>
+  }
+  @if (achievement().unlocked) {
+    <p class="text-eyebrow mt-4 text-win">{{ 'achievements.unlockedTitle' | translate }}</p>
+  }
+</div>

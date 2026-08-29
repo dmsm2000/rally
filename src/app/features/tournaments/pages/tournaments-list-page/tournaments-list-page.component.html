@@ -1,0 +1,26 @@
+<ui-page-header [eyebrow]="'tournaments.eyebrow' | translate" [title]="'tournaments.title' | translate" [lead]="'tournaments.lead' | translate" />
+
+<div class="no-scrollbar mb-8 flex gap-2 overflow-x-auto">
+  @for (f of tournaments.filters; track f) {
+    <ui-chip [clickable]="true" [active]="tournaments.activeFilter() === f" (toggled)="tournaments.toggleFilter(f)">{{ f | translate }}</ui-chip>
+  }
+</div>
+
+<section class="mb-14">
+  <ui-section-header [eyebrow]="'tournaments.registrationEyebrow' | translate" [title]="'tournaments.upcomingTournaments' | translate" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (t of tournaments.all(); track t.id) {
+      <app-tournament-card [tournament]="t" />
+    }
+  </div>
+</section>
+
+<section>
+  <ui-section-header [eyebrow]="'tournaments.standingsEyebrow' | translate" [title]="'tournaments.ranking' | translate" />
+  <div class="rounded-2xl border border-border bg-card px-5 shadow-sm">
+    @for (r of tournaments.rankings(); track r.rank) {
+      <app-ranking-row [rank]="r.rank" [playerId]="r.player" [points]="r.points" [trend]="r.trend" />
+    }
+  </div>
+  <p class="text-eyebrow mt-4 text-muted-foreground">{{ 'tournaments.pointsNote' | translate }}</p>
+</section>

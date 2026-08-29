@@ -1,0 +1,145 @@
+@import 'tailwindcss';
+@source '../src';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-display: 'Archivo', 'Archivo Black', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-ink: var(--ink);
+  --color-bone: var(--bone);
+  --color-lime: var(--lime);
+  --color-lime-deep: var(--lime-deep);
+  --color-clay: var(--clay);
+  --color-cobalt: var(--cobalt);
+  --color-line: var(--line);
+
+  --color-win: var(--win);
+  --color-loss: var(--loss);
+  --color-achievement: var(--achievement);
+}
+
+:root {
+  --ink: oklch(0.19 0.017 252);
+  --bone: oklch(0.973 0.008 95);
+  --lime: oklch(0.885 0.201 124);
+  --lime-deep: oklch(0.72 0.17 128);
+  --clay: oklch(0.68 0.16 48);
+  --cobalt: oklch(0.55 0.17 258);
+  --line: oklch(0.89 0.008 95);
+
+  --background: var(--bone);
+  --foreground: var(--ink);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--ink);
+  --border: var(--line);
+  --muted: oklch(0.955 0.01 95);
+  --muted-foreground: oklch(0.53 0.015 252);
+
+  --win: oklch(0.63 0.15 152);
+  --loss: oklch(0.6 0.17 20);
+  --achievement: oklch(0.76 0.13 82);
+}
+
+.dark {
+  --background: oklch(0.16 0.014 252);
+  --foreground: oklch(0.95 0.008 95);
+  --card: oklch(0.21 0.016 252);
+  --card-foreground: oklch(0.95 0.008 95);
+  --border: oklch(1 0 0 / 12%);
+  --muted: oklch(0.25 0.016 252);
+  --muted-foreground: oklch(0.68 0.015 252);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+  }
+}
+
+@utility text-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+@utility text-stat {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+@utility text-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@utility court-grid-ink {
+  background-image:
+    linear-gradient(to right, oklch(1 0 0 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(1 0 0 / 0.07) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes rally-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-rise {
+  animation: rally-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}

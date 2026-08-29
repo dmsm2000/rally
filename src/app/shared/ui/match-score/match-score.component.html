@@ -1,0 +1,16 @@
+<span class="relative inline-flex shrink-0 items-center justify-center" [style.width.px]="size()" [style.height.px]="size()">
+  <svg [attr.width]="size()" [attr.height]="size()" class="-rotate-90">
+    <circle [attr.cx]="size() / 2" [attr.cy]="size() / 2" [attr.r]="radius()" fill="none" stroke="var(--line)" stroke-width="4" />
+    <circle
+      [attr.cx]="size() / 2"
+      [attr.cy]="size() / 2"
+      [attr.r]="radius()"
+      fill="none"
+      stroke="var(--lime-deep)"
+      stroke-width="4"
+      stroke-linecap="round"
+      [attr.stroke-dasharray]="dashArray()"
+    />
+  </svg>
+  <span class="text-stat absolute text-[0.8rem]">{{ value() }}</span>
+</span>

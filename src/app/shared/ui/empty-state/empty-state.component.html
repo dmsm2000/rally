@@ -1,0 +1,9 @@
+<div class="rounded-2xl border border-dashed border-border p-10 text-center">
+  <h3 class="text-display text-lg">{{ title() }}</h3>
+  <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">{{ body() }}</p>
+  @if (action()) {
+    <button type="button" class="mt-5 rounded-full bg-foreground px-5 py-2.5 text-xs font-bold tracking-wide text-background uppercase">
+      {{ action() }}
+    </button>
+  }
+</div>

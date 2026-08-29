@@ -1,0 +1,82 @@
+@if (match(); as m) {
+  <section class="mb-10 overflow-hidden rounded-3xl border border-border bg-ink text-bone">
+    <div class="court-grid-ink p-6 sm:p-10">
+      <div class="flex items-center justify-between">
+        <p class="text-eyebrow text-bone/60">{{ m.date }} · {{ m.time }} · {{ ('enums.format.' + m.format) | translate }}</p>
+        <span class="text-eyebrow rounded-full px-3 py-1" [class]="done() ? 'bg-lime text-ink' : 'border border-bone/30 text-bone'">
+          {{ (done() ? 'matches.matchComplete' : 'enums.matchStatus.upcoming') | translate }}
+        </span>
+      </div>
+
+      <div class="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        <div class="text-center">
+          <ui-avatar [initials]="playerA()?.initials ?? ''" [accent]="playerA()?.accent ?? 'ink'" size="lg" class="mx-auto" />
+          <p class="text-display mt-3 text-lg sm:text-2xl">{{ playerA()?.name }}</p>
+          <p class="text-xs text-bone/60">{{ playerA()?.flag }} {{ playerA()?.city }}</p>
+        </div>
+        <div class="text-center">
+          @if (m.sets) {
+            <div class="flex gap-2">
+              @for (s of m.sets; track $index) {
+                <div class="rounded-xl border border-bone/20 px-3 py-2">
+                  <p class="text-stat text-2xl sm:text-4xl">{{ s[0] }}</p>
+                  <p class="text-stat mt-1 text-2xl text-bone/50 sm:text-4xl">{{ s[1] }}</p>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-display text-3xl text-lime">{{ 'matches.vs' | translate }}</p>
+          }
+        </div>
+        <div class="text-center">
+          <ui-avatar [initials]="playerB()?.initials ?? ''" [accent]="playerB()?.accent ?? 'ink'" size="lg" class="mx-auto" />
+          <p class="text-display mt-3 text-lg sm:text-2xl">{{ playerB()?.name }}</p>
+          <p class="text-xs text-bone/60">{{ playerB()?.flag }} {{ playerB()?.city }}</p>
+        </div>
+      </div>
+
+      @if (done()) {
+        <p class="text-display mt-8 text-center text-2xl text-lime sm:text-4xl">{{ aWon() ? playerA()?.name : playerB()?.name }} {{ 'matches.winsSuffix' | translate }}</p>
+      }
+
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3 border-t border-bone/15 pt-6 text-sm text-bone/70">
+        <span>{{ court()?.flag }} {{ court()?.name }}, {{ court()?.city }}</span>
+        <span>·</span>
+        <span>{{ ('enums.surface.' + court()?.surface) | translate }}</span>
+        <span>·</span>
+        <span>{{ (court()?.indoor ? 'enums.indoor' : 'enums.outdoor') | translate }}</span>
+      </div>
+    </div>
+  </section>
+
+  <div>
+    @if (m.stats) {
+      <h2 class="text-display mb-5 text-2xl">{{ 'matches.matchStatistics' | translate }}</h2>
+      <div class="overflow-hidden rounded-2xl border border-border bg-card">
+        @for (s of m.stats; track s.label) {
+          <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-border px-5 py-4 last:border-0">
+            <span class="text-stat text-xl">{{ s.a }}</span>
+            <span class="text-eyebrow text-muted-foreground">{{ s.label }}</span>
+            <span class="text-stat text-right text-xl">{{ s.b }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <h2 class="text-display mb-5 text-2xl">{{ 'matches.beforeYouPlay' | translate }}</h2>
+      <div class="rounded-2xl border border-border bg-card p-6">
+        <div class="flex flex-wrap gap-2">
+          <ui-chip tone="lime">{{ 'matches.bringBalls' | translate }}</ui-chip>
+          <ui-chip>{{ 'matches.courtBooked' | translate }}</ui-chip>
+          <ui-chip tone="cobalt">{{ 'matches.floodlights' | translate }}</ui-chip>
+        </div>
+        <p class="mt-5 text-sm text-muted-foreground">
+          {{ 'matches.headToHead' | translate:{ name: playerB()?.name ?? '', count: playerB()?.stats?.matches ?? 0, surface: (('enums.surface.' + playerB()?.surface) | translate) } }}
+        </p>
+        <button type="button" class="mt-6 rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'matches.addScore' | translate }}</button>
+      </div>
+    }
+  </div>
+} @else {
+  <p class="text-muted-foreground">{{ 'matches.notFound' | translate }}</p>
+  <a routerLink="/matches" class="text-sm font-bold uppercase hover:underline">{{ 'matches.backToMatches' | translate }}</a>
+}

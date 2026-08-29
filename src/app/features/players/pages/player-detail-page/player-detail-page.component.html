@@ -1,0 +1,92 @@
+@if (player(); as p) {
+  <section class="mb-10 overflow-hidden rounded-3xl border border-border bg-card">
+    <div class="h-28 bg-muted sm:h-36"></div>
+    <div class="-mt-12 px-6 pb-6 sm:px-8">
+      <div class="flex flex-wrap items-end gap-5">
+        <ui-avatar [initials]="p.initials" [accent]="p.accent" size="xl" [ring]="true" />
+        <div class="flex-1">
+          <h1 class="text-display text-3xl sm:text-5xl">{{ p.name }}</h1>
+          <p class="mt-1 text-sm text-muted-foreground">{{ p.flag }} {{ p.city }}, {{ p.country }} · {{ p.years }} years playing</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <ui-match-score [value]="p.matchScore" [size]="64" />
+          <div>
+            <p class="text-eyebrow">{{ 'players.matchScore' | translate }}</p>
+            <p class="max-w-40 text-xs text-muted-foreground">{{ p.matchReason }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-wrap gap-2">
+        <ui-chip tone="lime">{{ ('enums.level.' + p.level) | translate }}</ui-chip>
+        <ui-chip>{{ ('enums.format.' + p.format) | translate }}</ui-chip>
+        <ui-chip>{{ ('enums.surface.' + p.surface) | translate }} {{ 'stats.courts' | translate }}</ui-chip>
+        <ui-chip>{{ p.frequency }}</ui-chip>
+        @for (a of p.availability; track a) {
+          <ui-chip tone="cobalt">{{ a }}</ui-chip>
+        }
+      </div>
+
+      <p class="mt-5 max-w-2xl text-sm text-muted-foreground">{{ p.bio }}</p>
+
+      <div class="mt-7 flex flex-wrap gap-3">
+        <button type="button" class="rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'players.inviteToMatch' | translate }}</button>
+        <button type="button" class="rounded-full border border-border px-6 py-3 text-xs font-extrabold tracking-wide uppercase hover:border-foreground">{{ 'players.message' | translate }}</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="p.stats.wins" [label]="'stats.wins' | translate" /></div>
+    <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="p.stats.matches" [label]="'stats.matches' | translate" /></div>
+    <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="p.stats.courts" [label]="'stats.courts' | translate" /></div>
+    <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="p.stats.countries" [label]="'stats.countries' | translate" /></div>
+  </section>
+
+  <div class="grid gap-12 lg:grid-cols-[1fr_340px]">
+    <div class="space-y-12">
+      <section>
+        <ui-section-header [eyebrow]="'players.matchHistoryEyebrow' | translate" [title]="'players.recentMatches' | translate" />
+        <div class="grid gap-4 sm:grid-cols-2">
+          @for (m of history(); track m.id) {
+            <app-match-card [match]="m" />
+          }
+        </div>
+      </section>
+
+      <section>
+        <ui-section-header [eyebrow]="'players.collectedEyebrow' | translate" [title]="'players.courtsDiscovered' | translate" />
+        <div class="grid gap-4 sm:grid-cols-2">
+          @for (c of featuredCourts(); track c.id) {
+            <app-court-card [court]="c" />
+          }
+        </div>
+      </section>
+    </div>
+
+    <aside class="space-y-10">
+      <section>
+        <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'players.passport' | translate }}</p>
+        <div class="flex flex-wrap gap-2">
+          @for (c of visitedCountries(); track c.name) {
+            <app-country-badge [flag]="c.flag" [name]="c.name" />
+          }
+        </div>
+      </section>
+      <section>
+        <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'players.achievements' | translate }}</p>
+        <div class="space-y-2">
+          @for (a of unlockedAchievements(); track a.id) {
+            <div class="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+              <span class="text-lg">{{ a.icon }}</span>
+              <p class="text-xs font-bold tracking-wide uppercase">{{ a.name }}</p>
+            </div>
+          }
+        </div>
+      </section>
+    </aside>
+  </div>
+} @else {
+  <p class="text-muted-foreground">{{ 'players.notFound' | translate }}</p>
+  <a routerLink="/players" class="text-sm font-bold uppercase hover:underline">{{ 'players.backToPlayers' | translate }}</a>
+}
