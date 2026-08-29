@@ -309,6 +309,10 @@ export const pt = {
     createAccount: 'Criar conta',
     haveAccount: 'Já tens conta na Rally?',
     signIn: 'Iniciar sessão',
+    loginEyebrow: 'Bem-vindo de volta',
+    loginTitle: 'Inicia sessão na Rally',
+    loginLead: 'Introduz os teus dados e voltamos a pôr-te em campo.',
+    noAccount: 'Ainda não tens conta na Rally?',
   },
   enums: {
     level: {

@@ -22,4 +22,9 @@ export class AuthService {
     }
     this._isAuthenticated.set(true);
   }
+
+  /** Stand-in for a real Supabase sign-in call; just marks the session as authenticated. */
+  login(): void {
+    this._isAuthenticated.set(true);
+  }
 }

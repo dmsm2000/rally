@@ -307,6 +307,10 @@ export const en = {
     createAccount: 'Create account',
     haveAccount: 'Already on Rally?',
     signIn: 'Sign in',
+    loginEyebrow: 'Welcome back',
+    loginTitle: 'Sign in to Rally',
+    loginLead: "Enter your details and we'll get you back on court.",
+    noAccount: 'New to Rally?',
   },
   enums: {
     level: {

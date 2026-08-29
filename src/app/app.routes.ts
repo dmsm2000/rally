@@ -4,6 +4,7 @@ import { AppShellComponent } from './layout/app-shell/app-shell.component';
 export const routes: Routes = [
 	// Public, pre-authentication routes render outside the shell (no topbar/bottom-nav).
 	{ path: 'register', loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES) },
+	{ path: 'login', loadChildren: () => import('./features/auth/auth.routes').then((m) => m.LOGIN_ROUTES) },
 	{
 		path: '',
 		component: AppShellComponent,
