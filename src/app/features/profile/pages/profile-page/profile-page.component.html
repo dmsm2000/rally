@@ -34,10 +34,10 @@
     </section>
 
     <section>
-      <ui-section-header [eyebrow]="'profile.historyEyebrow' | translate" [title]="'profile.yourMatches' | translate" [action]="'home.allMatches' | translate" to="/matches" />
+      <ui-section-header [eyebrow]="'profile.historyEyebrow' | translate" [title]="'profile.yourMatches' | translate" [action]="'matches.viewAll' | translate" to="/matches" />
       <div class="grid gap-4 sm:grid-cols-2">
         @for (m of profile.matches(); track m.id) {
-          <app-match-card [match]="m" />
+          <rally-match-card [match]="m" />
         }
       </div>
     </section>
@@ -46,16 +46,16 @@
       <ui-section-header [eyebrow]="'players.collectedEyebrow' | translate" [title]="'players.courtsDiscovered' | translate" [action]="'profile.courtMap' | translate" to="/courts" />
       <div class="grid gap-4 sm:grid-cols-2">
         @for (c of profile.visitedCourts(); track c.id) {
-          <app-court-card [court]="c" />
+          <rally-court-card [court]="c" />
         }
       </div>
     </section>
 
     <section>
-      <ui-section-header [eyebrow]="'profile.milestonesEyebrow' | translate" [title]="'players.achievements' | translate" [action]="'profile.seeAll' | translate" to="/achievements" />
+      <ui-section-header [eyebrow]="'profile.milestonesEyebrow' | translate" [title]="'players.achievements' | translate" [action]="'profile.seeAll' | translate" to="/passport" />
       <div class="grid gap-4 sm:grid-cols-2">
         @for (a of profile.achievements(); track a.id) {
-          <app-achievement-card [achievement]="a" />
+          <rally-achievement-card [achievement]="a" />
         }
       </div>
     </section>
@@ -67,7 +67,7 @@
       <p class="text-display mt-2 text-2xl">{{ profile.visitedCountries().length }} {{ 'profile.countriesSuffix' | translate }}</p>
       <div class="mt-4 flex flex-wrap gap-2">
         @for (c of profile.visitedCountries(); track c.name) {
-          <app-country-badge [flag]="c.flag" [name]="c.name" />
+          <rally-country-badge [flag]="c.flag" [name]="c.name" />
         }
       </div>
       <a routerLink="/passport" class="mt-5 inline-block text-xs font-bold tracking-wide uppercase hover:underline">{{ 'profile.openPassport' | translate }} →</a>

@@ -22,4 +22,8 @@ export class PlayersRepository {
   get surfaces(): readonly string[] {
     return this.data.surfaces;
   }
+
+  countryCoords(country: string): { x: number; y: number } | undefined {
+    return this.data.countries().find((c) => c.name === country)?.coords;
+  }
 }

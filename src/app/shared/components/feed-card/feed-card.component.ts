@@ -4,7 +4,7 @@ import { FeedItem } from '../../../core/models';
 import { AvatarComponent } from '../../ui';
 
 @Component({
-  selector: 'app-feed-card',
+  selector: 'rally-feed-card',
   imports: [AvatarComponent],
   templateUrl: './feed-card.component.html',
   styleUrl: './feed-card.component.scss',

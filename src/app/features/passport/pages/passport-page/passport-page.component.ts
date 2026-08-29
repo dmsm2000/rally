@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { PassportService } from '../../passport.service';
 import { StatComponent, SectionHeaderComponent } from '../../../../shared/ui';
-import { RallyMapComponent, MapMarker } from '../../../../shared/components';
+import { RallyMapComponent, MapMarker, AchievementCardComponent, PlayerCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-passport-page',
-  imports: [StatComponent, SectionHeaderComponent, RallyMapComponent, TranslatePipe],
+  selector: 'rally-passport-page',
+  imports: [StatComponent, SectionHeaderComponent, RallyMapComponent, AchievementCardComponent, PlayerCardComponent, TranslatePipe],
   templateUrl: './passport-page.component.html',
   styleUrl: './passport-page.component.scss',
 })

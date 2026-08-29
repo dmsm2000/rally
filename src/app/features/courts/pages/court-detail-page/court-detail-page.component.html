@@ -29,7 +29,7 @@
 
       <section>
         <ui-section-header [eyebrow]="'courts.locationEyebrow' | translate" [title]="'courts.gettingThere' | translate" />
-        <app-rally-map class="h-56" [markers]="markers()" />
+        <rally-map class="h-56" [markers]="markers()" />
       </section>
 
       <section>
@@ -55,10 +55,10 @@
       </section>
 
       <section>
-        <ui-section-header [eyebrow]="'courts.nearbyEyebrow' | translate" [title]="'courts.playersWhoPlayHere' | translate" [action]="'courts.playerDiscovery' | translate" to="/players" />
+        <ui-section-header [eyebrow]="'courts.nearbyEyebrow' | translate" [title]="'courts.playersWhoPlayHere' | translate" [action]="'courts.playerDiscovery' | translate" to="/world" />
         <div class="grid gap-4 sm:grid-cols-2">
           @for (p of nearbyPlayers(); track p.id) {
-            <app-player-card [player]="p" />
+            <rally-player-card [player]="p" />
           }
         </div>
       </section>

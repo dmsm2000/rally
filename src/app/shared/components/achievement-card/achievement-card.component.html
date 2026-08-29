@@ -1,8 +1,17 @@
-<div class="relative overflow-hidden rounded-2xl border p-5" [class]="achievement().unlocked ? 'border-border bg-card shadow-sm' : 'border-dashed border-border bg-transparent'">
-  <div class="flex items-start gap-3">
+<div
+  class="group relative overflow-hidden rounded-2xl border p-5 transition-all"
+  [class]="achievement().unlocked ? 'border-border bg-card shadow-sm hover:-translate-y-1 hover:shadow-md ' + tierStyle().glow : 'border-dashed border-border bg-transparent'"
+>
+  <span
+    class="text-eyebrow absolute top-4 right-4 rounded-full px-2 py-1 font-extrabold uppercase"
+    [class]="achievement().unlocked ? tierStyle().pill : 'bg-muted text-muted-foreground'"
+  >
+    {{ ('achievements.tier.' + achievement().tier) | translate }}
+  </span>
+  <div class="flex items-start gap-3 pr-16">
     <span
-      class="flex size-11 items-center justify-center rounded-xl border text-lg"
-      [class]="achievement().unlocked ? 'border-achievement/40 bg-achievement/15' : 'border-border bg-muted grayscale'"
+      class="flex size-11 shrink-0 items-center justify-center rounded-xl border text-lg"
+      [class]="achievement().unlocked ? tierStyle().badge : 'border-border bg-muted grayscale'"
     >
       {{ achievement().unlocked ? achievement().icon : '🔒' }}
     </span>
@@ -14,7 +23,7 @@
   @if (!achievement().unlocked && achievement().goal) {
     <div class="mt-4">
       <div class="h-1.5 overflow-hidden rounded-full bg-muted">
-        <div class="h-full rounded-full bg-achievement" [style.width.%]="pct()"></div>
+        <div class="h-full rounded-full opacity-60" [class]="tierStyle().bar" [style.width.%]="pct()"></div>
       </div>
       <p class="text-eyebrow mt-2 text-muted-foreground">{{ achievement().progress }} / {{ achievement().goal }}</p>
     </div>

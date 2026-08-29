@@ -3,7 +3,7 @@ import { ThemeService } from '../../../core/theme/theme.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
-  selector: 'app-theme-toggle',
+  selector: 'rally-theme-toggle',
   imports: [TranslatePipe],
   templateUrl: './theme-toggle.component.html',
   styleUrl: './theme-toggle.component.scss',

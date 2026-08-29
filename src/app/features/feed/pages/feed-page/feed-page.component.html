@@ -1,4 +1,27 @@
-<ui-page-header [eyebrow]="'feed.eyebrow' | translate" [title]="'feed.title' | translate" [lead]="'feed.lead' | translate" />
+<section class="animate-rise relative mb-10 overflow-hidden rounded-3xl border border-border bg-ink">
+  <img [src]="feed.heroImage" alt="Two players in a rally on a rooftop court above a Mediterranean city" class="absolute inset-0 size-full object-cover opacity-55" />
+  <div class="court-grid-ink relative p-6 sm:p-10 lg:p-14">
+    <p class="text-eyebrow text-bone/70">{{ 'feed.greeting' | translate }}, {{ feed.me().name.split(' ')[0] }} · {{ feed.me().flag }} {{ feed.me().city }}</p>
+    <h1 class="text-display mt-4 max-w-3xl text-4xl text-bone sm:text-6xl lg:text-7xl">
+      {{ 'feed.heroTitleLine1' | translate }}<br />{{ 'feed.heroTitleLine2' | translate }}<br /><span class="text-lime">{{ 'feed.heroTitleLine3' | translate }}</span>
+    </h1>
+    <p class="mt-5 max-w-md text-sm text-bone/80">{{ 'feed.heroCopy' | translate }}</p>
+    <div class="mt-7 flex flex-wrap gap-3">
+      <a routerLink="/world" class="inline-flex items-center gap-2 rounded-full bg-lime px-6 py-3.5 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5">
+        {{ 'feed.findGame' | translate }} →
+      </a>
+      <a routerLink="/world" class="inline-flex items-center gap-2 rounded-full border border-bone/30 px-6 py-3.5 text-sm font-extrabold tracking-wide text-bone uppercase hover:bg-bone/10">
+        {{ 'feed.exploreWorld' | translate }}
+      </a>
+    </div>
+    <div class="mt-10 grid max-w-xl grid-cols-4 gap-4 border-t border-bone/15 pt-6 text-bone">
+      <ui-stat size="sm" [value]="feed.me().stats.wins" [label]="'stats.wins' | translate" />
+      <ui-stat size="sm" [value]="feed.me().stats.matches" [label]="'stats.matches' | translate" />
+      <ui-stat size="sm" [value]="feed.me().stats.courts" [label]="'stats.courts' | translate" />
+      <ui-stat size="sm" [value]="feed.me().stats.countries" [label]="'stats.countries' | translate" />
+    </div>
+  </div>
+</section>
 
 <div class="mb-8 flex gap-2 border-b border-border">
   @for (t of feed.tabs; track t) {
@@ -16,7 +39,7 @@
 <div class="grid gap-10 lg:grid-cols-[1fr_320px]">
   <div class="space-y-5">
     @for (f of feed.items(); track f.id) {
-      <app-feed-card [item]="f" />
+      <rally-feed-card [item]="f" />
     }
   </div>
   <aside class="space-y-8">
@@ -24,7 +47,7 @@
       <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'feed.suggestedPlayers' | translate }}</p>
       <div class="space-y-4">
         @for (p of feed.suggestedPlayers(); track p.id) {
-          <app-player-card [player]="p" />
+          <rally-player-card [player]="p" />
         }
       </div>
     </div>

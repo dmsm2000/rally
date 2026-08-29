@@ -5,22 +5,22 @@ export interface MapMarker {
   x: number;
   y: number;
   label?: string;
-  kind: 'player' | 'court' | 'tournament' | 'match' | 'destination' | 'locked';
+  kind: 'player' | 'court' | 'match' | 'destination' | 'locked' | 'activity';
   active?: boolean;
 }
 
 const MARKER_TONE: Record<MapMarker['kind'], string> = {
   player: 'bg-lime border-lime-deep',
   court: 'bg-clay border-clay',
-  tournament: 'bg-cobalt border-cobalt',
   match: 'bg-foreground border-foreground',
-  destination: 'bg-lime border-lime-deep',
+  destination: 'bg-foreground border-foreground',
   locked: 'bg-transparent border-dashed border-muted-foreground',
+  activity: 'bg-cobalt border-cobalt',
 };
 
 /** Stylised Rally map: an abstract land silhouette, not a real map provider. */
 @Component({
-  selector: 'app-rally-map',
+  selector: 'rally-map',
   templateUrl: './rally-map.component.html',
   styleUrl: './rally-map.component.scss',
 })

@@ -6,7 +6,7 @@ import { DistanceKmPipe } from '../../pipes/distance-km.pipe';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
-  selector: 'app-player-card',
+  selector: 'rally-player-card',
   imports: [RouterLink, AvatarComponent, ChipComponent, MatchScoreComponent, DistanceKmPipe, TranslatePipe],
   templateUrl: './player-card.component.html',
   styleUrl: './player-card.component.scss',

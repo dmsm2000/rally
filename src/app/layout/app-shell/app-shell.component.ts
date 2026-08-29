@@ -4,7 +4,7 @@ import { TopbarComponent } from '../topbar/topbar.component';
 import { BottomNavComponent } from '../bottom-nav/bottom-nav.component';
 
 @Component({
-  selector: 'app-shell',
+  selector: 'rally-shell',
   imports: [RouterOutlet, TopbarComponent, BottomNavComponent],
   templateUrl: './app-shell.component.html',
   styleUrl: './app-shell.component.scss',

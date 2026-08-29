@@ -30,3 +30,10 @@ export interface Player {
   stats: PlayerStats;
   accent: Accent;
 }
+
+export interface PlayerIntent {
+  id: string;
+  playerId: string;
+  text: string;
+  time: string;
+}

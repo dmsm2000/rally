@@ -14,15 +14,7 @@ export interface Destination {
   flag: string;
   players: number;
   courts: number;
-  tournaments: number;
   image: string;
   coords: { x: number; y: number };
   note: string;
-}
-
-export interface RankingEntry {
-  rank: number;
-  player: string;
-  points: number;
-  trend: string;
 }

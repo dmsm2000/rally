@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
 @Component({
-  selector: 'app-country-badge',
+  selector: 'rally-country-badge',
   templateUrl: './country-badge.component.html',
   styleUrl: './country-badge.component.scss',
 })

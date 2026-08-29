@@ -1,16 +1,25 @@
-<ui-page-header [eyebrow]="'world.eyebrow' | translate" [title]="'world.title' | translate" [lead]="'world.lead' | translate" />
+<section class="animate-rise relative mb-10 overflow-hidden rounded-3xl border border-border bg-ink text-bone">
+  <div class="court-grid-ink p-6 sm:p-10 lg:p-14">
+    <p class="text-eyebrow text-bone/60">{{ 'world.eyebrow' | translate }}</p>
+    <h1 class="text-display mt-3 max-w-2xl text-4xl sm:text-6xl">{{ 'world.title' | translate }}</h1>
+    <p class="mt-4 max-w-md text-sm text-bone/80">{{ 'world.lead' | translate }}</p>
+    <div class="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-bone/15 pt-6">
+      <ui-stat size="sm" [value]="world.communityStats.courtsCaptured" [label]="'world.statCourtsCaptured' | translate" />
+      <ui-stat size="sm" [value]="world.communityStats.countriesUnlocked" [label]="'world.statCountriesUnlocked' | translate" />
+      <ui-stat size="sm" [value]="world.communityStats.activePlayers" [label]="'world.statActivePlayers' | translate" />
+    </div>
+  </div>
+</section>
 
 <div class="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-  <app-rally-map class="h-[320px] lg:h-[520px]" [markers]="world.markers()" [selected]="world.selectedId()" (markerSelect)="world.select($event)">
-    <div class="absolute inset-x-4 bottom-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/90 px-4 py-3 backdrop-blur">
-      <div class="flex flex-wrap items-center gap-4">
-        <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 bg-lime border-lime-deep"></span>{{ 'world.legendPlayers' | translate }}</span>
-        <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 bg-clay border-clay"></span>{{ 'world.legendCourts' | translate }}</span>
-        <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 bg-cobalt border-cobalt"></span>{{ 'world.legendTournaments' | translate }}</span>
-      </div>
-      <span class="text-eyebrow text-muted-foreground">{{ 'world.countriesUnlocked' | translate }}</span>
+  <rally-map class="h-[320px] lg:h-[520px]" [markers]="markers()" [selected]="world.selectedId()" (markerSelect)="world.select($event)">
+    <div class="absolute inset-x-4 bottom-4 flex flex-wrap items-center gap-4 rounded-xl border border-border bg-background/90 px-4 py-3 backdrop-blur">
+      <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 bg-lime border-lime-deep"></span>{{ 'world.legendPlayers' | translate }}</span>
+      <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 bg-clay border-clay"></span>{{ 'world.legendCourts' | translate }}</span>
+      <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 bg-cobalt border-cobalt"></span>{{ 'world.legendActivity' | translate }}</span>
+      <span class="text-eyebrow flex items-center gap-2 text-muted-foreground"><span class="size-2.5 rounded-full border-2 border-dashed border-muted-foreground"></span>{{ 'world.legendLocked' | translate }}</span>
     </div>
-  </app-rally-map>
+  </rally-map>
 
   @if (world.selectedDestination(); as city) {
     <div class="rounded-2xl border border-border bg-card shadow-sm">
@@ -18,31 +27,74 @@
       <div class="p-6">
         <h2 class="text-display text-3xl">{{ city.city }} {{ city.flag }}</h2>
         <p class="mt-2 text-sm text-muted-foreground">{{ city.note }}</p>
-        <div class="mt-6 grid grid-cols-3 gap-4">
+        <div class="mt-6 grid grid-cols-2 gap-4">
           <ui-stat size="sm" [value]="city.players" [label]="'world.legendPlayers' | translate" />
           <ui-stat size="sm" [value]="city.courts" [label]="'world.legendCourts' | translate" />
-          <ui-stat size="sm" [value]="city.tournaments" [label]="'world.legendTournaments' | translate" />
         </div>
         <div class="mt-6 flex flex-wrap gap-2">
           @for (d of world.destinations(); track d.id) {
             <ui-chip [clickable]="true" [active]="d.id === world.selectedId()" (toggled)="world.select(d.id)">{{ d.flag }} {{ d.city }}</ui-chip>
           }
         </div>
-        <a routerLink="/players" class="mt-6 inline-flex rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'world.playersInCity' | translate:{ city: city.city } }}</a>
+        <button
+          type="button"
+          (click)="players.query.set(city.city)"
+          class="mt-6 inline-flex cursor-pointer rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase"
+        >
+          {{ 'world.playersInCity' | translate:{ city: city.city } }}
+        </button>
       </div>
     </div>
   }
 </div>
 
 <section class="mt-14">
-  <ui-section-header [eyebrow]="'world.nearbyPlacesEyebrow' | translate" [title]="'world.citiesToPlay' | translate" />
+  <ui-section-header [eyebrow]="'players.eyebrow' | translate" [title]="'players.title' | translate" />
+
+  <div class="mb-6 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-3">
+    <span class="shrink-0 text-muted-foreground">⌕</span>
+    <input
+      [ngModel]="players.query()"
+      (ngModelChange)="players.query.set($event)"
+      [placeholder]="'players.searchPlaceholder' | translate"
+      class="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+    />
+  </div>
+  <div class="no-scrollbar mb-6 flex gap-2 overflow-x-auto">
+    <ui-chip [clickable]="true" [active]="players.nearOnly()" (toggled)="players.nearOnly.set(!players.nearOnly())">{{ 'players.within300' | translate }}</ui-chip>
+    @for (l of players.levels; track l) {
+      <ui-chip [clickable]="true" [active]="players.level() === l" (toggled)="players.toggleLevel(l)">{{ ('enums.level.' + l) | translate }}</ui-chip>
+    }
+    @for (f of players.formats; track f) {
+      <ui-chip [clickable]="true" [active]="players.format() === f" (toggled)="players.toggleFormat(f)">{{ ('enums.format.' + f) | translate }}</ui-chip>
+    }
+    @for (s of players.surfaces.slice(0, 3); track s) {
+      <ui-chip [clickable]="true" [active]="players.surface() === s" (toggled)="players.toggleSurface(s)">{{ ('enums.surface.' + s) | translate }}</ui-chip>
+    }
+  </div>
+
+  <p class="text-eyebrow mb-4 text-muted-foreground">{{ players.results().length }} {{ 'players.resultsSuffix' | translate }}</p>
+
+  @if (players.results().length === 0) {
+    <ui-empty-state [title]="'players.emptyTitle' | translate" [body]="'players.emptyBody' | translate" [action]="'players.resetFilters' | translate" />
+  } @else {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (p of players.results(); track p.id) {
+        <rally-player-card [player]="p" />
+      }
+    </div>
+  }
+</section>
+
+<section class="mt-14">
+  <ui-section-header [eyebrow]="'world.hotspotsEyebrow' | translate" [title]="'world.hotspotsTitle' | translate" />
   <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     @for (d of world.destinations(); track d.id) {
       <button type="button" (click)="world.select(d.id)" class="overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-transform hover:-translate-y-0.5">
         <img [src]="d.image" [alt]="d.city" class="aspect-16/9 w-full object-cover" />
         <div class="p-4">
           <p class="font-display text-lg font-extrabold tracking-tight uppercase">{{ d.city }} {{ d.flag }}</p>
-          <p class="mt-2 text-xs text-muted-foreground">{{ 'world.playersLookingForGames' | translate:{ players: d.players, courts: d.courts, tournaments: d.tournaments } }}</p>
+          <p class="mt-2 text-xs text-muted-foreground">{{ 'world.playersLookingForGames' | translate:{ players: d.players, courts: d.courts } }}</p>
         </div>
       </button>
     }
@@ -50,29 +102,92 @@
 </section>
 
 <section class="mt-14">
-  <ui-section-header [eyebrow]="'world.courtsMapEyebrow' | translate" [title]="'world.courtsWorthTravelling' | translate" [action]="'world.allCourts' | translate" to="/courts" />
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    @for (c of world.featuredCourts(); track c.id) {
-      <app-court-card [court]="c" />
-    }
+  <ui-section-header [eyebrow]="'world.tripEyebrow' | translate" [title]="'world.tripTitle' | translate" />
+  <div class="rounded-2xl border border-border bg-card p-5">
+    <div class="grid gap-3 sm:grid-cols-3">
+      <select
+        [ngModel]="world.tripDestinationId()"
+        (ngModelChange)="world.tripDestinationId.set($event)"
+        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
+      >
+        <option value="" disabled>{{ 'world.tripDestination' | translate }}</option>
+        @for (d of world.destinations(); track d.id) {
+          <option [value]="d.id">{{ d.flag }} {{ d.city }}</option>
+        }
+      </select>
+      <input
+        [ngModel]="world.tripFromDate()"
+        (ngModelChange)="world.tripFromDate.set($event)"
+        [placeholder]="'world.tripFrom' | translate"
+        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      />
+      <input
+        [ngModel]="world.tripToDate()"
+        (ngModelChange)="world.tripToDate.set($event)"
+        [placeholder]="'world.tripTo' | translate"
+        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      />
+    </div>
+    <input
+      [ngModel]="world.tripNote()"
+      (ngModelChange)="world.tripNote.set($event)"
+      [placeholder]="'world.tripNotePlaceholder' | translate"
+      class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+    />
+    <button
+      type="button"
+      (click)="world.publishTripIntent()"
+      class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 sm:w-auto"
+    >
+      {{ 'world.tripPublish' | translate }}
+    </button>
+    <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'world.tripHint' | translate }}</p>
   </div>
 </section>
 
 <section class="mt-14">
-  <ui-section-header [eyebrow]="'world.abroadEyebrow' | translate" [title]="'world.playersOtherCountries' | translate" [action]="'world.playerDiscovery' | translate" to="/players" />
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    @for (p of world.abroadPlayers(); track p.id) {
-      <app-player-card [player]="p" />
+  <ui-section-header [eyebrow]="'world.hostEyebrow' | translate" [title]="'world.hostTitle' | translate" />
+  @if (world.openTripIntents().length) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (row of world.openTripIntents(); track row.intent.id) {
+        <div class="rounded-2xl border border-dashed border-lime-deep bg-card p-4">
+          <div class="flex items-center gap-3">
+            <ui-avatar [initials]="row.player?.initials ?? ''" [accent]="row.player?.accent ?? 'ink'" size="sm" />
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-bold">{{ row.player?.name }}</p>
+              <p class="truncate text-xs text-muted-foreground">{{ row.destination?.flag }} {{ row.destination?.city }} · {{ row.intent.fromDate }} – {{ row.intent.toDate }}</p>
+            </div>
+          </div>
+          <p class="mt-3 text-sm text-muted-foreground">{{ row.intent.note }}</p>
+          @if (!world.meId() || row.intent.playerId !== world.meId()) {
+            <button
+              type="button"
+              (click)="world.volunteerForTrip(row.intent.id)"
+              class="mt-3 w-full cursor-pointer rounded-full border border-lime-deep px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
+            >
+              {{ 'world.volunteer' | translate }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <p class="text-sm text-muted-foreground">{{ 'world.hostEmpty' | translate }}</p>
+  }
+</section>
+
+<section class="mt-14">
+  <ui-section-header [eyebrow]="'world.activityEyebrow' | translate" [title]="'world.activityTitle' | translate" />
+  <div class="space-y-3">
+    @for (a of world.activity(); track a.id) {
+      <div class="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <span class="text-2xl">{{ a.flag }}</span>
+        <div class="flex-1">
+          <p class="text-sm">{{ a.text }}</p>
+          <p class="text-xs text-muted-foreground">{{ a.city }} · {{ a.time }}</p>
+        </div>
+      </div>
     }
   </div>
 </section>
 
-<section class="mt-14">
-  <ui-section-header [eyebrow]="'world.tripsEyebrow' | translate" [title]="'world.tournamentsAbroad' | translate" [action]="'world.allTournaments' | translate" to="/tournaments" />
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    @for (t of world.abroadTournaments(); track t.id) {
-      <app-tournament-card [tournament]="t" />
-    }
-  </div>
-  <p class="text-eyebrow mt-6 text-muted-foreground">{{ 'world.suggestion' | translate }}</p>
-</section>

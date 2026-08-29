@@ -1,10 +1,86 @@
-<ui-page-header [eyebrow]="'matches.eyebrow' | translate" [title]="'matches.title' | translate" [lead]="'matches.lead' | translate" />
+<section class="animate-rise relative mb-10 overflow-hidden rounded-3xl border border-border bg-ink text-bone">
+  <div class="court-grid-ink p-6 sm:p-10 lg:p-14">
+    <p class="text-eyebrow text-bone/60">{{ 'matches.eyebrow' | translate }}</p>
+    <h1 class="text-display mt-3 max-w-2xl text-4xl sm:text-6xl">{{ 'matches.title' | translate }}</h1>
+    <p class="mt-4 max-w-md text-sm text-bone/80">{{ 'matches.lead' | translate }}</p>
+    <div class="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-bone/15 pt-6">
+      <ui-stat size="sm" [value]="matches.communityStats().matchesThisWeek" [label]="'matches.statThisWeek' | translate" />
+      <ui-stat size="sm" [value]="matches.open().length" [label]="'matches.statOpenCount' | translate" />
+      <ui-stat size="sm" [value]="matches.openPlayersCount()" [label]="'matches.statOpenPlayers' | translate" />
+    </div>
+  </div>
+</section>
 
-<section class="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="124" [label]="'stats.matches' | translate" /></div>
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="67" [label]="'stats.wins' | translate" /></div>
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="54%" [label]="'matches.winRate' | translate" /></div>
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat size="sm" value="28" [label]="'matches.longestRally' | translate" /></div>
+<section class="mb-14">
+  <ui-section-header [eyebrow]="'matches.openEyebrow' | translate" [title]="'matches.openTitle' | translate" />
+
+  <div class="mb-6 rounded-2xl border border-border bg-card p-5">
+    <div class="grid gap-3 sm:grid-cols-3">
+      <select
+        [ngModel]="matches.composerCourtId()"
+        (ngModelChange)="matches.composerCourtId.set($event)"
+        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
+      >
+        <option value="" disabled>{{ 'matches.composerCourt' | translate }}</option>
+        @for (c of matches.courts(); track c.id) {
+          <option [value]="c.id">{{ c.flag }} {{ c.name }}</option>
+        }
+      </select>
+      <input
+        [ngModel]="matches.composerDate()"
+        (ngModelChange)="matches.composerDate.set($event)"
+        [placeholder]="'matches.composerDate' | translate"
+        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      />
+      <input
+        [ngModel]="matches.composerTime()"
+        (ngModelChange)="matches.composerTime.set($event)"
+        [placeholder]="'matches.composerTime' | translate"
+        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      />
+    </div>
+    <input
+      [ngModel]="matches.composerNote()"
+      (ngModelChange)="matches.composerNote.set($event)"
+      [placeholder]="'matches.composerNotePlaceholder' | translate"
+      class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+    />
+    <button
+      type="button"
+      (click)="matches.publishOpenMatch()"
+      class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 sm:w-auto"
+    >
+      {{ 'matches.composerPublish' | translate }}
+    </button>
+    <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'matches.composerHint' | translate }}</p>
+  </div>
+
+  @if (matches.open().length) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (m of matches.open(); track m.id) {
+        <div class="rounded-2xl border border-dashed border-lime-deep bg-card p-4">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-eyebrow rounded-full bg-lime px-2 py-0.5 text-ink">{{ 'matches.openLabel' | translate }}</span>
+            @if (matches.isMine(m.playerA)) {
+              <span class="text-eyebrow text-muted-foreground">{{ 'matches.yourPost' | translate }}</span>
+            }
+          </div>
+          <p class="mt-3 text-sm font-bold">{{ matches.playerById(m.playerA)?.name }}</p>
+          <p class="mt-1 text-sm text-muted-foreground">{{ m.note }}</p>
+          <p class="mt-1 text-xs text-muted-foreground">{{ matches.courtById(m.courtId)?.flag }} {{ matches.courtById(m.courtId)?.name }} · {{ m.date }} {{ m.time }}</p>
+          @if (!matches.isMine(m.playerA)) {
+            <button
+              type="button"
+              (click)="matches.acceptOpenMatch(m.id)"
+              class="mt-3 w-full cursor-pointer rounded-full border border-lime-deep px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
+            >
+              {{ 'matches.joinMatch' | translate }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
 </section>
 
 <section class="mb-14">
@@ -12,7 +88,7 @@
   @if (matches.upcoming().length) {
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       @for (m of matches.upcoming(); track m.id) {
-        <app-match-card [match]="m" />
+        <rally-match-card [match]="m" />
       }
     </div>
   } @else {
@@ -24,7 +100,7 @@
   <ui-section-header [eyebrow]="'matches.resultsEyebrow' | translate" [title]="'matches.played' | translate" />
   <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     @for (m of matches.completed(); track m.id) {
-      <app-match-card [match]="m" />
+      <rally-match-card [match]="m" />
     }
   </div>
 </section>

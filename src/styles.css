@@ -27,6 +27,7 @@
   --color-win: var(--win);
   --color-loss: var(--loss);
   --color-achievement: var(--achievement);
+  --color-silver: var(--silver);
 }
 
 :root {
@@ -49,6 +50,7 @@
   --win: oklch(0.63 0.15 152);
   --loss: oklch(0.6 0.17 20);
   --achievement: oklch(0.76 0.13 82);
+  --silver: oklch(0.75 0.012 264);
 }
 
 .dark {
@@ -70,7 +72,8 @@
   html,
   body {
     height: 100%;
-    overflow-x: hidden;
+    /* clip (not hidden) avoids the UA forcing overflow-y to auto, which breaks position: sticky */
+    overflow-x: clip;
   }
 
   body {

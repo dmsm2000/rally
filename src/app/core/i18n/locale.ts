@@ -8,3 +8,9 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   en: 'EN',
   es: 'ES',
 };
+
+export const LOCALE_FLAGS: Record<Locale, string> = {
+  pt: '🇵🇹',
+  en: '🇬🇧',
+  es: '🇪🇸',
+};

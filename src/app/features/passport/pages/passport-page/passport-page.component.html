@@ -2,15 +2,16 @@
   <div class="court-grid-ink p-6 sm:p-10">
     <p class="text-eyebrow text-bone/60">{{ 'passport.eyebrow' | translate }}</p>
     <h1 class="text-display mt-3 text-5xl sm:text-7xl">{{ 'passport.titleLine1' | translate }}<br /><span class="text-lime">{{ 'passport.titleLine2' | translate }}</span></h1>
-    <div class="mt-10 grid grid-cols-3 gap-6 border-t border-bone/15 pt-8">
+    <div class="mt-10 grid grid-cols-2 gap-6 border-t border-bone/15 pt-8 sm:grid-cols-4">
       <ui-stat size="lg" [value]="passport.visitedCountries().length" [label]="'stats.countries' | translate" />
       <ui-stat size="lg" value="23" [label]="'stats.courts' | translate" />
-      <ui-stat size="lg" value="48" [label]="'stats.playersMet' | translate" />
+      <ui-stat size="lg" [value]="passport.playersMet().length" [label]="'stats.playersMet' | translate" />
+      <ui-stat size="lg" [value]="passport.unlockedAchievements().length + '/' + passport.achievements().length" [label]="'achievements.unlockedStat' | translate" />
     </div>
   </div>
 </section>
 
-<app-rally-map class="mb-12 h-[300px] sm:h-[420px]" [markers]="markers()" />
+<rally-map class="mb-12 h-[300px] sm:h-[420px]" [markers]="markers()" />
 
 <section class="mb-14">
   <ui-section-header [eyebrow]="'passport.stampedEyebrow' | translate" [title]="'passport.countriesPlayed' | translate" />
@@ -44,7 +45,7 @@
   </div>
 </section>
 
-<section>
+<section class="mb-14">
   <ui-section-header [eyebrow]="'passport.collectionEyebrow' | translate" [title]="'passport.courtsInPassport' | translate" [action]="'passport.allCourts' | translate" to="/courts" />
   <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     @for (c of passport.visitedCourts(); track c.id) {
@@ -57,4 +58,36 @@
       </div>
     }
   </div>
+</section>
+
+<section class="mb-14">
+  <ui-section-header [eyebrow]="'passport.playersMetEyebrow' | translate" [title]="'passport.playersMetTitle' | translate" />
+  @if (passport.playersMet().length) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (p of passport.playersMet(); track p.id) {
+        <rally-player-card [player]="p" />
+      }
+    </div>
+  } @else {
+    <p class="text-sm text-muted-foreground">{{ 'passport.playersMetEmpty' | translate }}</p>
+  }
+</section>
+
+<section class="mb-14">
+  <ui-section-header [eyebrow]="'achievements.earnedEyebrow' | translate" [title]="'achievements.unlockedTitle' | translate" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (a of passport.unlockedAchievements(); track a.id) {
+      <rally-achievement-card [achievement]="a" />
+    }
+  </div>
+</section>
+
+<section>
+  <ui-section-header [eyebrow]="'achievements.inProgressEyebrow' | translate" [title]="'achievements.nextUp' | translate" />
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (a of passport.lockedAchievements(); track a.id) {
+      <rally-achievement-card [achievement]="a" />
+    }
+  </div>
+  <p class="text-eyebrow mt-6 text-muted-foreground">{{ 'achievements.progressNote' | translate }}</p>
 </section>

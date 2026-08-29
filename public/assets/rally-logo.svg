@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+  <circle cx="18" cy="20" r="13" stroke="oklch(0.19 0.017 252)" stroke-width="3" />
+  <path d="M6.5 13.8C13 17 17.5 22.5 19 31.5" stroke="oklch(0.19 0.017 252)" stroke-width="3" stroke-linecap="round" />
+  <path d="M29.5 12C25 15.5 22.5 20 22.2 26" stroke="oklch(0.19 0.017 252)" stroke-width="3" stroke-linecap="round" />
+  <circle cx="33" cy="8" r="4" fill="oklch(0.885 0.201 124)" />
+</svg>

@@ -6,7 +6,7 @@ import { AvatarComponent } from '../../ui';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
-  selector: 'app-match-card',
+  selector: 'rally-match-card',
   imports: [RouterLink, AvatarComponent, TranslatePipe],
   templateUrl: './match-card.component.html',
   styleUrl: './match-card.component.scss',

@@ -7,7 +7,7 @@ import { AvatarComponent, ChipComponent } from '../../../../shared/ui';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-match-detail-page',
+  selector: 'rally-match-detail-page',
   imports: [RouterLink, AvatarComponent, ChipComponent, TranslatePipe],
   templateUrl: './match-detail-page.component.html',
   styleUrl: './match-detail-page.component.scss',

@@ -1,4 +1,4 @@
-import { Achievement, BracketRound, CountryEntry, Court, Destination, FeedItem, Match, Player, RankingEntry, Tournament } from '../models';
+import { Achievement, CommunityStats, CountryEntry, Court, Destination, FeedItem, Match, Player, PlayerIntent, TripIntent, WorldActivityItem } from '../models';
 
 /**
  * Static dataset acting as a stand-in for the future Supabase-backed tables.
@@ -359,97 +359,9 @@ export const MATCHES: Match[] = [
       { label: 'Winners', a: '18', b: '27' },
     ],
   },
-];
-
-export const TOURNAMENTS: Tournament[] = [
-  {
-    id: 'porto-open',
-    name: 'Porto Riverside Open',
-    city: 'Porto',
-    country: 'Portugal',
-    flag: '🇵🇹',
-    dates: '12 – 14 Sep',
-    level: 'Intermediate',
-    format: 'Singles · Knockout',
-    participants: 26,
-    capacity: 32,
-    fee: '€25',
-    status: 'Filling fast',
-    organizer: 'Clube de Ténis do Porto',
-    image: `${IMG}/court-clay.jpg`,
-    surface: 'Clay',
-  },
-  {
-    id: 'bcn-social',
-    name: 'Barcelona Social Slam',
-    city: 'Barcelona',
-    country: 'Spain',
-    flag: '🇪🇸',
-    dates: '27 – 28 Sep',
-    level: 'All levels',
-    format: 'Doubles · Groups + KO',
-    participants: 40,
-    capacity: 64,
-    fee: '€30',
-    status: 'Open',
-    organizer: 'Rally Barcelona',
-    image: `${IMG}/court-hard.jpg`,
-    surface: 'Hard',
-  },
-  {
-    id: 'london-grass',
-    name: 'London Grass Weekender',
-    city: 'London',
-    country: 'UK',
-    flag: '🇬🇧',
-    dates: '4 – 5 Oct',
-    level: 'Advanced',
-    format: 'Singles · Knockout',
-    participants: 32,
-    capacity: 32,
-    fee: '£45',
-    status: 'Waitlist',
-    organizer: 'Hedgerow Lawn Club',
-    image: `${IMG}/court-grass.jpg`,
-    surface: 'Grass',
-  },
-  {
-    id: 'tokyo-night',
-    name: 'Tokyo Night Series',
-    city: 'Tokyo',
-    country: 'Japan',
-    flag: '🇯🇵',
-    dates: '18 – 19 Oct',
-    level: 'Intermediate+',
-    format: 'Singles · Round robin',
-    participants: 18,
-    capacity: 48,
-    fee: '¥4,000',
-    status: 'Open',
-    organizer: 'Shinjuku Night Courts',
-    image: `${IMG}/court-urban.jpg`,
-    surface: 'Hard',
-  },
-];
-
-export const BRACKET: BracketRound[] = [
-  {
-    round: 'Quarter-finals',
-    matches: [
-      { a: 'João Silva', b: 'Rui Braga', scoreA: '6-3 6-4', scoreB: '', winner: 'a' },
-      { a: 'Marc Puig', b: 'Tomás Dias', scoreA: '7-6 6-2', scoreB: '', winner: 'a' },
-      { a: 'Pedro Almeida', b: 'Nuno Reis', scoreA: '6-1 6-4', scoreB: '', winner: 'a' },
-      { a: 'Miguel Sá', b: 'Diogo Lima', scoreA: '4-6 6-3 6-4', scoreB: '', winner: 'a' },
-    ],
-  },
-  {
-    round: 'Semi-finals',
-    matches: [
-      { a: 'João Silva', b: 'Marc Puig', scoreA: '6-4 3-6 7-5', winner: 'a' },
-      { a: 'Pedro Almeida', b: 'Miguel Sá' },
-    ],
-  },
-  { round: 'Final', matches: [{ a: 'João Silva', b: 'TBD' }] },
+  { id: 'om1', status: 'open', date: 'Hoje', time: '18:00', courtId: 'marina', format: 'Singles', playerA: 'marc', note: 'Looking for a hitting partner in Barcelona this week.' },
+  { id: 'om2', status: 'open', date: 'Amanhã', time: '20:00', courtId: 'shin', format: 'Singles', playerA: 'yuki', note: "I'd love to discover a new city to play in soon." },
+  { id: 'om3', status: 'open', date: 'Sábado', time: '10:00', courtId: 'ctp', format: 'Doubles', playerA: 'ana', note: 'Doubles this weekend? Need one more player.' },
 ];
 
 export const FEED: FeedItem[] = [
@@ -531,24 +443,40 @@ export const COUNTRIES: CountryEntry[] = [
 ];
 
 export const DESTINATIONS: Destination[] = [
-  { id: 'barcelona', city: 'Barcelona', country: 'Spain', flag: '🇪🇸', players: 12, courts: 7, tournaments: 3, image: `${IMG}/court-hard.jpg`, coords: { x: 48, y: 41 }, note: 'Clay-loving crowd, plays late. Marina Bay Courts is the local favourite.' },
-  { id: 'paris', city: 'Paris', country: 'France', flag: '🇫🇷', players: 9, courts: 5, tournaments: 1, image: `${IMG}/court-indoor.jpg`, coords: { x: 50, y: 34 }, note: 'Indoor season all year at Hangar. Great for winter trips.' },
-  { id: 'london', city: 'London', country: 'UK', flag: '🇬🇧', players: 14, courts: 6, tournaments: 2, image: `${IMG}/court-grass.jpg`, coords: { x: 47, y: 28 }, note: 'Grass season in summer. Hedgerow is worth the trip alone.' },
-  { id: 'tokyo', city: 'Tokyo', country: 'Japan', flag: '🇯🇵', players: 6, courts: 3, tournaments: 1, image: `${IMG}/court-urban.jpg`, coords: { x: 84, y: 39 }, note: 'Night tennis culture. Shinjuku courts run past midnight.' },
-];
-
-export const RANKINGS: RankingEntry[] = [
-  { rank: 1, player: 'james', points: 2840, trend: '0' },
-  { rank: 2, player: 'marc', points: 2615, trend: '+1' },
-  { rank: 3, player: 'joao', points: 2480, trend: '+2' },
-  { rank: 4, player: 'pedro', points: 2390, trend: '-1' },
-  { rank: 5, player: 'chloe', points: 2210, trend: '+1' },
-  { rank: 6, player: 'yuki', points: 2090, trend: '-2' },
-  { rank: 7, player: 'sofia', points: 1870, trend: '0' },
-  { rank: 8, player: 'maria', points: 1745, trend: '+3' },
-  { rank: 9, player: 'ana', points: 1520, trend: '-1' },
+  { id: 'barcelona', city: 'Barcelona', country: 'Spain', flag: '🇪🇸', players: 12, courts: 7, image: `${IMG}/court-hard.jpg`, coords: { x: 48, y: 41 }, note: 'Clay-loving crowd, plays late. Marina Bay Courts is the local favourite.' },
+  { id: 'paris', city: 'Paris', country: 'France', flag: '🇫🇷', players: 9, courts: 5, image: `${IMG}/court-indoor.jpg`, coords: { x: 50, y: 34 }, note: 'Indoor season all year at Hangar. Great for winter trips.' },
+  { id: 'london', city: 'London', country: 'UK', flag: '🇬🇧', players: 14, courts: 6, image: `${IMG}/court-grass.jpg`, coords: { x: 47, y: 28 }, note: 'Grass season in summer. Hedgerow is worth the trip alone.' },
+  { id: 'tokyo', city: 'Tokyo', country: 'Japan', flag: '🇯🇵', players: 6, courts: 3, image: `${IMG}/court-urban.jpg`, coords: { x: 84, y: 39 }, note: 'Night tennis culture. Shinjuku courts run past midnight.' },
 ];
 
 export const LEVELS = ['Beginner', 'Improver', 'Intermediate', 'Advanced', 'Competitive'] as const;
 export const SURFACES = ['Clay', 'Hard', 'Grass', 'Carpet'] as const;
 export const HERO_IMAGE = `${IMG}/hero-rally.jpg`;
+
+export const COMMUNITY_STATS: CommunityStats = {
+  courtsCaptured: 1842,
+  countriesUnlocked: 46,
+  activePlayers: 6300,
+  matchesThisWeek: 312,
+};
+
+export const WORLD_ACTIVITY: WorldActivityItem[] = [
+  { id: 'wa1', city: 'Barcelona', flag: '🇪🇸', kind: 'capture', text: 'Marc captured a new court at Marina Bay Courts.', time: '12m ago', coords: { x: 48, y: 41 } },
+  { id: 'wa2', city: 'Tokyo', flag: '🇯🇵', kind: 'challenge', text: 'Yuki posted "Fancy hitting some balls tonight?" nearby.', time: '40m ago', coords: { x: 84, y: 39 } },
+  { id: 'wa3', city: 'London', flag: '🇬🇧', kind: 'match', text: 'Two players just finished a match at Hedgerow Lawn Club.', time: '1h ago', coords: { x: 47, y: 28 } },
+  { id: 'wa4', city: 'Casablanca', flag: '🇲🇦', kind: 'capture', text: 'A new court was captured in Morocco — first one this month.', time: '3h ago', coords: { x: 45, y: 47 } },
+  { id: 'wa5', city: 'Paris', flag: '🇫🇷', kind: 'challenge', text: 'Someone in Paris wants to discover a new city to play in.', time: '5h ago', coords: { x: 50, y: 34 } },
+];
+
+export const PLAYER_INTENTS: PlayerIntent[] = [
+  { id: 'pi1', playerId: 'maria', text: 'Fancy hitting some balls tonight?', time: '18m ago' },
+  { id: 'pi2', playerId: 'marc', text: "Looking for a hitting partner in Barcelona this week.", time: '35m ago' },
+  { id: 'pi3', playerId: 'yuki', text: "I'd love to discover a new city to play in soon.", time: '1h ago' },
+  { id: 'pi4', playerId: 'pedro', text: 'Free tomorrow morning for a set or two?', time: '2h ago' },
+  { id: 'pi5', playerId: 'ana', text: 'Doubles this weekend? Need one more player.', time: '4h ago' },
+];
+
+export const TRIP_INTENTS: TripIntent[] = [
+  { id: 'ti1', playerId: 'yuki', destinationId: 'london', fromDate: '10 Out', toDate: '14 Out', note: 'Vou estar em Londres em outubro, alguém disponível para me mostrar os courts locais?', status: 'open' },
+  { id: 'ti2', playerId: 'marc', destinationId: 'tokyo', fromDate: '2 Nov', toDate: '6 Nov', note: 'Primeira vez em Tóquio — adorava jogar com alguém local!', status: 'open' },
+];

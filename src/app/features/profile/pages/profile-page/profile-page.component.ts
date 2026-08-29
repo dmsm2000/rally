@@ -6,7 +6,7 @@ import { MatchCardComponent, CourtCardComponent, AchievementCardComponent, Count
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-profile-page',
+  selector: 'rally-profile-page',
   imports: [RouterLink, AvatarComponent, ChipComponent, StatComponent, SectionHeaderComponent, MatchCardComponent, CourtCardComponent, AchievementCardComponent, CountryBadgeComponent, TranslatePipe],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.scss',

@@ -1,14 +1,32 @@
-<div class="flex items-center gap-1 rounded-full border border-border bg-card p-1" role="group" [attr.aria-label]="'nav.language' | translate">
-  @for (locale of i18n.locales; track locale) {
-    <button
-      type="button"
-      (click)="i18n.setLocale(locale)"
-      class="rounded-full px-2.5 py-1.5 text-xs font-bold tracking-wide uppercase transition-colors"
-      [class.bg-foreground]="i18n.locale() === locale"
-      [class.text-background]="i18n.locale() === locale"
-      [class.text-muted-foreground]="i18n.locale() !== locale"
-    >
-      {{ labels[locale] }}
-    </button>
+<div class="relative">
+  <button
+    type="button"
+    (click)="toggle()"
+    class="flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1.5 text-xs font-bold tracking-wide text-muted-foreground uppercase transition-colors hover:text-foreground cursor-pointer"
+    [attr.aria-label]="'nav.language' | translate"
+    [attr.aria-expanded]="open()"
+  >
+    <span class="text-base leading-none">{{ flags[i18n.locale()] }}</span>
+    <span>{{ labels[i18n.locale()] }}</span>
+    <svg viewBox="0 0 20 20" class="size-3" fill="none" aria-hidden="true">
+      <path d="M5 7.5 10 12.5 15 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  @if (open()) {
+    <div class="absolute top-full right-0 z-50 mt-1.5 w-max min-w-full overflow-hidden rounded-2xl border border-border bg-card p-1 shadow-lg">
+      @for (locale of i18n.locales; track locale) {
+        <button
+          type="button"
+          (click)="select(locale)"
+          class="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors hover:bg-muted cursor-pointer"
+          [class.text-foreground]="i18n.locale() === locale"
+          [class.text-muted-foreground]="i18n.locale() !== locale"
+        >
+          <span class="text-base leading-none">{{ flags[locale] }}</span>
+          <span>{{ labels[locale] }}</span>
+        </button>
+      }
+    </div>
   }
 </div>

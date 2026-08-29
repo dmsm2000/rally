@@ -49,7 +49,7 @@
         <ui-section-header [eyebrow]="'players.matchHistoryEyebrow' | translate" [title]="'players.recentMatches' | translate" />
         <div class="grid gap-4 sm:grid-cols-2">
           @for (m of history(); track m.id) {
-            <app-match-card [match]="m" />
+            <rally-match-card [match]="m" />
           }
         </div>
       </section>
@@ -58,7 +58,7 @@
         <ui-section-header [eyebrow]="'players.collectedEyebrow' | translate" [title]="'players.courtsDiscovered' | translate" />
         <div class="grid gap-4 sm:grid-cols-2">
           @for (c of featuredCourts(); track c.id) {
-            <app-court-card [court]="c" />
+            <rally-court-card [court]="c" />
           }
         </div>
       </section>
@@ -69,7 +69,7 @@
         <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'players.passport' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (c of visitedCountries(); track c.name) {
-            <app-country-badge [flag]="c.flag" [name]="c.name" />
+            <rally-country-badge [flag]="c.flag" [name]="c.name" />
           }
         </div>
       </section>
@@ -88,5 +88,5 @@
   </div>
 } @else {
   <p class="text-muted-foreground">{{ 'players.notFound' | translate }}</p>
-  <a routerLink="/players" class="text-sm font-bold uppercase hover:underline">{{ 'players.backToPlayers' | translate }}</a>
+  <a routerLink="/world" class="text-sm font-bold uppercase hover:underline">{{ 'players.backToPlayers' | translate }}</a>
 }

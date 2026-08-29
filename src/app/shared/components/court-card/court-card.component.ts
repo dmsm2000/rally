@@ -4,7 +4,7 @@ import { Court } from '../../../core/models';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
-  selector: 'app-court-card',
+  selector: 'rally-court-card',
   imports: [RouterLink, TranslatePipe],
   templateUrl: './court-card.component.html',
   styleUrl: './court-card.component.scss',

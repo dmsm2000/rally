@@ -9,7 +9,7 @@ import { CourtCardComponent, MatchCardComponent, CountryBadgeComponent } from '.
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-player-detail-page',
+  selector: 'rally-player-detail-page',
   imports: [RouterLink, AvatarComponent, ChipComponent, MatchScoreComponent, StatComponent, SectionHeaderComponent, CourtCardComponent, MatchCardComponent, CountryBadgeComponent, TranslatePipe],
   templateUrl: './player-detail-page.component.html',
   styleUrl: './player-detail-page.component.scss',

@@ -1,23 +1,25 @@
-<ui-page-header [eyebrow]="'courts.eyebrow' | translate" [title]="'courts.title' | translate" [lead]="'courts.lead' | translate" />
-
-<section class="mb-10 grid gap-6 rounded-3xl border border-border bg-ink p-6 text-bone sm:p-8 lg:grid-cols-[auto_1fr] lg:items-center">
-  <div>
-    <p class="text-eyebrow text-bone/60">{{ 'courts.yourCollection' | translate }}</p>
-    <p class="text-stat mt-2 text-6xl sm:text-7xl">30</p>
-    <p class="text-eyebrow mt-2 text-bone/70">{{ 'courts.courtsDiscoveredLabel' | translate }}</p>
-  </div>
-  <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-    @for (c of courts.collectionByCountry; track c.country) {
-      <div class="rounded-xl border border-bone/15 p-4">
-        <p class="text-2xl">{{ c.flag }}</p>
-        <p class="text-stat mt-2 text-2xl">{{ c.n }}</p>
-        <p class="text-eyebrow mt-1 text-bone/60">{{ c.country }}</p>
-      </div>
-    }
+<section class="animate-rise relative mb-10 overflow-hidden rounded-3xl border border-border bg-ink text-bone">
+  <div class="court-grid-ink grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:p-14">
+    <div>
+      <p class="text-eyebrow text-bone/60">{{ 'courts.eyebrow' | translate }}</p>
+      <h1 class="text-display mt-3 text-4xl sm:text-6xl">{{ 'courts.title' | translate }}</h1>
+      <p class="mt-4 max-w-md text-sm text-bone/80">{{ 'courts.lead' | translate }}</p>
+      <p class="text-stat mt-8 text-6xl sm:text-7xl">{{ courts.totalCourts() }}</p>
+      <p class="text-eyebrow mt-2 text-bone/70">{{ 'courts.courtsRegisteredLabel' | translate }}</p>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      @for (c of courts.topCountries(); track c.country) {
+        <div class="rounded-xl border border-bone/15 p-4">
+          <p class="text-2xl">{{ c.flag }}</p>
+          <p class="text-stat mt-2 text-2xl">{{ c.n }}</p>
+          <p class="text-eyebrow mt-1 text-bone/60">{{ c.country }}</p>
+        </div>
+      }
+    </div>
   </div>
 </section>
 
-<app-rally-map class="mb-8 h-64" [markers]="markers()" />
+<rally-map class="mb-8 h-64" [markers]="markers()" />
 
 <div class="mb-6 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-3">
   <span class="shrink-0 text-muted-foreground">⌕</span>
@@ -40,12 +42,12 @@
 <p class="text-eyebrow mb-4 text-muted-foreground">{{ courts.results().length }} {{ 'courts.resultsSuffix' | translate }}</p>
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
   @for (c of courts.results(); track c.id) {
-    <app-court-card [court]="c" />
+    <rally-court-card [court]="c" />
   }
 </div>
 
 <section class="mt-14 grid gap-4 sm:grid-cols-3">
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat value="7" [label]="'courts.countriesPlayed' | translate" /></div>
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat value="4.6" [label]="'courts.averageRating' | translate" /></div>
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat value="91%" [label]="'courts.wouldPlayAgainStat' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="courts.countriesWithCourts()" [label]="'courts.countriesWithCourts' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="courts.averageRating()" [label]="'courts.averageRating' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="courts.averagePlayAgain() + '%'" [label]="'courts.wouldPlayAgainStat' | translate" /></div>
 </section>

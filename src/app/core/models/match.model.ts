@@ -1,4 +1,4 @@
-export type MatchStatus = 'upcoming' | 'live' | 'complete';
+export type MatchStatus = 'upcoming' | 'live' | 'complete' | 'open';
 export type MatchFormat = 'Singles' | 'Doubles';
 
 export interface MatchStat {
@@ -15,7 +15,8 @@ export interface Match {
   courtId: string;
   format: MatchFormat;
   playerA: string;
-  playerB: string;
+  playerB?: string;
+  note?: string;
   sets?: [number, number][];
   winner?: string;
   stats?: MatchStat[];

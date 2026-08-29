@@ -15,7 +15,7 @@ const REVIEWS = [
 ];
 
 @Component({
-  selector: 'app-court-detail-page',
+  selector: 'rally-court-detail-page',
   imports: [RouterLink, StatComponent, ChipComponent, SectionHeaderComponent, PlayerCardComponent, RallyMapComponent, TranslatePipe],
   templateUrl: './court-detail-page.component.html',
   styleUrl: './court-detail-page.component.scss',

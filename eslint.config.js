@@ -16,8 +16,8 @@ module.exports = tseslint.config(
       },
     },
     rules: {
-      '@angular-eslint/component-selector': ['warn', { type: 'element', prefix: ['app', 'ui'], style: 'kebab-case' }],
-      '@angular-eslint/directive-selector': ['warn', { type: 'attribute', prefix: ['app', 'ui'], style: 'camelCase' }],
+      '@angular-eslint/component-selector': ['warn', { type: 'element', prefix: ['rally', 'ui'], style: 'kebab-case' }],
+      '@angular-eslint/directive-selector': ['warn', { type: 'attribute', prefix: ['rally', 'ui'], style: 'camelCase' }],
       '@angular-eslint/component-class-suffix': 'warn',
       '@angular-eslint/directive-class-suffix': 'warn',
       '@angular-eslint/no-inputs-metadata-property': 'warn',
