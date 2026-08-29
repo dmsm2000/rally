@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { AppShellComponent } from './layout/app-shell/app-shell.component';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'rally-root',
-  imports: [AppShellComponent],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

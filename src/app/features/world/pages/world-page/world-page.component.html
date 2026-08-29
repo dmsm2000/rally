@@ -69,7 +69,7 @@
       <ui-chip [clickable]="true" [active]="players.format() === f" (toggled)="players.toggleFormat(f)">{{ ('enums.format.' + f) | translate }}</ui-chip>
     }
     @for (s of players.surfaces.slice(0, 3); track s) {
-      <ui-chip [clickable]="true" [active]="players.surface() === s" (toggled)="players.toggleSurface(s)">{{ ('enums.surface.' + s) | translate }}</ui-chip>
+      <ui-chip [clickable]="true" [active]="players.surface() === s" (toggled)="players.toggleSurface(s)">{{ s }}</ui-chip>
     }
   </div>
 

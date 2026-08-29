@@ -2,7 +2,7 @@
   <section class="relative mb-8 overflow-hidden rounded-3xl border border-border">
     <img [src]="c.image" [alt]="c.name" class="aspect-16/9 w-full object-cover sm:aspect-21/9" />
     <div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-ink via-ink/60 to-transparent p-6 sm:p-10">
-      <p class="text-eyebrow text-bone/70">{{ ('enums.surface.' + c.surface) | translate }} · {{ (c.indoor ? 'enums.indoor' : 'enums.outdoor') | translate }} · {{ c.courts }} {{ 'stats.courts' | translate }}</p>
+      <p class="text-eyebrow text-bone/70">{{ c.surface }} · {{ (c.indoor ? 'enums.indoor' : 'enums.outdoor') | translate }} · {{ c.courts }} {{ 'stats.courts' | translate }}</p>
       <h1 class="text-display mt-2 text-3xl text-bone sm:text-5xl">{{ c.name }}</h1>
       <p class="mt-2 flex items-center gap-2 text-sm text-bone/80">📍 {{ c.flag }} {{ c.city }}, {{ c.country }}</p>
     </div>

@@ -42,7 +42,7 @@
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3 border-t border-bone/15 pt-6 text-sm text-bone/70">
         <span>{{ court()?.flag }} {{ court()?.name }}, {{ court()?.city }}</span>
         <span>·</span>
-        <span>{{ ('enums.surface.' + court()?.surface) | translate }}</span>
+        <span>{{ court()?.surface }}</span>
         <span>·</span>
         <span>{{ (court()?.indoor ? 'enums.indoor' : 'enums.outdoor') | translate }}</span>
       </div>
@@ -70,7 +70,7 @@
           <ui-chip tone="cobalt">{{ 'matches.floodlights' | translate }}</ui-chip>
         </div>
         <p class="mt-5 text-sm text-muted-foreground">
-          {{ 'matches.headToHead' | translate:{ name: playerB()?.name ?? '', count: playerB()?.stats?.matches ?? 0, surface: (('enums.surface.' + playerB()?.surface) | translate) } }}
+          {{ 'matches.headToHead' | translate:{ name: playerB()?.name ?? '', count: playerB()?.stats?.matches ?? 0, surface: playerB()?.surface ?? '' } }}
         </p>
         <button type="button" class="mt-6 rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'matches.addScore' | translate }}</button>
       </div>

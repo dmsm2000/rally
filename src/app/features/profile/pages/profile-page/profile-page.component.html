@@ -25,7 +25,7 @@
       <div class="flex flex-wrap gap-2">
         <ui-chip tone="lime">{{ ('enums.level.' + profile.me().level) | translate }}</ui-chip>
         <ui-chip>{{ ('enums.format.' + profile.me().format) | translate }}</ui-chip>
-        <ui-chip>{{ ('enums.surface.' + profile.me().surface) | translate }} {{ 'stats.courts' | translate }}</ui-chip>
+        <ui-chip>{{ profile.me().surface }} {{ 'stats.courts' | translate }}</ui-chip>
         <ui-chip>{{ profile.me().frequency }}</ui-chip>
         @for (a of profile.me().availability; track a) {
           <ui-chip tone="cobalt">{{ a }}</ui-chip>

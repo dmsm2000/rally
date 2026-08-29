@@ -33,7 +33,7 @@
 
 <div class="no-scrollbar mb-8 flex gap-2 overflow-x-auto">
   @for (s of courts.surfaces; track s) {
-    <ui-chip [clickable]="true" [active]="courts.surface() === s" (toggled)="courts.toggleSurface(s)">{{ ('enums.surface.' + s) | translate }}</ui-chip>
+    <ui-chip [clickable]="true" [active]="courts.surface() === s" (toggled)="courts.toggleSurface(s)">{{ s }}</ui-chip>
   }
   <ui-chip [clickable]="true" [active]="courts.indoor() === true" (toggled)="courts.toggleIndoor(true)">{{ 'enums.indoor' | translate }}</ui-chip>
   <ui-chip [clickable]="true" [active]="courts.indoor() === false" (toggled)="courts.toggleIndoor(false)">{{ 'enums.outdoor' | translate }}</ui-chip>

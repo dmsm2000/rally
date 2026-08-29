@@ -7,7 +7,7 @@
   <div class="relative aspect-16/10 overflow-hidden">
     <img [src]="court().image" [alt]="court().name + ', ' + court().city" loading="lazy" class="size-full object-cover transition-transform duration-500 group-hover:scale-105" />
     <span class="text-eyebrow absolute top-3 left-3 rounded-full bg-background/90 px-2.5 py-1">
-      {{ ('enums.surface.' + court().surface) | translate }} · {{ (court().indoor ? 'enums.indoor' : 'enums.outdoor') | translate }}
+      {{ court().surface }} · {{ (court().indoor ? 'enums.indoor' : 'enums.outdoor') | translate }}
     </span>
     @if (court().visited) {
       <span class="text-eyebrow absolute top-3 right-3 rounded-full bg-lime px-2.5 py-1 text-ink">{{ 'courts.collected' | translate }}</span>

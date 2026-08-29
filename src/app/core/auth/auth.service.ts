@@ -14,4 +14,9 @@ export class AuthService {
   readonly isAuthenticated = this._isAuthenticated.asReadonly();
 
   readonly currentPlayer = computed<Player>(() => this.data.me());
+
+  /** Stand-in for a real Supabase sign-up call; just marks the session as authenticated. */
+  register(): void {
+    this._isAuthenticated.set(true);
+  }
 }

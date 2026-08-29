@@ -20,7 +20,7 @@
       <div class="mt-6 flex flex-wrap gap-2">
         <ui-chip tone="lime">{{ ('enums.level.' + p.level) | translate }}</ui-chip>
         <ui-chip>{{ ('enums.format.' + p.format) | translate }}</ui-chip>
-        <ui-chip>{{ ('enums.surface.' + p.surface) | translate }} {{ 'stats.courts' | translate }}</ui-chip>
+        <ui-chip>{{ p.surface }} {{ 'stats.courts' | translate }}</ui-chip>
         <ui-chip>{{ p.frequency }}</ui-chip>
         @for (a of p.availability; track a) {
           <ui-chip tone="cobalt">{{ a }}</ui-chip>

@@ -1,4 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 
 const TONE_CLASSES: Record<string, string> = {
   default: 'border-border bg-card text-muted-foreground hover:border-foreground hover:text-foreground',
@@ -9,6 +10,7 @@ const TONE_CLASSES: Record<string, string> = {
 
 @Component({
   selector: 'ui-chip',
+  imports: [NgTemplateOutlet],
   templateUrl: './chip.component.html',
   styleUrl: './chip.component.scss',
 })
