@@ -1,4 +1,5 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
+import { AvatarService } from '../../../core/services/avatar.service';
 
 const ACCENT_CLASSES: Record<string, string> = {
   lime: 'bg-lime text-ink',
@@ -15,18 +16,55 @@ const SIZE_CLASSES: Record<string, string> = {
   xl: 'size-24 text-2xl',
 };
 
+// Matches the px width of SIZE_CLASSES (Tailwind size-N = N * 4px), doubled for crisp rendering.
+const SIZE_PX: Record<string, number> = {
+  xs: 56,
+  sm: 72,
+  md: 96,
+  lg: 128,
+  xl: 192,
+};
+
+// Tennis-ball badge size (px), roughly a third of the avatar's rendered size.
+const BADGE_PX: Record<string, number> = {
+  xs: 0,
+  sm: 0,
+  md: 18,
+  lg: 24,
+  xl: 34,
+};
+
 @Component({
   selector: 'ui-avatar',
   templateUrl: './avatar.component.html',
   styleUrl: './avatar.component.scss',
 })
 export class AvatarComponent {
-  readonly initials = input.required<string>();
+  private readonly avatarService = inject(AvatarService);
+
+  readonly initials = input<string>('');
   readonly accent = input<string>('ink');
   readonly size = input<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('md');
   readonly ring = input(false);
+  readonly seed = input<string | undefined>(undefined);
+  readonly avatarStyle = input<string | undefined>(undefined);
 
   protected readonly classes = computed(() =>
     [ACCENT_CLASSES[this.accent()] ?? ACCENT_CLASSES['ink'], SIZE_CLASSES[this.size()], this.ring() ? 'ring-2 ring-background' : ''].join(' '),
   );
+
+  protected readonly avatarUri = computed(() => {
+    const seed = this.seed();
+    const style = this.avatarStyle();
+    if (!seed || !this.avatarService.isKnownStyle(style)) {
+      return null;
+    }
+    return this.avatarService.dataUri(seed, style, SIZE_PX[this.size()]);
+  });
+
+  // Skip the badge at the smallest sizes, where it would just look like noise.
+  protected readonly showBadge = computed(() => !!this.avatarUri() && BADGE_PX[this.size()] > 0);
+
+  protected readonly badgePx = computed(() => BADGE_PX[this.size()]);
 }
+

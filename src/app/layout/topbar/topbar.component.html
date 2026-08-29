@@ -48,7 +48,7 @@
       <rally-language-switcher />
       <rally-theme-toggle />
       <a routerLink="/profile" [attr.aria-label]="'nav.yourProfile' | translate">
-        <ui-avatar [initials]="auth.currentPlayer().initials" accent="lime" size="sm" />
+        <ui-avatar [initials]="auth.currentPlayer().initials" [seed]="auth.currentPlayer().avatarSeed" [avatarStyle]="auth.currentPlayer().avatarStyle" accent="lime" size="sm" />
       </a>
     </div>
     </div>

@@ -1,6 +1,7 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { RallyDataService } from '../../core/data/rally-data.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { Player } from '../../core/models';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
@@ -8,8 +9,8 @@ export class ProfileService {
   private readonly auth = inject(AuthService);
 
   readonly me = this.auth.currentPlayer;
-  readonly matches = this.data.matches;
-  readonly achievements = computed(() => this.data.achievements().slice(0, 4));
-  readonly visitedCountries = computed(() => this.data.countries().filter((c) => c.visited));
-  readonly visitedCourts = computed(() => this.data.courts().filter((c) => c.visited));
+
+  updateMe(partial: Partial<Player>): void {
+    this.data.updateMe(partial);
+  }
 }

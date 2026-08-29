@@ -25,6 +25,8 @@ export const ME: Player = {
   bio: 'Play for the rally, stay for the coffee after. Always up for a hitting session in a new city — currently plotting a tennis trip through Spain.',
   stats: { wins: 67, matches: 124, courts: 23, countries: 7 },
   accent: 'lime',
+  avatarSeed: 'joao',
+  avatarStyle: 'lorelei',
 };
 
 export const PLAYERS: Player[] = [
@@ -47,6 +49,8 @@ export const PLAYERS: Player[] = [
     bio: 'Baseline grinder. Will chase every ball down until the sun goes.',
     stats: { wins: 41, matches: 78, courts: 12, countries: 3 },
     accent: 'lime',
+    avatarSeed: 'maria',
+    avatarStyle: 'notionists',
   },
   {
     id: 'pedro',
@@ -67,6 +71,8 @@ export const PLAYERS: Player[] = [
     bio: 'Ex-junior circuit. Loves clay, long points and a proper warm-up.',
     stats: { wins: 118, matches: 190, courts: 34, countries: 9 },
     accent: 'clay',
+    avatarSeed: 'pedro',
+    avatarStyle: 'open-peeps',
   },
   {
     id: 'ana',
@@ -87,6 +93,8 @@ export const PLAYERS: Player[] = [
     bio: 'Doubles only. Here for the social side and the post-match pastéis.',
     stats: { wins: 12, matches: 30, courts: 6, countries: 2 },
     accent: 'cobalt',
+    avatarSeed: 'ana',
+    avatarStyle: 'thumbs',
   },
   {
     id: 'marc',
@@ -107,6 +115,8 @@ export const PLAYERS: Player[] = [
     bio: "Barcelona local. Happy to show you three courts you'd never find alone.",
     stats: { wins: 63, matches: 121, courts: 27, countries: 6 },
     accent: 'clay',
+    avatarSeed: 'marc',
+    avatarStyle: 'lorelei',
   },
   {
     id: 'yuki',
@@ -127,6 +137,8 @@ export const PLAYERS: Player[] = [
     bio: 'Night tennis under the neon in Shinjuku. Fast courts, faster points.',
     stats: { wins: 204, matches: 320, courts: 51, countries: 12 },
     accent: 'ink',
+    avatarSeed: 'yuki',
+    avatarStyle: 'notionists',
   },
   {
     id: 'chloe',
@@ -147,6 +159,8 @@ export const PLAYERS: Player[] = [
     bio: 'Clay is the only surface, everything else is a compromise.',
     stats: { wins: 38, matches: 74, courts: 19, countries: 5 },
     accent: 'cobalt',
+    avatarSeed: 'chloe',
+    avatarStyle: 'open-peeps',
   },
   {
     id: 'james',
@@ -167,6 +181,8 @@ export const PLAYERS: Player[] = [
     bio: 'Grass-court specialist. Serve, volley, repeat.',
     stats: { wins: 289, matches: 402, courts: 63, countries: 17 },
     accent: 'lime',
+    avatarSeed: 'james',
+    avatarStyle: 'thumbs',
   },
   {
     id: 'sofia',
@@ -187,6 +203,8 @@ export const PLAYERS: Player[] = [
     bio: 'Started at 29, obsessed by 30. Collecting courts across Lombardy.',
     stats: { wins: 17, matches: 44, courts: 9, countries: 3 },
     accent: 'clay',
+    avatarSeed: 'sofia',
+    avatarStyle: 'lorelei',
   },
 ];
 

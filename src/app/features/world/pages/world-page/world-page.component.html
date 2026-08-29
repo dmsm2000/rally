@@ -152,7 +152,7 @@
       @for (row of world.openTripIntents(); track row.intent.id) {
         <div class="rounded-2xl border border-dashed border-lime-deep bg-card p-4">
           <div class="flex items-center gap-3">
-            <ui-avatar [initials]="row.player?.initials ?? ''" [accent]="row.player?.accent ?? 'ink'" size="sm" />
+            <ui-avatar [initials]="row.player?.initials ?? ''" [accent]="row.player?.accent ?? 'ink'" [seed]="row.player?.avatarSeed" [avatarStyle]="row.player?.avatarStyle" size="sm" />
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-bold">{{ row.player?.name }}</p>
               <p class="truncate text-xs text-muted-foreground">{{ row.destination?.flag }} {{ row.destination?.city }} · {{ row.intent.fromDate }} – {{ row.intent.toDate }}</p>

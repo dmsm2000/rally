@@ -3,106 +3,41 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
+import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
 import { Format, Level, Surface } from '../../../../core/models';
+import {
+  Backhand,
+  CourtPref,
+  Hand,
+  PlayStyle,
+  TimeOfDay,
+  LEVELS,
+  FORMATS,
+  SURFACES,
+  FREQUENCIES,
+  AVAILABILITY_OPTIONS,
+  MAX_DISTANCE_OPTIONS,
+  MAX_YEARS,
+  COUNTRIES,
+  HANDS,
+  BACKHANDS,
+  PLAY_STYLES,
+  COURT_PREFS,
+  TIMES_OF_DAY,
+} from '../../../../core/data/player-profile-options';
 import { ChipComponent } from '../../../../shared/ui';
-import { LanguageSwitcherComponent, ThemeToggleComponent } from '../../../../shared/components';
+import { LanguageSwitcherComponent, ThemeToggleComponent, AvatarPickerComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-
-type Hand = 'Right' | 'Left' | 'Ambidextrous';
-type Backhand = 'OneHanded' | 'TwoHanded';
-type PlayStyle = 'AggressiveBaseliner' | 'Counterpuncher' | 'ServeAndVolleyer' | 'AllCourt';
-type CourtPref = 'Indoor' | 'Outdoor' | 'NoPreference';
-type TimeOfDay = 'Morning' | 'Afternoon' | 'Evening';
-
-interface ChipOption<T extends string> {
-  value: T;
-  emoji: string;
-  key: string;
-}
-
-interface TextOption {
-  value: string;
-  key: string;
-}
-
-interface CountryOption {
-  name: string;
-  flag: string;
-  cities: string[];
-}
-
-const LEVELS: Level[] = ['Beginner', 'Improver', 'Intermediate', 'Advanced', 'Competitive'];
-const FORMATS: Format[] = ['Singles', 'Doubles', 'Both'];
-const SURFACES: Surface[] = ['Clay', 'Hard', 'Grass', 'Carpet'];
-const FREQUENCIES: TextOption[] = [
-  { value: 'Daily', key: 'auth.freqDaily' },
-  { value: '3–4 times a week', key: 'auth.freq3to4' },
-  { value: 'Twice a week', key: 'auth.freqTwice' },
-  { value: 'Once a week', key: 'auth.freqOnce' },
-  { value: 'A few times a month', key: 'auth.freqFewMonth' },
-];
-const AVAILABILITY_OPTIONS: TextOption[] = [
-  { value: 'Early mornings', key: 'auth.availEarlyMorning' },
-  { value: 'Weekday mornings', key: 'auth.availWeekdayMorning' },
-  { value: 'Weekday evenings', key: 'auth.availWeekdayEvening' },
-  { value: 'Late evenings', key: 'auth.availLateEvening' },
-  { value: 'Saturdays', key: 'auth.availSaturdays' },
-  { value: 'Sunday mornings', key: 'auth.availSundayMorning' },
-  { value: 'Weekends', key: 'auth.availWeekends' },
-];
-const MAX_DISTANCE_OPTIONS = [5, 10, 20, 50, 100];
-const MAX_YEARS = 40;
-
-// Mirrors the countries/cities that already exist across the app's dataset.
-const COUNTRIES: CountryOption[] = [
-  { name: 'Portugal', flag: '🇵🇹', cities: ['Porto', 'Lisbon', 'Matosinhos'] },
-  { name: 'Spain', flag: '🇪🇸', cities: ['Barcelona', 'Madrid'] },
-  { name: 'France', flag: '🇫🇷', cities: ['Paris'] },
-  { name: 'Italy', flag: '🇮🇹', cities: ['Milan'] },
-  { name: 'UK', flag: '🇬🇧', cities: ['London', 'Surrey'] },
-  { name: 'Netherlands', flag: '🇳🇱', cities: ['Amsterdam'] },
-  { name: 'Morocco', flag: '🇲🇦', cities: ['Casablanca'] },
-  { name: 'Japan', flag: '🇯🇵', cities: ['Tokyo'] },
-  { name: 'USA', flag: '🇺🇸', cities: ['New York'] },
-  { name: 'Australia', flag: '🇦🇺', cities: ['Sydney'] },
-  { name: 'Brazil', flag: '🇧🇷', cities: ['São Paulo'] },
-  { name: 'Mexico', flag: '🇲🇽', cities: ['Mexico City'] },
-];
-
-const HANDS: ChipOption<Hand>[] = [
-  { value: 'Right', emoji: '🫱', key: 'auth.handRight' },
-  { value: 'Left', emoji: '🫲', key: 'auth.handLeft' },
-  { value: 'Ambidextrous', emoji: '🤷', key: 'auth.handAmbi' },
-];
-const BACKHANDS: ChipOption<Backhand>[] = [
-  { value: 'OneHanded', emoji: '☝️', key: 'auth.backhandOne' },
-  { value: 'TwoHanded', emoji: '✌️', key: 'auth.backhandTwo' },
-];
-const PLAY_STYLES: ChipOption<PlayStyle>[] = [
-  { value: 'AggressiveBaseliner', emoji: '🔥', key: 'auth.styleAggressiveBaseliner' },
-  { value: 'Counterpuncher', emoji: '🛡️', key: 'auth.styleCounterpuncher' },
-  { value: 'ServeAndVolleyer', emoji: '⚡', key: 'auth.styleServeVolley' },
-  { value: 'AllCourt', emoji: '🧭', key: 'auth.styleAllCourt' },
-];
-const COURT_PREFS: ChipOption<CourtPref>[] = [
-  { value: 'Indoor', emoji: '🏟️', key: 'enums.indoor' },
-  { value: 'Outdoor', emoji: '☀️', key: 'enums.outdoor' },
-  { value: 'NoPreference', emoji: '🤙', key: 'auth.noPreference' },
-];
-const TIMES_OF_DAY: ChipOption<TimeOfDay>[] = [
-  { value: 'Morning', emoji: '☀️', key: 'auth.morning' },
-  { value: 'Afternoon', emoji: '🌤️', key: 'auth.afternoon' },
-  { value: 'Evening', emoji: '🌙', key: 'auth.evening' },
-];
 
 interface RegisterStep {
   label: string;
   tagline: string;
 }
 
+
 @Component({
   selector: 'rally-register-page',
-  imports: [FormsModule, RouterLink, ChipComponent, LanguageSwitcherComponent, ThemeToggleComponent, TranslatePipe],
+  imports: [FormsModule, RouterLink, ChipComponent, LanguageSwitcherComponent, ThemeToggleComponent, AvatarPickerComponent, TranslatePipe],
   templateUrl: './register-page.component.html',
   styleUrl: './register-page.component.scss',
 })
@@ -157,6 +92,8 @@ export class RegisterPageComponent {
   protected readonly timesOfDay = signal<TimeOfDay[]>([]);
   protected readonly availability = signal<string[]>([]);
   protected readonly bio = signal('');
+  protected readonly avatarSeed = signal('rally-player');
+  protected readonly avatarStyle = signal<AvatarStyleId>(AVATAR_STYLES[0]);
 
   private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -168,6 +105,8 @@ export class RegisterPageComponent {
     switch (this.step()) {
       case 0:
         return this.name().trim().length > 1 && this.emailPattern.test(this.email()) && this.password().length >= 6 && this.password() === this.confirmPassword();
+      case 1:
+        return this.age() !== null;
       case 2:
         return this.country().length > 0 && this.city().length > 0;
       case 3:
@@ -211,7 +150,11 @@ export class RegisterPageComponent {
 
   protected next(): void {
     if (this.canContinue() && this.step() < this.steps.length - 1) {
-      this.step.update((s) => s + 1);
+      const nextStep = this.step() + 1;
+      if (nextStep === this.steps.length - 1) {
+        this.avatarSeed.update((seed) => (seed === 'rally-player' ? this.name().trim() || seed : seed));
+      }
+      this.step.set(nextStep);
     }
   }
 
@@ -223,7 +166,29 @@ export class RegisterPageComponent {
     if (!this.canContinue()) {
       return;
     }
-    this.auth.register();
+    this.auth.register({
+      name: this.name(),
+      age: this.age() ?? undefined,
+      dominantHand: this.dominantHand() ?? undefined,
+      backhand: this.backhand() ?? undefined,
+      city: this.city(),
+      country: this.country(),
+      maxDistanceKm: this.maxDistanceKm() ?? undefined,
+      level: this.level() ?? undefined,
+      years: this.years() ?? undefined,
+      playStyle: this.playStyle() ?? undefined,
+      format: this.format() ?? undefined,
+      surface: this.surface() ?? undefined,
+      courtPref: this.courtPref() ?? undefined,
+      frequency: this.frequency() ?? undefined,
+      coached: this.coached() ?? undefined,
+      coachedFrequency: this.coachedFrequency() ?? undefined,
+      timesOfDay: this.timesOfDay(),
+      availability: this.availability(),
+      bio: this.bio(),
+      avatarSeed: this.avatarSeed(),
+      avatarStyle: this.avatarStyle(),
+    });
     this.router.navigateByUrl('/');
   }
 }

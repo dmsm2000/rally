@@ -29,6 +29,19 @@ export interface Player {
   bio: string;
   stats: PlayerStats;
   accent: Accent;
+  /** DiceBear generation inputs; the same seed + style always renders the same avatar. */
+  avatarSeed?: string;
+  avatarStyle?: string;
+  /** Extra questions collected at registration, editable later from the profile. */
+  age?: number;
+  dominantHand?: string;
+  backhand?: string;
+  playStyle?: string;
+  courtPref?: string;
+  coached?: boolean;
+  coachedFrequency?: string;
+  timesOfDay?: string[];
+  maxDistanceKm?: number;
 }
 
 export interface PlayerIntent {

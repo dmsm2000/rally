@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { FeedItem, Match, MatchFormat, TripIntent, WorldActivityItem } from '../models';
+import { FeedItem, Match, MatchFormat, Player, TripIntent, WorldActivityItem } from '../models';
 import {
   ACHIEVEMENTS,
   COMMUNITY_STATS,
@@ -57,6 +57,10 @@ export class RallyDataService {
 
   playerById(id: string | undefined) {
     return id ? this.allPlayers.find(p => p.id === id) : undefined;
+  }
+
+  updateMe(partial: Partial<Player>): void {
+    this._me.update((player) => ({ ...player, ...partial }));
   }
 
   courtById(id: string) {

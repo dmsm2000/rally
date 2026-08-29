@@ -5,7 +5,7 @@
   [class.shrink-0]="compact()"
 >
   <div class="flex items-start gap-3">
-    <ui-avatar [initials]="player().initials" [accent]="player().accent" size="md" />
+    <ui-avatar [initials]="player().initials" [accent]="player().accent" [seed]="player().avatarSeed" [avatarStyle]="player().avatarStyle" size="md" />
     <div class="min-w-0 flex-1">
       <p class="truncate font-display text-base font-extrabold tracking-tight">{{ player().name }}</p>
       <p class="text-xs text-muted-foreground">{{ player().flag }} {{ player().city }} · {{ player().distanceKm | distanceKm }}</p>

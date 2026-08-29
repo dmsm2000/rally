@@ -7,3 +7,4 @@ export * from './country-badge/country-badge.component';
 export * from './rally-map/rally-map.component';
 export * from './language-switcher/language-switcher.component';
 export * from './theme-toggle/theme-toggle.component';
+export * from './avatar-picker/avatar-picker.component';

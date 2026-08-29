@@ -10,7 +10,7 @@
 
       <div class="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
         <div class="text-center">
-          <ui-avatar [initials]="playerA()?.initials ?? ''" [accent]="playerA()?.accent ?? 'ink'" size="lg" class="mx-auto" />
+          <ui-avatar [initials]="playerA()?.initials ?? ''" [accent]="playerA()?.accent ?? 'ink'" [seed]="playerA()?.avatarSeed" [avatarStyle]="playerA()?.avatarStyle" size="lg" class="mx-auto" />
           <p class="text-display mt-3 text-lg sm:text-2xl">{{ playerA()?.name }}</p>
           <p class="text-xs text-bone/60">{{ playerA()?.flag }} {{ playerA()?.city }}</p>
         </div>
@@ -29,7 +29,7 @@
           }
         </div>
         <div class="text-center">
-          <ui-avatar [initials]="playerB()?.initials ?? ''" [accent]="playerB()?.accent ?? 'ink'" size="lg" class="mx-auto" />
+          <ui-avatar [initials]="playerB()?.initials ?? ''" [accent]="playerB()?.accent ?? 'ink'" [seed]="playerB()?.avatarSeed" [avatarStyle]="playerB()?.avatarStyle" size="lg" class="mx-auto" />
           <p class="text-display mt-3 text-lg sm:text-2xl">{{ playerB()?.name }}</p>
           <p class="text-xs text-bone/60">{{ playerB()?.flag }} {{ playerB()?.city }}</p>
         </div>

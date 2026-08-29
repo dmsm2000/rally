@@ -1,3 +1,20 @@
-<span class="inline-flex shrink-0 items-center justify-center rounded-full font-display font-extrabold tracking-tight uppercase" [class]="classes()">
-  {{ initials() }}
-</span>
+@if (avatarUri(); as uri) {
+  <span class="relative inline-flex shrink-0">
+    <img [src]="uri" alt="" class="shrink-0 rounded-full object-cover" [class]="classes()" />
+    @if (showBadge()) {
+      <span
+        class="absolute -right-0.5 -bottom-0.5 flex items-center justify-center rounded-full bg-lime leading-none ring-2 ring-background"
+        [style.width.px]="badgePx()"
+        [style.height.px]="badgePx()"
+        [style.fontSize.px]="badgePx() * 0.6"
+        aria-hidden="true"
+      >
+        🎾
+      </span>
+    }
+  </span>
+} @else {
+  <span class="inline-flex shrink-0 items-center justify-center rounded-full font-display font-extrabold tracking-tight uppercase" [class]="classes()">
+    {{ initials() }}
+  </span>
+}

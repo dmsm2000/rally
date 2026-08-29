@@ -212,6 +212,13 @@ export const es = {
     openPassport: 'Abrir pasaporte',
     winRate: 'Porcentaje de victorias',
     winRateNote: '{wins} victorias de {matches} partidos. Mejor superficie: hard ({pct}%).',
+    changeAvatar: 'Avatar',
+    bioLabel: 'Biografía',
+    saveChanges: 'Guardar cambios',
+    saved: 'Guardado',
+  },
+  avatar: {
+    generateAnother: 'Generar otro',
   },
   auth: {
     eyebrow: 'Únete a Rally',
@@ -268,6 +275,7 @@ export const es = {
     availSundayMorning: 'Domingos por la mañana',
     availWeekends: 'Fines de semana',
     bio: 'Biografía breve',
+    avatarQuestion: 'Elige tu avatar',
     bioPlaceholder: 'Estilo de juego, golpe favorito, qué buscas en Rally…',
     bioHint: 'Opcional — se muestra en tu perfil para ayudar a otros jugadores a encontrarte.',
     age: 'Edad',

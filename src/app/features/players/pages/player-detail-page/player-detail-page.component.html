@@ -3,7 +3,7 @@
     <div class="h-28 bg-muted sm:h-36"></div>
     <div class="-mt-12 px-6 pb-6 sm:px-8">
       <div class="flex flex-wrap items-end gap-5">
-        <ui-avatar [initials]="p.initials" [accent]="p.accent" size="xl" [ring]="true" />
+        <ui-avatar [initials]="p.initials" [accent]="p.accent" [seed]="p.avatarSeed" [avatarStyle]="p.avatarStyle" size="xl" [ring]="true" />
         <div class="flex-1">
           <h1 class="text-display text-3xl sm:text-5xl">{{ p.name }}</h1>
           <p class="mt-1 text-sm text-muted-foreground">{{ p.flag }} {{ p.city }}, {{ p.country }} · {{ p.years }} years playing</p>
