@@ -1,6 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProfileService } from '../../profile.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { AvatarComponent, ChipComponent, StatComponent, SectionHeaderComponent } from '../../../../shared/ui';
 import { AvatarPickerComponent } from '../../../../shared/components';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
@@ -35,6 +37,8 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 })
 export class ProfilePageComponent {
   protected readonly profile = inject(ProfileService);
+  protected readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   protected readonly levels = LEVELS;
   protected readonly formats = FORMATS;
@@ -132,5 +136,10 @@ export class ProfilePageComponent {
     });
     this.saved.set(true);
     setTimeout(() => this.saved.set(false), 2000);
+  }
+
+  protected logout(): void {
+    this.auth.logout();
+    this.router.navigateByUrl('/login');
   }
 }

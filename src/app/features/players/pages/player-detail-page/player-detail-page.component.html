@@ -30,8 +30,10 @@
       <p class="mt-5 max-w-2xl text-sm text-muted-foreground">{{ p.bio }}</p>
 
       <div class="mt-7 flex flex-wrap gap-3">
-        <button type="button" class="rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'players.inviteToMatch' | translate }}</button>
-        <button type="button" class="rounded-full border border-border px-6 py-3 text-xs font-extrabold tracking-wide uppercase hover:border-foreground">{{ 'players.message' | translate }}</button>
+        @if (!auth.isObserver()) {
+          <button type="button" class="rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'players.inviteToMatch' | translate }}</button>
+          <button type="button" class="rounded-full border border-border px-6 py-3 text-xs font-extrabold tracking-wide uppercase hover:border-foreground">{{ 'players.message' | translate }}</button>
+        }
       </div>
     </div>
   </section>

@@ -12,6 +12,7 @@ export const en = {
     yourProfile: 'Your profile',
     language: 'Language',
     toggleTheme: 'Toggle dark mode',
+    exitObserver: 'Stop observing',
   },
   stats: {
     wins: 'Wins',
@@ -214,6 +215,7 @@ export const en = {
     bioLabel: 'Bio',
     saveChanges: 'Save changes',
     saved: 'Saved',
+    logout: 'Log out',
   },
   avatar: {
     generateAnother: 'Generate another',
@@ -311,6 +313,8 @@ export const en = {
     loginTitle: 'Sign in to Rally',
     loginLead: "Enter your details and we'll get you back on court.",
     noAccount: 'New to Rally?',
+    or: 'or',
+    enterAsObserver: 'Continue as an observer',
   },
   enums: {
     level: {

@@ -103,46 +103,48 @@
 
 <section class="mt-14">
   <ui-section-header [eyebrow]="'world.tripEyebrow' | translate" [title]="'world.tripTitle' | translate" />
-  <div class="rounded-2xl border border-border bg-card p-5">
-    <div class="grid gap-3 sm:grid-cols-3">
-      <select
-        [ngModel]="world.tripDestinationId()"
-        (ngModelChange)="world.tripDestinationId.set($event)"
-        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
+  @if (!auth.isObserver()) {
+    <div class="rounded-2xl border border-border bg-card p-5">
+      <div class="grid gap-3 sm:grid-cols-3">
+        <select
+          [ngModel]="world.tripDestinationId()"
+          (ngModelChange)="world.tripDestinationId.set($event)"
+          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
+        >
+          <option value="" disabled>{{ 'world.tripDestination' | translate }}</option>
+          @for (d of world.destinations(); track d.id) {
+            <option [value]="d.id">{{ d.flag }} {{ d.city }}</option>
+          }
+        </select>
+        <input
+          [ngModel]="world.tripFromDate()"
+          (ngModelChange)="world.tripFromDate.set($event)"
+          [placeholder]="'world.tripFrom' | translate"
+          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+        />
+        <input
+          [ngModel]="world.tripToDate()"
+          (ngModelChange)="world.tripToDate.set($event)"
+          [placeholder]="'world.tripTo' | translate"
+          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </div>
+      <input
+        [ngModel]="world.tripNote()"
+        (ngModelChange)="world.tripNote.set($event)"
+        [placeholder]="'world.tripNotePlaceholder' | translate"
+        class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      />
+      <button
+        type="button"
+        (click)="world.publishTripIntent()"
+        class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 sm:w-auto"
       >
-        <option value="" disabled>{{ 'world.tripDestination' | translate }}</option>
-        @for (d of world.destinations(); track d.id) {
-          <option [value]="d.id">{{ d.flag }} {{ d.city }}</option>
-        }
-      </select>
-      <input
-        [ngModel]="world.tripFromDate()"
-        (ngModelChange)="world.tripFromDate.set($event)"
-        [placeholder]="'world.tripFrom' | translate"
-        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-      />
-      <input
-        [ngModel]="world.tripToDate()"
-        (ngModelChange)="world.tripToDate.set($event)"
-        [placeholder]="'world.tripTo' | translate"
-        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-      />
+        {{ 'world.tripPublish' | translate }}
+      </button>
+      <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'world.tripHint' | translate }}</p>
     </div>
-    <input
-      [ngModel]="world.tripNote()"
-      (ngModelChange)="world.tripNote.set($event)"
-      [placeholder]="'world.tripNotePlaceholder' | translate"
-      class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-    />
-    <button
-      type="button"
-      (click)="world.publishTripIntent()"
-      class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 sm:w-auto"
-    >
-      {{ 'world.tripPublish' | translate }}
-    </button>
-    <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'world.tripHint' | translate }}</p>
-  </div>
+  }
 </section>
 
 <section class="mt-14">
@@ -159,7 +161,7 @@
             </div>
           </div>
           <p class="mt-3 text-sm text-muted-foreground">{{ row.intent.note }}</p>
-          @if (!world.meId() || row.intent.playerId !== world.meId()) {
+          @if ((!world.meId() || row.intent.playerId !== world.meId()) && !auth.isObserver()) {
             <button
               type="button"
               (click)="world.volunteerForTrip(row.intent.id)"

@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { MatchesService } from '../../matches.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { AvatarComponent, ChipComponent } from '../../../../shared/ui';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
@@ -15,6 +16,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 export class MatchDetailPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly matches = inject(MatchesService);
+  protected readonly auth = inject(AuthService);
 
   private readonly matchId = toSignal(this.route.paramMap.pipe(map((params) => params.get('matchId') ?? '')), { initialValue: '' });
 

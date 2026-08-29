@@ -14,46 +14,48 @@
 <section class="mb-14">
   <ui-section-header [eyebrow]="'matches.openEyebrow' | translate" [title]="'matches.openTitle' | translate" />
 
-  <div class="mb-6 rounded-2xl border border-border bg-card p-5">
-    <div class="grid gap-3 sm:grid-cols-3">
-      <select
-        [ngModel]="matches.composerCourtId()"
-        (ngModelChange)="matches.composerCourtId.set($event)"
-        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
+  @if (!auth.isObserver()) {
+    <div class="mb-6 rounded-2xl border border-border bg-card p-5">
+      <div class="grid gap-3 sm:grid-cols-3">
+        <select
+          [ngModel]="matches.composerCourtId()"
+          (ngModelChange)="matches.composerCourtId.set($event)"
+          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
+        >
+          <option value="" disabled>{{ 'matches.composerCourt' | translate }}</option>
+          @for (c of matches.courts(); track c.id) {
+            <option [value]="c.id">{{ c.flag }} {{ c.name }}</option>
+          }
+        </select>
+        <input
+          [ngModel]="matches.composerDate()"
+          (ngModelChange)="matches.composerDate.set($event)"
+          [placeholder]="'matches.composerDate' | translate"
+          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+        />
+        <input
+          [ngModel]="matches.composerTime()"
+          (ngModelChange)="matches.composerTime.set($event)"
+          [placeholder]="'matches.composerTime' | translate"
+          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </div>
+      <input
+        [ngModel]="matches.composerNote()"
+        (ngModelChange)="matches.composerNote.set($event)"
+        [placeholder]="'matches.composerNotePlaceholder' | translate"
+        class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      />
+      <button
+        type="button"
+        (click)="matches.publishOpenMatch()"
+        class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 sm:w-auto"
       >
-        <option value="" disabled>{{ 'matches.composerCourt' | translate }}</option>
-        @for (c of matches.courts(); track c.id) {
-          <option [value]="c.id">{{ c.flag }} {{ c.name }}</option>
-        }
-      </select>
-      <input
-        [ngModel]="matches.composerDate()"
-        (ngModelChange)="matches.composerDate.set($event)"
-        [placeholder]="'matches.composerDate' | translate"
-        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-      />
-      <input
-        [ngModel]="matches.composerTime()"
-        (ngModelChange)="matches.composerTime.set($event)"
-        [placeholder]="'matches.composerTime' | translate"
-        class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-      />
+        {{ 'matches.composerPublish' | translate }}
+      </button>
+      <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'matches.composerHint' | translate }}</p>
     </div>
-    <input
-      [ngModel]="matches.composerNote()"
-      (ngModelChange)="matches.composerNote.set($event)"
-      [placeholder]="'matches.composerNotePlaceholder' | translate"
-      class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-    />
-    <button
-      type="button"
-      (click)="matches.publishOpenMatch()"
-      class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 sm:w-auto"
-    >
-      {{ 'matches.composerPublish' | translate }}
-    </button>
-    <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'matches.composerHint' | translate }}</p>
-  </div>
+  }
 
   @if (matches.open().length) {
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -68,7 +70,7 @@
           <p class="mt-3 text-sm font-bold">{{ matches.playerById(m.playerA)?.name }}</p>
           <p class="mt-1 text-sm text-muted-foreground">{{ m.note }}</p>
           <p class="mt-1 text-xs text-muted-foreground">{{ matches.courtById(m.courtId)?.flag }} {{ matches.courtById(m.courtId)?.name }} · {{ m.date }} {{ m.time }}</p>
-          @if (!matches.isMine(m.playerA)) {
+          @if (!matches.isMine(m.playerA) && !auth.isObserver()) {
             <button
               type="button"
               (click)="matches.acceptOpenMatch(m.id)"

@@ -1,12 +1,21 @@
 <section class="mb-10 overflow-hidden rounded-3xl border border-border bg-ink text-bone">
   <div class="court-grid-ink p-6 sm:p-10">
-    <div class="flex flex-wrap items-center gap-5">
-      <ui-avatar [initials]="profile.me().initials" [seed]="draftAvatarSeed()" [avatarStyle]="draftAvatarStyle()" accent="lime" size="xl" />
-      <div class="flex-1">
-        <p class="text-eyebrow text-bone/60">{{ 'profile.yourProfile' | translate }}</p>
-        <h1 class="text-display mt-1 text-4xl sm:text-6xl">{{ profile.me().name }}</h1>
-        <p class="mt-2 text-sm text-bone/70">{{ draftFlag() }} {{ draftCity() }}, {{ draftCountry() }} · {{ ('enums.level.' + draftLevel()) | translate }} · {{ 'profile.yearsPlaying' | translate:{ years: draftYears() ?? 0 } }}</p>
+    <div class="flex flex-wrap items-start justify-between gap-5">
+      <div class="flex flex-wrap items-center gap-5">
+        <ui-avatar [initials]="profile.me().initials" [seed]="draftAvatarSeed()" [avatarStyle]="draftAvatarStyle()" accent="lime" size="xl" />
+        <div class="flex-1">
+          <p class="text-eyebrow text-bone/60">{{ 'profile.yourProfile' | translate }}</p>
+          <h1 class="text-display mt-1 text-4xl sm:text-6xl">{{ profile.me().name }}</h1>
+          <p class="mt-2 text-sm text-bone/70">{{ draftFlag() }} {{ draftCity() }}, {{ draftCountry() }} · {{ ('enums.level.' + draftLevel()) | translate }} · {{ 'profile.yearsPlaying' | translate:{ years: draftYears() ?? 0 } }}</p>
+        </div>
       </div>
+      <button
+        type="button"
+        (click)="logout()"
+        class="cursor-pointer rounded-full border border-bone/30 px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-bone"
+      >
+        {{ 'profile.logout' | translate }}
+      </button>
     </div>
 
     <div class="mt-8 grid grid-cols-2 gap-6 border-t border-bone/15 pt-6 sm:grid-cols-4">
@@ -18,11 +27,12 @@
   </div>
 </section>
 
-<section class="mb-10 rounded-3xl border border-border bg-card p-6 sm:p-8">
-  <div>
-    <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'profile.changeAvatar' | translate }}</p>
-    <rally-avatar-picker [(seed)]="draftAvatarSeed" [(avatarStyle)]="draftAvatarStyle" />
-  </div>
+@if (!auth.isObserver()) {
+  <section class="mb-10 rounded-3xl border border-border bg-card p-6 sm:p-8">
+    <div>
+      <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'profile.changeAvatar' | translate }}</p>
+      <rally-avatar-picker [(seed)]="draftAvatarSeed" [(avatarStyle)]="draftAvatarStyle" />
+    </div>
 
     <div class="mt-8 space-y-6 border-t border-border pt-6">
       <p class="text-eyebrow text-muted-foreground">{{ 'auth.steps.traits' | translate }}</p>
@@ -212,6 +222,7 @@
       </button>
     </div>
   </section>
+}
 
 <section>
   <ui-section-header [eyebrow]="'profile.preferencesEyebrow' | translate" [title]="'profile.howYouPlay' | translate" />

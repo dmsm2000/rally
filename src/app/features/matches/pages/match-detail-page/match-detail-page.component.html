@@ -72,7 +72,9 @@
         <p class="mt-5 text-sm text-muted-foreground">
           {{ 'matches.headToHead' | translate:{ name: playerB()?.name ?? '', count: playerB()?.stats?.matches ?? 0, surface: playerB()?.surface ?? '' } }}
         </p>
-        <button type="button" class="mt-6 rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'matches.addScore' | translate }}</button>
+        @if (!auth.isObserver()) {
+          <button type="button" class="mt-6 rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'matches.addScore' | translate }}</button>
+        }
       </div>
     }
   </div>

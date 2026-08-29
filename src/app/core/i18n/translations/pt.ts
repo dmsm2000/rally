@@ -14,6 +14,7 @@ export const pt = {
     yourProfile: 'O teu perfil',
     language: 'Idioma',
     toggleTheme: 'Alternar modo escuro',
+    exitObserver: 'Deixar de observar',
   },
   stats: {
     wins: 'Vitórias',
@@ -216,6 +217,7 @@ export const pt = {
     bioLabel: 'Bio',
     saveChanges: 'Guardar alterações',
     saved: 'Guardado',
+    logout: 'Terminar sessão',
   },
   avatar: {
     generateAnother: 'Gerar outro',
@@ -313,6 +315,8 @@ export const pt = {
     loginTitle: 'Inicia sessão na Rally',
     loginLead: 'Introduz os teus dados e voltamos a pôr-te em campo.',
     noAccount: 'Ainda não tens conta na Rally?',
+    or: 'ou',
+    enterAsObserver: 'Continuar como olheiro',
   },
   enums: {
     level: {

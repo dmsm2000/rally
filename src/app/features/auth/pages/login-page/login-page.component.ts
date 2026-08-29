@@ -31,4 +31,9 @@ export class LoginPageComponent {
     this.auth.login();
     this.router.navigateByUrl('/');
   }
+
+  protected enterAsObserver(): void {
+    this.auth.loginAsObserver();
+    this.router.navigateByUrl('/');
+  }
 }

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AppShellComponent } from './layout/app-shell/app-shell.component';
+import { noObserverGuard } from './core/auth/no-observer.guard';
 
 export const routes: Routes = [
 	// Public, pre-authentication routes render outside the shell (no topbar/bottom-nav).
@@ -14,9 +15,9 @@ export const routes: Routes = [
 			{ path: 'courts', loadChildren: () => import('./features/courts/courts.routes').then((m) => m.COURTS_ROUTES) },
 			{ path: 'matches', loadChildren: () => import('./features/matches/matches.routes').then((m) => m.MATCHES_ROUTES) },
 			{ path: 'world', loadChildren: () => import('./features/world/world.routes').then((m) => m.WORLD_ROUTES) },
-			{ path: 'passport', loadChildren: () => import('./features/passport/passport.routes').then((m) => m.PASSPORT_ROUTES) },
+			{ path: 'passport', canActivate: [noObserverGuard], loadChildren: () => import('./features/passport/passport.routes').then((m) => m.PASSPORT_ROUTES) },
 			{ path: 'achievements', redirectTo: '/passport' },
-			{ path: 'profile', loadChildren: () => import('./features/profile/profile.routes').then((m) => m.PROFILE_ROUTES) },
+			{ path: 'profile', canActivate: [noObserverGuard], loadChildren: () => import('./features/profile/profile.routes').then((m) => m.PROFILE_ROUTES) },
 			{ path: '**', redirectTo: '' },
 		],
 	},

@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { CourtsService } from '../../courts.service';
 import { RallyDataService } from '../../../../core/data/rally-data.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { StatComponent, ChipComponent, SectionHeaderComponent } from '../../../../shared/ui';
 import { PlayerCardComponent, RallyMapComponent, MapMarker } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
@@ -23,6 +24,7 @@ const REVIEWS = [
 export class CourtDetailPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly courts = inject(CourtsService);
+  protected readonly auth = inject(AuthService);
   private readonly data = inject(RallyDataService);
 
   private readonly courtId = toSignal(this.route.paramMap.pipe(map((params) => params.get('courtId') ?? '')), { initialValue: '' });

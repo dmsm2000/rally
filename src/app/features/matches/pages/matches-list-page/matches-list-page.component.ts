@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatchesService } from '../../matches.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { StatComponent, SectionHeaderComponent, EmptyStateComponent } from '../../../../shared/ui';
 import { MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
@@ -13,4 +14,5 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 })
 export class MatchesListPageComponent {
   protected readonly matches = inject(MatchesService);
+  protected readonly auth = inject(AuthService);
 }

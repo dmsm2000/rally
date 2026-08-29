@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { AvatarComponent } from '../../shared/ui';
@@ -22,19 +22,25 @@ export class TopbarComponent {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
 
-  protected readonly primary: NavItem[] = [
+  // Observers can't hold a passport, so that link is dropped from the nav for them.
+  protected readonly primary = computed(() => this.primaryItems);
+  protected readonly secondary = computed(() => (this.auth.isObserver() ? this.secondaryItems.filter((i) => i.path !== '/passport') : this.secondaryItems));
+
+  protected readonly indicatorLeft = signal(0);
+  protected readonly indicatorWidth = signal(0);
+
+  private readonly router = inject(Router);
+
+  private readonly primaryItems: NavItem[] = [
     { path: '/', label: 'nav.home', exact: true },
     { path: '/world', label: 'nav.world' },
   ];
 
-  protected readonly secondary: NavItem[] = [
+  private readonly secondaryItems: NavItem[] = [
     { path: '/courts', label: 'nav.courts' },
     { path: '/matches', label: 'nav.matches' },
     { path: '/passport', label: 'nav.passport' },
   ];
-
-  protected readonly indicatorLeft = signal(0);
-  protected readonly indicatorWidth = signal(0);
 
   // Slides the tennis-pill indicator to whichever nav link becomes active.
   protected onActiveChange(isActive: boolean, link: HTMLAnchorElement): void {
@@ -43,5 +49,10 @@ export class TopbarComponent {
     }
     this.indicatorLeft.set(link.offsetLeft);
     this.indicatorWidth.set(link.offsetWidth);
+  }
+
+  protected exitObserverMode(): void {
+    this.auth.logout();
+    this.router.navigateByUrl('/login');
   }
 }

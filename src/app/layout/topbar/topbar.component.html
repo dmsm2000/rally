@@ -19,7 +19,7 @@
         [style.transform]="'translateX(' + indicatorLeft() + 'px)'"
         [class.opacity-0]="indicatorWidth() === 0"
       ></span>
-      @for (item of primary; track item.path) {
+      @for (item of primary(); track item.path) {
         <a
           #navLink
           [routerLink]="item.path"
@@ -31,7 +31,7 @@
           <span class="relative z-10">{{ item.label | translate }}</span>
         </a>
       }
-      @for (item of secondary; track item.path) {
+      @for (item of secondary(); track item.path) {
         <a
           #navLink
           [routerLink]="item.path"
@@ -47,9 +47,20 @@
     <div class="flex shrink-0 items-center justify-end gap-2">
       <rally-language-switcher />
       <rally-theme-toggle />
-      <a routerLink="/profile" [attr.aria-label]="'nav.yourProfile' | translate">
-        <ui-avatar [initials]="auth.currentPlayer().initials" [seed]="auth.currentPlayer().avatarSeed" [avatarStyle]="auth.currentPlayer().avatarStyle" accent="lime" size="sm" />
-      </a>
+      @if (auth.isObserver()) {
+        <button
+          type="button"
+          (click)="exitObserverMode()"
+          [attr.aria-label]="'nav.exitObserver' | translate"
+          class="flex size-9 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-base"
+        >
+          👀
+        </button>
+      } @else {
+        <a routerLink="/profile" [attr.aria-label]="'nav.yourProfile' | translate">
+          <ui-avatar [initials]="auth.currentPlayer().initials" [seed]="auth.currentPlayer().avatarSeed" [avatarStyle]="auth.currentPlayer().avatarStyle" accent="lime" size="sm" />
+        </a>
+      }
     </div>
     </div>
   </header>

@@ -10,8 +10,11 @@ import { Player } from '../models';
 export class AuthService {
   private readonly data = inject(RallyDataService);
   private readonly _isAuthenticated = signal(true);
+  private readonly _isObserver = signal(false);
 
   readonly isAuthenticated = this._isAuthenticated.asReadonly();
+  /** Observers ("olheiros") can browse the app but can't perform any write action. */
+  readonly isObserver = this._isObserver.asReadonly();
 
   readonly currentPlayer = computed<Player>(() => this.data.me());
 
@@ -20,11 +23,24 @@ export class AuthService {
     if (profile) {
       this.data.updateMe(profile);
     }
+    this._isObserver.set(false);
     this._isAuthenticated.set(true);
   }
 
   /** Stand-in for a real Supabase sign-in call; just marks the session as authenticated. */
   login(): void {
+    this._isObserver.set(false);
     this._isAuthenticated.set(true);
+  }
+
+  /** Read-only guest session — no sign-up required, no write actions allowed. */
+  loginAsObserver(): void {
+    this._isObserver.set(true);
+    this._isAuthenticated.set(true);
+  }
+
+  logout(): void {
+    this._isAuthenticated.set(false);
+    this._isObserver.set(false);
   }
 }
