@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { MatchesRepository } from './data/matches.repository';
 import { Match, MatchFormat, SessionType } from '../../core/models';
+import { MatchesRepository } from './data/matches.repository';
 
 export const SESSION_TYPES: SessionType[] = ['Training', 'HittingSession', 'PracticeMatch', 'FullMatch'];
 export const DURATION_OPTIONS = [30, 60, 90, 120];
@@ -12,12 +12,12 @@ export class MatchesService {
 
   readonly all = computed(() => this.repository.getAll());
   readonly me = computed(() => this.repository.me());
-  readonly upcoming = computed(() => this.all().filter((m) => m.status === 'upcoming'));
-  readonly completed = computed(() => this.all().filter((m) => m.status === 'complete'));
-  readonly open = computed(() => this.all().filter((m) => m.status === 'open'));
+  readonly upcoming = computed(() => this.all().filter(m => m.status === 'upcoming'));
+  readonly completed = computed(() => this.all().filter(m => m.status === 'complete'));
+  readonly open = computed(() => this.all().filter(m => m.status === 'open'));
   readonly courts = computed(() => this.repository.courts());
   readonly communityStats = computed(() => this.repository.communityStats());
-  readonly openPlayersCount = computed(() => new Set(this.open().map((m) => m.playerA)).size);
+  readonly openPlayersCount = computed(() => new Set(this.open().map(m => m.playerA)).size);
 
   readonly sessionTypes = SESSION_TYPES;
   readonly durationOptions = DURATION_OPTIONS;
@@ -35,7 +35,7 @@ export class MatchesService {
   readonly composerNote = signal('');
 
   readonly canPublish = computed(() =>
-    this.composerLocationMode() === 'court' ? this.composerCourtId().length > 0 : this.composerCity().trim().length > 0,
+    this.composerLocationMode() === 'court' ? this.composerCourtId().length > 0 : this.composerCity().trim().length > 0
   );
 
   getById(id: string) {
@@ -80,7 +80,7 @@ export class MatchesService {
       format: this.composerFormat(),
       sessionType: this.composerSessionType(),
       durationMinutes: this.composerDurationMinutes() ?? undefined,
-      note: this.composerNote(),
+      note: this.composerNote()
     });
     this.composerNote.set('');
     this.composerDate.set('');

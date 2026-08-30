@@ -332,6 +332,7 @@ export const es = {
     backhandQuestion: '¿Revés a una mano o a dos manos?',
     backhandOne: 'Una mano',
     backhandTwo: 'Dos manos',
+    backhandUnknown: 'No lo sé',
     levelHint: 'Es solo tu percepción — nadie va a comprobar tu ranking.',
     styleQuestion: '¿Cómo te describirías en pista?',
     styleHint: 'Vale con la intuición, no hay respuesta incorrecta.',

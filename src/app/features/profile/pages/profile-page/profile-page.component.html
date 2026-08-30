@@ -2,11 +2,21 @@
   <div class="court-grid-ink p-6 sm:p-10">
     <div class="flex flex-wrap items-start justify-between gap-5">
       <div class="flex flex-wrap items-center gap-5">
-        <ui-avatar [initials]="profile.me().initials" [seed]="draftAvatarSeed()" [avatarStyle]="draftAvatarStyle()" accent="lime" size="xl" />
+        <ui-avatar
+          [initials]="profile.me().initials"
+          [seed]="draftAvatarSeed()"
+          [avatarStyle]="draftAvatarStyle()"
+          accent="lime"
+          size="xl"
+        />
         <div class="flex-1">
           <p class="text-eyebrow text-bone/60">{{ 'profile.yourProfile' | translate }}</p>
           <h1 class="text-display mt-1 text-4xl sm:text-6xl">{{ profile.me().name }}</h1>
-          <p class="mt-2 text-sm text-bone/70">{{ draftFlag() }} {{ draftCity() }}, {{ draftCountry() }} · {{ ('enums.level.' + draftLevel()) | translate }} · {{ 'profile.yearsPlaying' | translate:{ years: draftYears() ?? 0 } }}</p>
+          <p class="mt-2 text-sm text-bone/70">
+            {{ draftFlag() }} {{ draftCity() }}, {{ draftCountry() }} ·
+            {{ 'enums.level.' + draftLevel() | translate }} ·
+            {{ 'profile.yearsPlaying' | translate: { years: draftYears() ?? 0 } }}
+          </p>
         </div>
       </div>
       <button
@@ -31,20 +41,37 @@
   <div class="rounded-2xl border border-border bg-card p-5">
     <p class="text-eyebrow text-muted-foreground">{{ 'profile.winRate' | translate }}</p>
     <p class="text-stat mt-2 text-4xl">{{ winRatePct() }}%</p>
-    <p class="mt-2 text-xs text-muted-foreground">{{ 'profile.winRateNote' | translate: { wins: winCount(), matches: completedCount(), surface: bestSurfaceLabel(), pct: winRatePct() } }}</p>
+    <p class="mt-2 text-xs text-muted-foreground">
+      {{
+        'profile.winRateNote'
+          | translate: { wins: winCount(), matches: completedCount(), surface: bestSurfaceLabel(), pct: winRatePct() }
+      }}
+    </p>
   </div>
-  <a routerLink="/passport" class="rounded-2xl border border-border bg-ink p-5 text-bone transition-transform hover:-translate-y-0.5">
+  <a
+    routerLink="/passport"
+    class="rounded-2xl border border-border bg-ink p-5 text-bone transition-transform hover:-translate-y-0.5"
+  >
     <p class="text-eyebrow text-bone/60">{{ 'profile.milestonesEyebrow' | translate }}</p>
-    <p class="mt-2 font-display text-lg font-extrabold tracking-tight uppercase">{{ 'profile.tennisPassport' | translate }}</p>
+    <p class="mt-2 font-display text-lg font-extrabold tracking-tight uppercase">
+      {{ 'profile.tennisPassport' | translate }}
+    </p>
     <p class="mt-2 text-xs text-bone/70">
-      {{ passportService.visitedCountries().length }} {{ 'profile.countriesSuffix' | translate }} · {{ passportService.unlockedAchievements().length }}/{{ passportService.achievements().length }} {{ 'achievements.title' | translate }}
+      {{ passportService.visitedCountries().length }} {{ 'profile.countriesSuffix' | translate }} ·
+      {{ passportService.unlockedAchievements().length }}/{{ passportService.achievements().length }}
+      {{ 'achievements.title' | translate }}
     </p>
     <p class="mt-4 text-xs font-bold text-lime">{{ 'profile.openPassport' | translate }} →</p>
   </a>
 </section>
 
 <section class="mb-10">
-  <ui-section-header [eyebrow]="'profile.historyEyebrow' | translate" [title]="'profile.yourMatches' | translate" [action]="'profile.seeAll' | translate" to="/matches" />
+  <ui-section-header
+    [eyebrow]="'profile.historyEyebrow' | translate"
+    [title]="'profile.yourMatches' | translate"
+    [action]="'profile.seeAll' | translate"
+    to="/matches"
+  />
   @if (recentMatches().length) {
     <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
       @for (m of recentMatches(); track m.id) {
@@ -84,7 +111,9 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.genderQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (g of genders; track g.value) {
-            <ui-chip [clickable]="true" [active]="draftGender() === g.value" (toggled)="draftGender.set(g.value)">{{ g.emoji }} {{ g.key | translate }}</ui-chip>
+            <ui-chip [clickable]="true" [active]="draftGender() === g.value" (toggled)="draftGender.set(g.value)"
+              >{{ g.emoji }} {{ g.key | translate }}</ui-chip
+            >
           }
         </div>
       </div>
@@ -92,7 +121,12 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.dominantHand' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (h of hands; track h.value) {
-            <ui-chip [clickable]="true" [active]="draftDominantHand() === h.value" (toggled)="draftDominantHand.set(h.value)">{{ h.emoji }} {{ h.key | translate }}</ui-chip>
+            <ui-chip
+              [clickable]="true"
+              [active]="draftDominantHand() === h.value"
+              (toggled)="draftDominantHand.set(h.value)"
+              >{{ h.emoji }} {{ h.key | translate }}</ui-chip
+            >
           }
         </div>
       </div>
@@ -100,7 +134,9 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.backhandQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (b of backhands; track b.value) {
-            <ui-chip [clickable]="true" [active]="draftBackhand() === b.value" (toggled)="draftBackhand.set(b.value)">{{ b.emoji }} {{ b.key | translate }}</ui-chip>
+            <ui-chip [clickable]="true" [active]="draftBackhand() === b.value" (toggled)="draftBackhand.set(b.value)"
+              >{{ b.emoji }} {{ b.key | translate }}</ui-chip
+            >
           }
         </div>
       </div>
@@ -144,7 +180,13 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.maxDistanceQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (d of maxDistanceOptions; track d) {
-            <ui-chip [clickable]="true" [active]="draftMaxDistanceKm() === d" tone="cobalt" (toggled)="draftMaxDistanceKm.set(d)">{{ d }}{{ d === 100 ? '+' : '' }} km</ui-chip>
+            <ui-chip
+              [clickable]="true"
+              [active]="draftMaxDistanceKm() === d"
+              tone="cobalt"
+              (toggled)="draftMaxDistanceKm.set(d)"
+              >{{ d }}{{ d === 100 ? '+' : '' }} km</ui-chip
+            >
           }
         </div>
       </div>
@@ -161,23 +203,48 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.level' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (l of levels; track l) {
-            <ui-chip [clickable]="true" [active]="draftLevel() === l" tone="lime" (toggled)="draftLevel.set(l)">{{ ('enums.level.' + l) | translate }}</ui-chip>
+            <ui-chip [clickable]="true" [active]="draftLevel() === l" tone="lime" (toggled)="draftLevel.set(l)">{{
+              'enums.level.' + l | translate
+            }}</ui-chip>
           }
         </div>
       </div>
       <div>
-        <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{ 'auth.yearsPlaying' | translate }}</span>
+        <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{
+          'auth.yearsPlaying' | translate
+        }}</span>
         <div class="inline-flex items-center gap-4 rounded-xl border border-border bg-background px-4 py-2">
-          <button type="button" (click)="decrementDraftYears()" [disabled]="draftYears() === 0" class="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-lg font-bold hover:border-foreground disabled:pointer-events-none disabled:opacity-30">−</button>
-          <span class="text-stat w-16 text-center text-xl">{{ draftYears() === null ? '—' : draftYears() === 40 ? '40+' : draftYears() }}</span>
-          <button type="button" (click)="incrementDraftYears()" [disabled]="draftYears() === 40" class="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-lg font-bold hover:border-foreground disabled:pointer-events-none disabled:opacity-30">+</button>
+          <button
+            type="button"
+            (click)="decrementDraftYears()"
+            [disabled]="draftYears() === 0"
+            class="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-lg font-bold hover:border-foreground disabled:pointer-events-none disabled:opacity-30"
+          >
+            −
+          </button>
+          <span class="text-stat w-16 text-center text-xl">{{
+            draftYears() === null ? '—' : draftYears() === 40 ? '40+' : draftYears()
+          }}</span>
+          <button
+            type="button"
+            (click)="incrementDraftYears()"
+            [disabled]="draftYears() === 40"
+            class="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-lg font-bold hover:border-foreground disabled:pointer-events-none disabled:opacity-30"
+          >
+            +
+          </button>
         </div>
       </div>
       <div>
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.styleQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (st of playStyles; track st.value) {
-            <ui-chip [clickable]="true" [active]="draftPlayStyle() === st.value" (toggled)="draftPlayStyle.set(st.value)">{{ st.emoji }} {{ st.key | translate }}</ui-chip>
+            <ui-chip
+              [clickable]="true"
+              [active]="draftPlayStyle() === st.value"
+              (toggled)="draftPlayStyle.set(st.value)"
+              >{{ st.emoji }} {{ st.key | translate }}</ui-chip
+            >
           }
         </div>
       </div>
@@ -185,7 +252,9 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.format' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (f of formats; track f) {
-            <ui-chip [clickable]="true" [active]="draftFormat() === f" (toggled)="draftFormat.set(f)">{{ ('enums.format.' + f) | translate }}</ui-chip>
+            <ui-chip [clickable]="true" [active]="draftFormat() === f" (toggled)="draftFormat.set(f)">{{
+              'enums.format.' + f | translate
+            }}</ui-chip>
           }
         </div>
       </div>
@@ -193,7 +262,9 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.surface' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (s of surfaces; track s) {
-            <ui-chip [clickable]="true" [active]="draftSurface() === s" tone="clay" (toggled)="draftSurface.set(s)">{{ s }}</ui-chip>
+            <ui-chip [clickable]="true" [active]="draftSurface() === s" tone="clay" (toggled)="draftSurface.set(s)">{{
+              s
+            }}</ui-chip>
           }
         </div>
       </div>
@@ -201,7 +272,9 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.courtPrefQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (c of courtPrefs; track c.value) {
-            <ui-chip [clickable]="true" [active]="draftCourtPref() === c.value" (toggled)="draftCourtPref.set(c.value)">{{ c.emoji }} {{ c.key | translate }}</ui-chip>
+            <ui-chip [clickable]="true" [active]="draftCourtPref() === c.value" (toggled)="draftCourtPref.set(c.value)"
+              >{{ c.emoji }} {{ c.key | translate }}</ui-chip
+            >
           }
         </div>
       </div>
@@ -218,21 +291,37 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.frequency' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (f of frequencies; track f.value) {
-            <ui-chip [clickable]="true" [active]="draftFrequency() === f.value" (toggled)="draftFrequency.set(f.value)">{{ f.key | translate }}</ui-chip>
+            <ui-chip
+              [clickable]="true"
+              [active]="draftFrequency() === f.value"
+              (toggled)="draftFrequency.set(f.value)"
+              >{{ f.key | translate }}</ui-chip
+            >
           }
         </div>
       </div>
       <div>
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.coachedQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
-          <ui-chip [clickable]="true" [active]="draftCoached() === true" tone="lime" (toggled)="setDraftCoached(true)">🎾 {{ 'auth.coachedYes' | translate }}</ui-chip>
-          <ui-chip [clickable]="true" [active]="draftCoached() === false" (toggled)="setDraftCoached(false)">🙅 {{ 'auth.coachedNo' | translate }}</ui-chip>
+          <ui-chip [clickable]="true" [active]="draftCoached() === true" tone="lime" (toggled)="setDraftCoached(true)"
+            >🎾 {{ 'auth.coachedYes' | translate }}</ui-chip
+          >
+          <ui-chip [clickable]="true" [active]="draftCoached() === false" (toggled)="setDraftCoached(false)"
+            >🙅 {{ 'auth.coachedNo' | translate }}</ui-chip
+          >
         </div>
         @if (draftCoached() === true) {
-          <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.coachedFrequencyQuestion' | translate }}</p>
+          <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">
+            {{ 'auth.coachedFrequencyQuestion' | translate }}
+          </p>
           <div class="flex flex-wrap gap-2">
             @for (f of frequencies; track f.value) {
-              <ui-chip [clickable]="true" [active]="draftCoachedFrequency() === f.value" (toggled)="draftCoachedFrequency.set(f.value)">{{ f.key | translate }}</ui-chip>
+              <ui-chip
+                [clickable]="true"
+                [active]="draftCoachedFrequency() === f.value"
+                (toggled)="draftCoachedFrequency.set(f.value)"
+                >{{ f.key | translate }}</ui-chip
+              >
             }
           </div>
         }
@@ -241,7 +330,13 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.timeOfDayQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (t of timesOfDayOptions; track t.value) {
-            <ui-chip [clickable]="true" [active]="draftTimesOfDay().includes(t.value)" tone="cobalt" (toggled)="toggleDraftTimeOfDay(t.value)">{{ t.emoji }} {{ t.key | translate }}</ui-chip>
+            <ui-chip
+              [clickable]="true"
+              [active]="draftTimesOfDay().includes(t.value)"
+              tone="cobalt"
+              (toggled)="toggleDraftTimeOfDay(t.value)"
+              >{{ t.emoji }} {{ t.key | translate }}</ui-chip
+            >
           }
         </div>
       </div>
@@ -249,7 +344,13 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.availability' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (a of availabilityOptions; track a.value) {
-            <ui-chip [clickable]="true" [active]="draftAvailability().includes(a.value)" tone="cobalt" (toggled)="toggleDraftAvailability(a.value)">{{ a.key | translate }}</ui-chip>
+            <ui-chip
+              [clickable]="true"
+              [active]="draftAvailability().includes(a.value)"
+              tone="cobalt"
+              (toggled)="toggleDraftAvailability(a.value)"
+              >{{ a.key | translate }}</ui-chip
+            >
           }
         </div>
       </div>
@@ -271,9 +372,16 @@
 
   <div class="mb-10 flex flex-wrap items-center justify-end gap-3 rounded-2xl border border-border bg-card p-5">
     @if (saved()) {
-      <span class="animate-tennis-pop self-center text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+      <span class="animate-tennis-pop self-center text-xs font-semibold text-muted-foreground"
+        >🎾 {{ 'profile.saved' | translate }}</span
+      >
     }
-    <button type="button" (click)="save()" [disabled]="!canSave()" class="cursor-pointer rounded-full bg-lime px-6 py-3 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40">
+    <button
+      type="button"
+      (click)="save()"
+      [disabled]="!canSave()"
+      class="cursor-pointer rounded-full bg-lime px-6 py-3 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
+    >
       {{ 'profile.saveChanges' | translate }}
     </button>
   </div>
@@ -281,10 +389,13 @@
 
 @if (auth.isObserver()) {
   <section>
-    <ui-section-header [eyebrow]="'profile.preferencesEyebrow' | translate" [title]="'profile.howYouPlay' | translate" />
+    <ui-section-header
+      [eyebrow]="'profile.preferencesEyebrow' | translate"
+      [title]="'profile.howYouPlay' | translate"
+    />
     <div class="flex flex-wrap gap-2">
-      <ui-chip tone="lime">{{ ('enums.level.' + draftLevel()) | translate }}</ui-chip>
-      <ui-chip>{{ ('enums.format.' + draftFormat()) | translate }}</ui-chip>
+      <ui-chip tone="lime">{{ 'enums.level.' + draftLevel() | translate }}</ui-chip>
+      <ui-chip>{{ 'enums.format.' + draftFormat() | translate }}</ui-chip>
       <ui-chip>{{ draftSurface() }} {{ 'stats.courts' | translate }}</ui-chip>
       <ui-chip>{{ draftFrequency() }}</ui-chip>
       @for (a of draftAvailability(); track a) {
@@ -293,4 +404,3 @@
     </div>
   </section>
 }
-

@@ -6,7 +6,7 @@ import { Format, Level, Surface } from '../models';
  */
 
 export type Hand = 'Right' | 'Left' | 'Ambidextrous';
-export type Backhand = 'OneHanded' | 'TwoHanded';
+export type Backhand = 'OneHanded' | 'TwoHanded' | 'Unknown';
 export type Gender = 'Male' | 'Female' | 'NonBinary' | 'PreferNotToSay';
 export type PlayStyle = 'AggressiveBaseliner' | 'Counterpuncher' | 'ServeAndVolleyer' | 'AllCourt';
 export type CourtPref = 'Indoor' | 'Outdoor' | 'NoPreference';
@@ -38,7 +38,7 @@ export const FREQUENCIES: TextOption[] = [
   { value: '3–4 times a week', key: 'auth.freq3to4' },
   { value: 'Twice a week', key: 'auth.freqTwice' },
   { value: 'Once a week', key: 'auth.freqOnce' },
-  { value: 'A few times a month', key: 'auth.freqFewMonth' },
+  { value: 'A few times a month', key: 'auth.freqFewMonth' }
 ];
 
 export const AVAILABILITY_OPTIONS: TextOption[] = [
@@ -48,7 +48,7 @@ export const AVAILABILITY_OPTIONS: TextOption[] = [
   { value: 'Late evenings', key: 'auth.availLateEvening' },
   { value: 'Saturdays', key: 'auth.availSaturdays' },
   { value: 'Sunday mornings', key: 'auth.availSundayMorning' },
-  { value: 'Weekends', key: 'auth.availWeekends' },
+  { value: 'Weekends', key: 'auth.availWeekends' }
 ];
 
 export const MAX_DISTANCE_OPTIONS = [5, 10, 20, 50, 100];
@@ -67,42 +67,43 @@ export const COUNTRIES: CountryOption[] = [
   { name: 'USA', flag: '🇺🇸', cities: ['New York'] },
   { name: 'Australia', flag: '🇦🇺', cities: ['Sydney'] },
   { name: 'Brazil', flag: '🇧🇷', cities: ['São Paulo'] },
-  { name: 'Mexico', flag: '🇲🇽', cities: ['Mexico City'] },
+  { name: 'Mexico', flag: '🇲🇽', cities: ['Mexico City'] }
 ];
 
 export const HANDS: ChipOption<Hand>[] = [
   { value: 'Right', emoji: '🫱', key: 'auth.handRight' },
   { value: 'Left', emoji: '🫲', key: 'auth.handLeft' },
-  { value: 'Ambidextrous', emoji: '🤷', key: 'auth.handAmbi' },
+  { value: 'Ambidextrous', emoji: '🤷', key: 'auth.handAmbi' }
 ];
 
 export const BACKHANDS: ChipOption<Backhand>[] = [
   { value: 'OneHanded', emoji: '☝️', key: 'auth.backhandOne' },
   { value: 'TwoHanded', emoji: '✌️', key: 'auth.backhandTwo' },
+  { value: 'Unknown', emoji: '🤷', key: 'auth.backhandUnknown' }
 ];
 
 export const GENDERS: ChipOption<Gender>[] = [
   { value: 'Male', emoji: '👨', key: 'auth.genderMale' },
   { value: 'Female', emoji: '👩', key: 'auth.genderFemale' },
   { value: 'NonBinary', emoji: '🌈', key: 'auth.genderNonBinary' },
-  { value: 'PreferNotToSay', emoji: '🤐', key: 'auth.genderPreferNotToSay' },
+  { value: 'PreferNotToSay', emoji: '🤐', key: 'auth.genderPreferNotToSay' }
 ];
 
 export const PLAY_STYLES: ChipOption<PlayStyle>[] = [
   { value: 'AggressiveBaseliner', emoji: '🔥', key: 'auth.styleAggressiveBaseliner' },
   { value: 'Counterpuncher', emoji: '🛡️', key: 'auth.styleCounterpuncher' },
   { value: 'ServeAndVolleyer', emoji: '⚡', key: 'auth.styleServeVolley' },
-  { value: 'AllCourt', emoji: '🧭', key: 'auth.styleAllCourt' },
+  { value: 'AllCourt', emoji: '🧭', key: 'auth.styleAllCourt' }
 ];
 
 export const COURT_PREFS: ChipOption<CourtPref>[] = [
   { value: 'Indoor', emoji: '🏟️', key: 'enums.indoor' },
   { value: 'Outdoor', emoji: '☀️', key: 'enums.outdoor' },
-  { value: 'NoPreference', emoji: '🤙', key: 'auth.noPreference' },
+  { value: 'NoPreference', emoji: '🤙', key: 'auth.noPreference' }
 ];
 
 export const TIMES_OF_DAY: ChipOption<TimeOfDay>[] = [
   { value: 'Morning', emoji: '☀️', key: 'auth.morning' },
   { value: 'Afternoon', emoji: '🌤️', key: 'auth.afternoon' },
-  { value: 'Evening', emoji: '🌙', key: 'auth.evening' },
+  { value: 'Evening', emoji: '🌙', key: 'auth.evening' }
 ];

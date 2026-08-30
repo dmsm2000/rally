@@ -143,7 +143,9 @@ export class RallyDataService {
     };
     this._matches.update(list => [match, ...list]);
 
-    const location = input.courtId ? this.courtById(input.courtId)?.name ?? '' : `${input.city ?? ''} · ±${input.radiusKm ?? 0}km`;
+    const location = input.courtId
+      ? (this.courtById(input.courtId)?.name ?? '')
+      : `${input.city ?? ''} · ±${input.radiusKm ?? 0}km`;
     const feedItem: FeedItem = {
       id: `feed-${Date.now()}`,
       playerId: this._me().id,

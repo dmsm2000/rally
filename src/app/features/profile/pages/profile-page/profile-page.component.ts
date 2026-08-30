@@ -1,44 +1,54 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ProfileService } from '../../profile.service';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { TranslationService } from '../../../../core/i18n/translation.service';
-import { MatchesService } from '../../../matches/matches.service';
-import { PassportService } from '../../../passport/passport.service';
-import { AvatarComponent, ChipComponent, StatComponent, SectionHeaderComponent } from '../../../../shared/ui';
-import { AvatarPickerComponent, MatchCardComponent } from '../../../../shared/components';
-import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
-import { Format, Level, Surface } from '../../../../core/models';
 import {
-  Backhand,
-  CourtPref,
-  Gender,
-  Hand,
-  PlayStyle,
-  TimeOfDay,
-  LEVELS,
-  FORMATS,
-  SURFACES,
-  FREQUENCIES,
   AVAILABILITY_OPTIONS,
+  Backhand,
+  BACKHANDS,
+  COUNTRIES,
+  COURT_PREFS,
+  CourtPref,
+  FORMATS,
+  FREQUENCIES,
+  Gender,
+  GENDERS,
+  Hand,
+  HANDS,
+  LEVELS,
   MAX_DISTANCE_OPTIONS,
   MAX_YEARS,
-  COUNTRIES,
-  HANDS,
-  BACKHANDS,
-  GENDERS,
   PLAY_STYLES,
-  COURT_PREFS,
-  TIMES_OF_DAY,
+  PlayStyle,
+  SURFACES,
+  TimeOfDay,
+  TIMES_OF_DAY
 } from '../../../../core/data/player-profile-options';
+import { TranslationService } from '../../../../core/i18n/translation.service';
+import { Format, Level, Surface } from '../../../../core/models';
+import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
+import { AvatarPickerComponent, MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { AvatarComponent, ChipComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
+import { MatchesService } from '../../../matches/matches.service';
+import { PassportService } from '../../../passport/passport.service';
+import { ProfileService } from '../../profile.service';
 
 @Component({
   selector: 'rally-profile-page',
-  imports: [FormsModule, RouterLink, AvatarComponent, ChipComponent, StatComponent, SectionHeaderComponent, AvatarPickerComponent, MatchCardComponent, TranslatePipe],
+  imports: [
+    FormsModule,
+    RouterLink,
+    AvatarComponent,
+    ChipComponent,
+    StatComponent,
+    SectionHeaderComponent,
+    AvatarPickerComponent,
+    MatchCardComponent,
+    TranslatePipe
+  ],
   templateUrl: './profile-page.component.html',
-  styleUrl: './profile-page.component.scss',
+  styleUrl: './profile-page.component.scss'
 })
 export class ProfilePageComponent {
   protected readonly profile = inject(ProfileService);
@@ -50,12 +60,14 @@ export class ProfilePageComponent {
 
   private readonly myMatches = computed(() => {
     const meId = this.profile.me().id;
-    return this.matchesService.all().filter((m) => m.playerA === meId || m.playerB === meId);
+    return this.matchesService.all().filter(m => m.playerA === meId || m.playerB === meId);
   });
   protected readonly recentMatches = computed(() => this.myMatches().slice(0, 6));
-  private readonly myCompletedMatches = computed(() => this.myMatches().filter((m) => m.status === 'complete'));
-  private readonly myWins = computed(() => this.myCompletedMatches().filter((m) => m.winner === this.profile.me().id));
-  protected readonly winRatePct = computed(() => (this.myCompletedMatches().length ? Math.round((this.myWins().length / this.myCompletedMatches().length) * 100) : 0));
+  private readonly myCompletedMatches = computed(() => this.myMatches().filter(m => m.status === 'complete'));
+  private readonly myWins = computed(() => this.myCompletedMatches().filter(m => m.winner === this.profile.me().id));
+  protected readonly winRatePct = computed(() =>
+    this.myCompletedMatches().length ? Math.round((this.myWins().length / this.myCompletedMatches().length) * 100) : 0
+  );
   protected readonly winCount = computed(() => this.myWins().length);
   protected readonly completedCount = computed(() => this.myCompletedMatches().length);
 
@@ -118,10 +130,16 @@ export class ProfilePageComponent {
   protected readonly draftAvailability = signal<string[]>(this.profile.me().availability);
   protected readonly draftBio = signal(this.profile.me().bio);
   protected readonly draftAvatarSeed = signal(this.profile.me().avatarSeed ?? this.profile.me().id);
-  protected readonly draftAvatarStyle = signal<AvatarStyleId>((this.profile.me().avatarStyle as AvatarStyleId) ?? AVATAR_STYLES[0]);
+  protected readonly draftAvatarStyle = signal<AvatarStyleId>(
+    (this.profile.me().avatarStyle as AvatarStyleId) ?? AVATAR_STYLES[0]
+  );
 
-  protected readonly availableDraftCities = computed(() => this.countries.find((c) => c.name === this.draftCountry())?.cities ?? []);
-  protected readonly draftFlag = computed(() => this.countries.find((c) => c.name === this.draftCountry())?.flag ?? this.profile.me().flag);
+  protected readonly availableDraftCities = computed(
+    () => this.countries.find(c => c.name === this.draftCountry())?.cities ?? []
+  );
+  protected readonly draftFlag = computed(
+    () => this.countries.find(c => c.name === this.draftCountry())?.flag ?? this.profile.me().flag
+  );
 
   protected readonly canSave = computed(() => this.draftAge() !== null);
 
@@ -140,12 +158,12 @@ export class ProfilePageComponent {
 
   protected toggleDraftAvailability(option: string): void {
     const current = this.draftAvailability();
-    this.draftAvailability.set(current.includes(option) ? current.filter((a) => a !== option) : [...current, option]);
+    this.draftAvailability.set(current.includes(option) ? current.filter(a => a !== option) : [...current, option]);
   }
 
   protected toggleDraftTimeOfDay(option: TimeOfDay): void {
     const current = this.draftTimesOfDay();
-    this.draftTimesOfDay.set(current.includes(option) ? current.filter((t) => t !== option) : [...current, option]);
+    this.draftTimesOfDay.set(current.includes(option) ? current.filter(t => t !== option) : [...current, option]);
   }
 
   protected setDraftCoached(value: boolean): void {
@@ -179,7 +197,7 @@ export class ProfilePageComponent {
       availability: this.draftAvailability(),
       bio: this.draftBio(),
       avatarSeed: this.draftAvatarSeed(),
-      avatarStyle: this.draftAvatarStyle(),
+      avatarStyle: this.draftAvatarStyle()
     });
     this.saved.set(true);
     setTimeout(() => this.saved.set(false), 2000);

@@ -6,7 +6,11 @@
     <h1 class="text-display mt-3 max-w-2xl text-4xl sm:text-6xl">{{ 'matches.title' | translate }}</h1>
     <p class="mt-4 max-w-md text-sm text-bone/80">{{ 'matches.lead' | translate }}</p>
     <div class="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-bone/15 pt-6">
-      <ui-stat size="sm" [value]="matches.communityStats().matchesThisWeek" [label]="'matches.statThisWeek' | translate" />
+      <ui-stat
+        size="sm"
+        [value]="matches.communityStats().matchesThisWeek"
+        [label]="'matches.statThisWeek' | translate"
+      />
       <ui-stat size="sm" [value]="matches.open().length" [label]="'matches.statOpenCount' | translate" />
       <ui-stat size="sm" [value]="matches.openPlayersCount()" [label]="'matches.statOpenPlayers' | translate" />
     </div>
@@ -21,20 +25,45 @@
       <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerSessionType' | translate }}</p>
       <div class="mb-4 flex flex-wrap gap-2">
         @for (t of matches.sessionTypes; track t) {
-          <ui-chip [clickable]="true" [active]="matches.composerSessionType() === t" (toggled)="matches.composerSessionType.set(t)">{{ ('enums.sessionType.' + t) | translate }}</ui-chip>
+          <ui-chip
+            [clickable]="true"
+            [active]="matches.composerSessionType() === t"
+            (toggled)="matches.composerSessionType.set(t)"
+            >{{ 'enums.sessionType.' + t | translate }}</ui-chip
+          >
         }
       </div>
 
       <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerFormat' | translate }}</p>
       <div class="mb-4 flex flex-wrap gap-2">
-        <ui-chip [clickable]="true" [active]="matches.composerFormat() === 'Singles'" (toggled)="matches.composerFormat.set('Singles')">{{ 'enums.format.Singles' | translate }}</ui-chip>
-        <ui-chip [clickable]="true" [active]="matches.composerFormat() === 'Doubles'" (toggled)="matches.composerFormat.set('Doubles')">{{ 'enums.format.Doubles' | translate }}</ui-chip>
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerFormat() === 'Singles'"
+          (toggled)="matches.composerFormat.set('Singles')"
+          >{{ 'enums.format.Singles' | translate }}</ui-chip
+        >
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerFormat() === 'Doubles'"
+          (toggled)="matches.composerFormat.set('Doubles')"
+          >{{ 'enums.format.Doubles' | translate }}</ui-chip
+        >
       </div>
 
       <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerLocation' | translate }}</p>
       <div class="mb-3 flex flex-wrap gap-2">
-        <ui-chip [clickable]="true" [active]="matches.composerLocationMode() === 'court'" (toggled)="matches.composerLocationMode.set('court')">{{ 'matches.composerLocationCourt' | translate }}</ui-chip>
-        <ui-chip [clickable]="true" [active]="matches.composerLocationMode() === 'radius'" (toggled)="matches.composerLocationMode.set('radius')">{{ 'matches.composerLocationArea' | translate }}</ui-chip>
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerLocationMode() === 'court'"
+          (toggled)="matches.composerLocationMode.set('court')"
+          >{{ 'matches.composerLocationCourt' | translate }}</ui-chip
+        >
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerLocationMode() === 'radius'"
+          (toggled)="matches.composerLocationMode.set('radius')"
+          >{{ 'matches.composerLocationArea' | translate }}</ui-chip
+        >
       </div>
 
       @if (matches.composerLocationMode() === 'court') {
@@ -57,7 +86,13 @@
         />
         <div class="mb-4 flex flex-wrap gap-2">
           @for (r of matches.radiusOptions; track r) {
-            <ui-chip [clickable]="true" [active]="matches.composerRadiusKm() === r" tone="cobalt" (toggled)="matches.composerRadiusKm.set(r)">±{{ r }} km</ui-chip>
+            <ui-chip
+              [clickable]="true"
+              [active]="matches.composerRadiusKm() === r"
+              tone="cobalt"
+              (toggled)="matches.composerRadiusKm.set(r)"
+              >±{{ r }} km</ui-chip
+            >
           }
         </div>
       }
@@ -80,7 +115,12 @@
       <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerDuration' | translate }}</p>
       <div class="mb-4 flex flex-wrap gap-2">
         @for (d of matches.durationOptions; track d) {
-          <ui-chip [clickable]="true" [active]="matches.composerDurationMinutes() === d" (toggled)="matches.composerDurationMinutes.set(d)">{{ d }} min</ui-chip>
+          <ui-chip
+            [clickable]="true"
+            [active]="matches.composerDurationMinutes() === d"
+            (toggled)="matches.composerDurationMinutes.set(d)"
+            >{{ d }} min</ui-chip
+          >
         }
       </div>
 
@@ -106,7 +146,9 @@
       @for (m of matches.open(); track m.id) {
         <div class="rounded-2xl border border-dashed border-lime-deep bg-card p-4">
           <div class="flex items-center justify-between gap-2">
-            <span class="text-eyebrow rounded-full bg-lime px-2 py-0.5 text-ink">{{ ('enums.sessionType.' + (m.sessionType ?? 'FullMatch')) | translate }}</span>
+            <span class="text-eyebrow rounded-full bg-lime px-2 py-0.5 text-ink">{{
+              'enums.sessionType.' + (m.sessionType ?? 'FullMatch') | translate
+            }}</span>
             @if (matches.isMine(m.playerA)) {
               <span class="text-eyebrow text-muted-foreground">{{ 'matches.yourPost' | translate }}</span>
             }
@@ -143,7 +185,11 @@
       }
     </div>
   } @else {
-    <ui-empty-state [title]="'matches.emptyTitle' | translate" [body]="'matches.emptyBody' | translate" [action]="'matches.findGame' | translate" />
+    <ui-empty-state
+      [title]="'matches.emptyTitle' | translate"
+      [body]="'matches.emptyBody' | translate"
+      [action]="'matches.findGame' | translate"
+    />
   }
 </section>
 

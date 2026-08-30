@@ -1,0 +1,59 @@
+@if (visible()) {
+  <div class="splash pointer-events-none fixed inset-0 z-[100] flex" [class.splash--fading]="fading()">
+    <div class="relative h-full flex-1 bg-clay">
+      <svg viewBox="0 0 100 220" preserveAspectRatio="none" class="splash-court-lines absolute inset-0 size-full">
+        <rect x="8" y="10" width="84" height="200" />
+        <rect x="20" y="10" width="60" height="200" />
+        <line x1="20" y1="75" x2="80" y2="75" />
+        <line x1="20" y1="145" x2="80" y2="145" />
+        <line x1="50" y1="75" x2="50" y2="145" />
+        <line x1="8" y1="110" x2="92" y2="110" class="splash-court-net" />
+      </svg>
+    </div>
+    <div class="relative h-full flex-1 bg-cobalt">
+      <svg viewBox="0 0 100 220" preserveAspectRatio="none" class="splash-court-lines absolute inset-0 size-full">
+        <rect x="8" y="10" width="84" height="200" />
+        <rect x="20" y="10" width="60" height="200" />
+        <line x1="20" y1="75" x2="80" y2="75" />
+        <line x1="20" y1="145" x2="80" y2="145" />
+        <line x1="50" y1="75" x2="50" y2="145" />
+        <line x1="8" y1="110" x2="92" y2="110" class="splash-court-net" />
+      </svg>
+    </div>
+    <div class="relative h-full flex-1 bg-lime">
+      <svg viewBox="0 0 100 220" preserveAspectRatio="none" class="splash-court-lines absolute inset-0 size-full">
+        <rect x="8" y="10" width="84" height="200" />
+        <rect x="20" y="10" width="60" height="200" />
+        <line x1="20" y1="75" x2="80" y2="75" />
+        <line x1="20" y1="145" x2="80" y2="145" />
+        <line x1="50" y1="75" x2="50" y2="145" />
+        <line x1="8" y1="110" x2="92" y2="110" class="splash-court-net" />
+      </svg>
+    </div>
+
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
+      <div class="splash-stage relative size-56">
+        <div class="absolute inset-0 rounded-full bg-ink/75"></div>
+        <svg viewBox="0 0 224 224" class="absolute inset-0 size-full">
+          <path d="M100.8 39.2A72.8 72.8 0 1 1 100.7 39.2Z" pathLength="100" class="splash-logo-world" />
+          <path
+            d="M36.4 77.28C72.8 95.2 98 126 106.4 176.4"
+            pathLength="100"
+            class="splash-logo-mountain splash-logo-mountain--a"
+          />
+          <path
+            d="M124.32 145.6C126 112 140 86.8 165.2 67.2"
+            pathLength="100"
+            class="splash-logo-mountain splash-logo-mountain--b"
+          />
+          <circle cx="184.8" cy="44.8" r="22.4" class="splash-logo-sun" />
+        </svg>
+        <!-- Each ball travels the exact same path as the shape it's drawing, one after another: world, then each mountain. -->
+        <span class="splash-ball splash-ball--world absolute" aria-hidden="true">🎾</span>
+        <span class="splash-ball splash-ball--mountain-a absolute" aria-hidden="true">🎾</span>
+        <span class="splash-ball splash-ball--mountain-b absolute" aria-hidden="true">🎾</span>
+      </div>
+      <p class="splash-wordmark text-display text-3xl text-bone">Rally</p>
+    </div>
+  </div>
+}

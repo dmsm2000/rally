@@ -329,6 +329,7 @@ export const en = {
     backhandQuestion: 'One-handed or two-handed backhand?',
     backhandOne: 'One hand',
     backhandTwo: 'Two hands',
+    backhandUnknown: "Don't know",
     levelHint: "It's just your own read on it — nobody's checking your ranking.",
     styleQuestion: 'How would you describe yourself on court?',
     styleHint: "Gut feeling is fine, there's no wrong answer.",

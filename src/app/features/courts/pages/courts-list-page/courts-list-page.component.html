@@ -78,8 +78,12 @@
       </div>
 
       <div class="mt-3 flex flex-wrap items-center gap-2">
-        <ui-chip [clickable]="true" [active]="!courts.composerIndoor()" (toggled)="courts.composerIndoor.set(false)">{{ 'enums.outdoor' | translate }}</ui-chip>
-        <ui-chip [clickable]="true" [active]="courts.composerIndoor()" (toggled)="courts.composerIndoor.set(true)">{{ 'enums.indoor' | translate }}</ui-chip>
+        <ui-chip [clickable]="true" [active]="!courts.composerIndoor()" (toggled)="courts.composerIndoor.set(false)">{{
+          'enums.outdoor' | translate
+        }}</ui-chip>
+        <ui-chip [clickable]="true" [active]="courts.composerIndoor()" (toggled)="courts.composerIndoor.set(true)">{{
+          'enums.indoor' | translate
+        }}</ui-chip>
       </div>
 
       @if (courts.composerPhotoUrl()) {
@@ -96,7 +100,9 @@
       }
 
       <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:bg-muted">
+        <label
+          class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
+        >
           📷 {{ 'courts.composerPhoto' | translate }}
           <input type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)" />
         </label>
@@ -128,20 +134,31 @@
   @for (s of courts.surfaces; track s) {
     <ui-chip [clickable]="true" [active]="courts.surface() === s" (toggled)="courts.toggleSurface(s)">{{ s }}</ui-chip>
   }
-  <ui-chip [clickable]="true" [active]="courts.indoor() === true" (toggled)="courts.toggleIndoor(true)">{{ 'enums.indoor' | translate }}</ui-chip>
-  <ui-chip [clickable]="true" [active]="courts.indoor() === false" (toggled)="courts.toggleIndoor(false)">{{ 'enums.outdoor' | translate }}</ui-chip>
+  <ui-chip [clickable]="true" [active]="courts.indoor() === true" (toggled)="courts.toggleIndoor(true)">{{
+    'enums.indoor' | translate
+  }}</ui-chip>
+  <ui-chip [clickable]="true" [active]="courts.indoor() === false" (toggled)="courts.toggleIndoor(false)">{{
+    'enums.outdoor' | translate
+  }}</ui-chip>
 </div>
 
 <section class="mb-8 grid gap-4 sm:grid-cols-3">
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="courts.countriesWithCourts()" [label]="'courts.countriesWithCourts' | translate" /></div>
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="courts.averageRating()" [label]="'courts.averageRating' | translate" /></div>
-  <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="courts.averagePlayAgain() + '%'" [label]="'courts.wouldPlayAgainStat' | translate" /></div>
+  <div class="rounded-2xl border border-border bg-card p-5">
+    <ui-stat [value]="courts.countriesWithCourts()" [label]="'courts.countriesWithCourts' | translate" />
+  </div>
+  <div class="rounded-2xl border border-border bg-card p-5">
+    <ui-stat [value]="courts.averageRating()" [label]="'courts.averageRating' | translate" />
+  </div>
+  <div class="rounded-2xl border border-border bg-card p-5">
+    <ui-stat [value]="courts.averagePlayAgain() + '%'" [label]="'courts.wouldPlayAgainStat' | translate" />
+  </div>
 </section>
 
-<p class="text-eyebrow mb-4 text-muted-foreground">{{ courts.results().length }} {{ 'courts.resultsSuffix' | translate }}</p>
+<p class="text-eyebrow mb-4 text-muted-foreground">
+  {{ courts.results().length }} {{ 'courts.resultsSuffix' | translate }}
+</p>
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
   @for (c of courts.results(); track c.id) {
     <rally-court-card [court]="c" />
   }
 </div>
-

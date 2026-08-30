@@ -2,46 +2,53 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { ThemeService } from '../../../../core/theme/theme.service';
-import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
-import { Format, Level, Surface } from '../../../../core/models';
 import {
-  Backhand,
-  CourtPref,
-  Gender,
-  Hand,
-  PlayStyle,
-  TimeOfDay,
-  LEVELS,
-  FORMATS,
-  SURFACES,
-  FREQUENCIES,
   AVAILABILITY_OPTIONS,
+  Backhand,
+  BACKHANDS,
+  COUNTRIES,
+  COURT_PREFS,
+  CourtPref,
+  FORMATS,
+  FREQUENCIES,
+  Gender,
+  GENDERS,
+  Hand,
+  HANDS,
+  LEVELS,
   MAX_DISTANCE_OPTIONS,
   MAX_YEARS,
-  COUNTRIES,
-  HANDS,
-  BACKHANDS,
-  GENDERS,
   PLAY_STYLES,
-  COURT_PREFS,
-  TIMES_OF_DAY,
+  PlayStyle,
+  SURFACES,
+  TimeOfDay,
+  TIMES_OF_DAY
 } from '../../../../core/data/player-profile-options';
-import { ChipComponent } from '../../../../shared/ui';
-import { LanguageSwitcherComponent, ThemeToggleComponent, AvatarPickerComponent } from '../../../../shared/components';
+import { Format, Level, Surface } from '../../../../core/models';
+import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
+import { ThemeService } from '../../../../core/theme/theme.service';
+import { AvatarPickerComponent, LanguageSwitcherComponent, ThemeToggleComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { ChipComponent } from '../../../../shared/ui';
 
 interface RegisterStep {
   label: string;
   tagline: string;
 }
 
-
 @Component({
   selector: 'rally-register-page',
-  imports: [FormsModule, RouterLink, ChipComponent, LanguageSwitcherComponent, ThemeToggleComponent, AvatarPickerComponent, TranslatePipe],
+  imports: [
+    FormsModule,
+    RouterLink,
+    ChipComponent,
+    LanguageSwitcherComponent,
+    ThemeToggleComponent,
+    AvatarPickerComponent,
+    TranslatePipe
+  ],
   templateUrl: './register-page.component.html',
-  styleUrl: './register-page.component.scss',
+  styleUrl: './register-page.component.scss'
 })
 export class RegisterPageComponent {
   private readonly auth = inject(AuthService);
@@ -68,7 +75,7 @@ export class RegisterPageComponent {
     { label: 'auth.steps.location', tagline: 'auth.taglines.location' },
     { label: 'auth.steps.game', tagline: 'auth.taglines.game' },
     { label: 'auth.steps.schedule', tagline: 'auth.taglines.schedule' },
-    { label: 'auth.steps.finish', tagline: 'auth.taglines.finish' },
+    { label: 'auth.steps.finish', tagline: 'auth.taglines.finish' }
   ];
 
   protected readonly step = signal(0);
@@ -101,18 +108,27 @@ export class RegisterPageComponent {
 
   private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  protected readonly passwordsMismatch = computed(() => this.confirmPassword().length > 0 && this.password() !== this.confirmPassword());
+  protected readonly passwordsMismatch = computed(
+    () => this.confirmPassword().length > 0 && this.password() !== this.confirmPassword()
+  );
 
-  protected readonly availableCities = computed(() => this.countries.find((c) => c.name === this.country())?.cities ?? []);
+  protected readonly availableCities = computed(
+    () => this.countries.find(c => c.name === this.country())?.cities ?? []
+  );
 
   protected readonly canContinue = computed(() => {
     switch (this.step()) {
       case 0:
-        return this.name().trim().length > 1 && this.emailPattern.test(this.email()) && this.password().length >= 6 && this.password() === this.confirmPassword();
+        return (
+          this.name().trim().length > 1 &&
+          this.emailPattern.test(this.email()) &&
+          this.password().length >= 6 &&
+          this.password() === this.confirmPassword()
+        );
       case 1:
         return this.age() !== null;
       case 2:
-        return this.country().length > 0 && this.city().length > 0;
+        return this.country().length > 0 && this.city().length > 0 && this.maxDistanceKm() !== null;
       case 3:
         return !!this.level() && this.years() !== null;
       case 4:
@@ -137,12 +153,12 @@ export class RegisterPageComponent {
 
   protected toggleAvailability(option: string): void {
     const current = this.availability();
-    this.availability.set(current.includes(option) ? current.filter((a) => a !== option) : [...current, option]);
+    this.availability.set(current.includes(option) ? current.filter(a => a !== option) : [...current, option]);
   }
 
   protected toggleTimeOfDay(option: TimeOfDay): void {
     const current = this.timesOfDay();
-    this.timesOfDay.set(current.includes(option) ? current.filter((t) => t !== option) : [...current, option]);
+    this.timesOfDay.set(current.includes(option) ? current.filter(t => t !== option) : [...current, option]);
   }
 
   protected setCoached(value: boolean): void {
@@ -156,14 +172,14 @@ export class RegisterPageComponent {
     if (this.canContinue() && this.step() < this.steps.length - 1) {
       const nextStep = this.step() + 1;
       if (nextStep === this.steps.length - 1) {
-        this.avatarSeed.update((seed) => (seed === 'rally-player' ? this.name().trim() || seed : seed));
+        this.avatarSeed.update(seed => (seed === 'rally-player' ? this.name().trim() || seed : seed));
       }
       this.step.set(nextStep);
     }
   }
 
   protected back(): void {
-    this.step.update((s) => Math.max(0, s - 1));
+    this.step.update(s => Math.max(0, s - 1));
   }
 
   protected onSubmit(): void {
@@ -192,7 +208,7 @@ export class RegisterPageComponent {
       availability: this.availability(),
       bio: this.bio(),
       avatarSeed: this.avatarSeed(),
-      avatarStyle: this.avatarStyle(),
+      avatarStyle: this.avatarStyle()
     });
     this.router.navigateByUrl('/');
   }

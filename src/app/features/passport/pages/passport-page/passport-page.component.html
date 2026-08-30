@@ -3,12 +3,20 @@
   <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/85 to-ink/40"></div>
   <div class="court-grid-ink relative p-6 sm:p-10">
     <p class="text-eyebrow text-bone/60">{{ 'passport.eyebrow' | translate }}</p>
-    <h1 class="text-display mt-3 text-5xl sm:text-7xl">{{ 'passport.titleLine1' | translate }}<br /><span class="text-lime">{{ 'passport.titleLine2' | translate }}</span></h1>
+    <h1 class="text-display mt-3 text-5xl sm:text-7xl">
+      {{ 'passport.titleLine1' | translate }}<br /><span class="text-lime">{{
+        'passport.titleLine2' | translate
+      }}</span>
+    </h1>
     <div class="mt-10 grid grid-cols-2 gap-6 border-t border-bone/15 pt-8 sm:grid-cols-4">
       <ui-stat size="lg" [value]="passport.visitedCountries().length" [label]="'stats.countries' | translate" />
       <ui-stat size="lg" [value]="passport.visitedCourts().length" [label]="'stats.courts' | translate" />
       <ui-stat size="lg" [value]="passport.playersMet().length" [label]="'stats.playersMet' | translate" />
-      <ui-stat size="lg" [value]="passport.unlockedAchievements().length + '/' + passport.achievements().length" [label]="'achievements.unlockedStat' | translate" />
+      <ui-stat
+        size="lg"
+        [value]="passport.unlockedAchievements().length + '/' + passport.achievements().length"
+        [label]="'achievements.unlockedStat' | translate"
+      />
     </div>
   </div>
 </section>
@@ -19,7 +27,11 @@
       type="button"
       (click)="passport.selectTab(t)"
       class="shrink-0 px-1 pb-3 text-sm font-semibold whitespace-nowrap transition-colors"
-      [class]="passport.activeTab() === t ? 'border-b-2 border-lime-deep text-foreground' : 'text-muted-foreground hover:text-foreground'"
+      [class]="
+        passport.activeTab() === t
+          ? 'border-b-2 border-lime-deep text-foreground'
+          : 'text-muted-foreground hover:text-foreground'
+      "
     >
       {{ t | translate }}
     </button>
@@ -30,12 +42,18 @@
   @case ('passport.tabOverview') {
     @if (passport.nextAchievement(); as next) {
       <section class="mb-10 flex items-center gap-4 rounded-2xl border border-dashed border-lime-deep bg-card p-5">
-        <span class="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-lg grayscale">{{ next.icon }}</span>
+        <span
+          class="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-lg grayscale"
+          >{{ next.icon }}</span
+        >
         <div class="min-w-0 flex-1">
           <p class="text-eyebrow text-muted-foreground">{{ 'passport.almostThere' | translate }}</p>
           <p class="font-display text-sm font-extrabold tracking-tight uppercase">{{ next.name }}</p>
           <div class="mt-2 h-1.5 max-w-xs overflow-hidden rounded-full bg-muted">
-            <div class="h-full rounded-full bg-lime-deep" [style.width.%]="(next.progress ?? 0) / (next.goal ?? 1) * 100"></div>
+            <div
+              class="h-full rounded-full bg-lime-deep"
+              [style.width.%]="((next.progress ?? 0) / (next.goal ?? 1)) * 100"
+            ></div>
           </div>
         </div>
         <p class="text-eyebrow shrink-0 text-muted-foreground">{{ next.progress }} / {{ next.goal }}</p>
@@ -43,23 +61,41 @@
     }
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <button type="button" (click)="passport.selectTab('passport.tabCountries')" class="cursor-pointer rounded-2xl border border-border bg-card p-5 text-left transition-transform hover:-translate-y-0.5">
+      <button
+        type="button"
+        (click)="passport.selectTab('passport.tabCountries')"
+        class="cursor-pointer rounded-2xl border border-border bg-card p-5 text-left transition-transform hover:-translate-y-0.5"
+      >
         <p class="text-stat text-3xl">{{ passport.visitedCountries().length }}</p>
         <p class="text-eyebrow mt-1 text-muted-foreground">{{ 'passport.countriesPlayed' | translate }}</p>
         <p class="mt-4 text-xs font-bold text-foreground">{{ 'passport.viewAll' | translate }} →</p>
       </button>
-      <button type="button" (click)="passport.selectTab('passport.tabCourts')" class="cursor-pointer rounded-2xl border border-border bg-card p-5 text-left transition-transform hover:-translate-y-0.5">
+      <button
+        type="button"
+        (click)="passport.selectTab('passport.tabCourts')"
+        class="cursor-pointer rounded-2xl border border-border bg-card p-5 text-left transition-transform hover:-translate-y-0.5"
+      >
         <p class="text-stat text-3xl">{{ passport.visitedCourts().length }}</p>
         <p class="text-eyebrow mt-1 text-muted-foreground">{{ 'passport.courtsInPassport' | translate }}</p>
         <p class="mt-4 text-xs font-bold text-foreground">{{ 'passport.viewAll' | translate }} →</p>
       </button>
-      <button type="button" (click)="passport.selectTab('passport.tabPlayers')" class="cursor-pointer rounded-2xl border border-border bg-card p-5 text-left transition-transform hover:-translate-y-0.5">
+      <button
+        type="button"
+        (click)="passport.selectTab('passport.tabPlayers')"
+        class="cursor-pointer rounded-2xl border border-border bg-card p-5 text-left transition-transform hover:-translate-y-0.5"
+      >
         <p class="text-stat text-3xl">{{ passport.playersMet().length }}</p>
         <p class="text-eyebrow mt-1 text-muted-foreground">{{ 'passport.playersMetTitle' | translate }}</p>
         <p class="mt-4 text-xs font-bold text-foreground">{{ 'passport.viewAll' | translate }} →</p>
       </button>
-      <button type="button" (click)="passport.selectTab('passport.tabAchievements')" class="cursor-pointer rounded-2xl border border-border bg-card p-5 text-left transition-transform hover:-translate-y-0.5">
-        <p class="text-stat text-3xl">{{ passport.unlockedAchievements().length }}/{{ passport.achievements().length }}</p>
+      <button
+        type="button"
+        (click)="passport.selectTab('passport.tabAchievements')"
+        class="cursor-pointer rounded-2xl border border-border bg-card p-5 text-left transition-transform hover:-translate-y-0.5"
+      >
+        <p class="text-stat text-3xl">
+          {{ passport.unlockedAchievements().length }}/{{ passport.achievements().length }}
+        </p>
         <p class="text-eyebrow mt-1 text-muted-foreground">{{ 'achievements.title' | translate }}</p>
         <p class="mt-4 text-xs font-bold text-foreground">{{ 'passport.viewAll' | translate }} →</p>
       </button>
@@ -68,14 +104,19 @@
 
   @case ('passport.tabCountries') {
     <section class="mb-14">
-      <ui-section-header [eyebrow]="'passport.stampedEyebrow' | translate" [title]="'passport.countriesPlayed' | translate" />
+      <ui-section-header
+        [eyebrow]="'passport.stampedEyebrow' | translate"
+        [title]="'passport.countriesPlayed' | translate"
+      />
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         @for (c of passport.visitedCountries(); track c.name) {
           <div class="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
             <span class="text-3xl">{{ c.flag }}</span>
             <div class="flex-1">
               <p class="font-display text-base font-extrabold tracking-tight uppercase">{{ c.name }}</p>
-              <p class="text-xs text-muted-foreground">{{ 'passport.firstPlayed' | translate:{ courts: c.courts, date: c.firstPlayed ?? '' } }}</p>
+              <p class="text-xs text-muted-foreground">
+                {{ 'passport.firstPlayed' | translate: { courts: c.courts, date: c.firstPlayed ?? '' } }}
+              </p>
             </div>
             <span class="text-eyebrow text-win">✓</span>
           </div>
@@ -84,13 +125,18 @@
     </section>
 
     <section>
-      <ui-section-header [eyebrow]="'passport.lockedEyebrow' | translate" [title]="'passport.stillToPlay' | translate" />
+      <ui-section-header
+        [eyebrow]="'passport.lockedEyebrow' | translate"
+        [title]="'passport.stillToPlay' | translate"
+      />
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         @for (c of passport.lockedCountries(); track c.name) {
           <div class="flex items-center gap-4 rounded-2xl border border-dashed border-border p-4">
             <span class="text-3xl opacity-40 grayscale">{{ c.flag }}</span>
             <div class="flex-1">
-              <p class="font-display text-base font-extrabold tracking-tight text-muted-foreground uppercase">{{ c.name }}</p>
+              <p class="font-display text-base font-extrabold tracking-tight text-muted-foreground uppercase">
+                {{ c.name }}
+              </p>
               <p class="text-xs text-muted-foreground">{{ 'passport.oneMatchUnlocks' | translate }}</p>
             </div>
             <span class="text-eyebrow text-muted-foreground">🔒</span>
@@ -102,7 +148,12 @@
 
   @case ('passport.tabCourts') {
     <section>
-      <ui-section-header [eyebrow]="'passport.collectionEyebrow' | translate" [title]="'passport.courtsInPassport' | translate" [action]="'passport.allCourts' | translate" to="/courts" />
+      <ui-section-header
+        [eyebrow]="'passport.collectionEyebrow' | translate"
+        [title]="'passport.courtsInPassport' | translate"
+        [action]="'passport.allCourts' | translate"
+        to="/courts"
+      />
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         @for (c of passport.visitedCourts(); track c.id) {
           <div class="overflow-hidden rounded-2xl border border-border bg-card">
@@ -119,7 +170,10 @@
 
   @case ('passport.tabPlayers') {
     <section>
-      <ui-section-header [eyebrow]="'passport.playersMetEyebrow' | translate" [title]="'passport.playersMetTitle' | translate" />
+      <ui-section-header
+        [eyebrow]="'passport.playersMetEyebrow' | translate"
+        [title]="'passport.playersMetTitle' | translate"
+      />
       @if (passport.playersMet().length) {
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           @for (p of passport.playersMet(); track p.id) {
@@ -134,7 +188,10 @@
 
   @case ('passport.tabAchievements') {
     <section class="mb-14">
-      <ui-section-header [eyebrow]="'achievements.earnedEyebrow' | translate" [title]="'achievements.unlockedTitle' | translate" />
+      <ui-section-header
+        [eyebrow]="'achievements.earnedEyebrow' | translate"
+        [title]="'achievements.unlockedTitle' | translate"
+      />
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         @for (a of passport.unlockedAchievements(); track a.id) {
           <rally-achievement-card [achievement]="a" />
@@ -143,7 +200,10 @@
     </section>
 
     <section>
-      <ui-section-header [eyebrow]="'achievements.inProgressEyebrow' | translate" [title]="'achievements.nextUp' | translate" />
+      <ui-section-header
+        [eyebrow]="'achievements.inProgressEyebrow' | translate"
+        [title]="'achievements.nextUp' | translate"
+      />
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         @for (a of passport.lockedAchievements(); track a.id) {
           <rally-achievement-card [achievement]="a" />
@@ -153,4 +213,3 @@
     </section>
   }
 }
-

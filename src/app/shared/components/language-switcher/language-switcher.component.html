@@ -7,14 +7,22 @@
     [attr.aria-expanded]="open()"
   >
     <span class="text-base leading-none">{{ flags[i18n.locale()] }}</span>
-    <span>{{ labels[i18n.locale()] }}</span>
+    <span class="hidden sm:inline">{{ labels[i18n.locale()] }}</span>
     <svg viewBox="0 0 20 20" class="size-3" fill="none" aria-hidden="true">
-      <path d="M5 7.5 10 12.5 15 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      <path
+        d="M5 7.5 10 12.5 15 7.5"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
     </svg>
   </button>
 
   @if (open()) {
-    <div class="absolute top-full right-0 z-50 mt-1.5 w-max min-w-full overflow-hidden rounded-2xl border border-border bg-card p-1 shadow-lg">
+    <div
+      class="absolute top-full right-0 z-50 mt-1.5 w-max min-w-full overflow-hidden rounded-2xl border border-border bg-card p-1 shadow-lg"
+    >
       @for (locale of i18n.locales; track locale) {
         <button
           type="button"

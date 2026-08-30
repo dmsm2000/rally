@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { CourtsRepository } from './data/courts.repository';
 import { Surface } from '../../core/models';
+import { CourtsRepository } from './data/courts.repository';
 
 /** Owns the search/filter state for court discovery. */
 @Injectable({ providedIn: 'root' })
@@ -20,9 +20,9 @@ export class CourtsService {
     const surface = this.surface();
     const indoor = this.indoor();
     return this.all()
-      .filter((c) => (query ? `${c.name} ${c.city} ${c.country}`.toLowerCase().includes(query) : true))
-      .filter((c) => (surface ? c.surface === surface : true))
-      .filter((c) => (indoor === null ? true : c.indoor === indoor));
+      .filter(c => (query ? `${c.name} ${c.city} ${c.country}`.toLowerCase().includes(query) : true))
+      .filter(c => (surface ? c.surface === surface : true))
+      .filter(c => (indoor === null ? true : c.indoor === indoor));
   });
 
   // Community-wide totals for the hero banner — the stats row below (after the filters) reacts to search/filters instead.
@@ -38,7 +38,7 @@ export class CourtsService {
   });
 
   // These react to the active search/filters, since they sit right below them and describe the current results.
-  readonly countriesWithCourts = computed(() => new Set(this.results().map((c) => c.country)).size);
+  readonly countriesWithCourts = computed(() => new Set(this.results().map(c => c.country)).size);
   readonly averageRating = computed(() => {
     const list = this.results();
     return list.length ? Math.round((list.reduce((sum, c) => sum + c.rating, 0) / list.length) * 10) / 10 : 0;
@@ -67,7 +67,9 @@ export class CourtsService {
   readonly composerHours = signal('');
   readonly composerPhotoUrl = signal<string | null>(null);
 
-  readonly canPublishCourt = computed(() => this.composerName().trim().length > 0 && this.composerCity().trim().length > 0);
+  readonly canPublishCourt = computed(
+    () => this.composerName().trim().length > 0 && this.composerCity().trim().length > 0
+  );
 
   // Reads the picked photo locally (no upload backend yet) and previews it as a data URL.
   attachPhoto(file: File): void {

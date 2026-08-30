@@ -1,10 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CourtsService } from '../../courts.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { StatComponent, ChipComponent } from '../../../../shared/ui';
 import { CourtCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { ChipComponent, StatComponent } from '../../../../shared/ui';
+import { CourtsService } from '../../courts.service';
 
 @Component({
   selector: 'rally-courts-list-page',

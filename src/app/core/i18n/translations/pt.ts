@@ -332,6 +332,7 @@ export const pt = {
     backhandQuestion: 'Backhand de uma mão ou de duas?',
     backhandOne: 'Uma mão',
     backhandTwo: 'Duas mãos',
+    backhandUnknown: 'Não sei',
     levelHint: 'É só a tua sensação — ninguém vai verificar o teu ranking.',
     styleQuestion: 'Como te descreverias em campo?',
     styleHint: 'Vale ir pelo instinto, não há resposta errada.',

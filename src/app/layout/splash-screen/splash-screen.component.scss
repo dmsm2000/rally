@@ -1,0 +1,126 @@
+:host {
+  display: contents;
+}
+
+.splash {
+  transition: opacity 0.5s ease;
+
+  &--fading {
+    opacity: 0;
+  }
+}
+
+// Abstract court line markings, stretched to fill each panel (not meant to be geometrically exact).
+.splash-court-lines {
+  fill: none;
+  stroke: var(--bone);
+  stroke-opacity: 0.4;
+  stroke-width: 1.5;
+}
+
+.splash-court-net {
+  stroke-opacity: 0.6;
+  stroke-dasharray: 3 3;
+}
+
+.splash-ball {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  font-size: 1.5rem;
+  line-height: 1;
+  offset-rotate: 0deg;
+  offset-distance: 0%;
+  filter: drop-shadow(0 4px 4px oklch(0 0 0 / 0.4));
+  opacity: 0;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+    opacity: 0;
+  }
+}
+
+// Each ball rides along the exact same path its shape draws, so the bounce is literally what traces the logo.
+.splash-ball--world {
+  offset-path: path('M100.8 39.2A72.8 72.8 0 1 1 100.7 39.2Z');
+  animation: splash-ball-ride 0.9s linear both;
+}
+
+.splash-ball--mountain-a {
+  offset-path: path('M36.4 77.28C72.8 95.2 98 126 106.4 176.4');
+  animation: splash-ball-ride 0.4s linear 0.9s both;
+}
+
+.splash-ball--mountain-b {
+  offset-path: path('M124.32 145.6C126 112 140 86.8 165.2 67.2');
+  animation: splash-ball-ride 0.4s linear 1.3s both;
+}
+
+.splash-logo-world,
+.splash-logo-mountain {
+  fill: none;
+  stroke: var(--bone);
+  stroke-width: 16.8;
+  stroke-linecap: round;
+  // Gap (200) is longer than the path (100 via pathLength) so the whole hidden path sits mid-gap, not straddling the dash/gap edge.
+  stroke-dasharray: 100 200;
+}
+
+// Drawn in perfect lockstep with its ball (same duration/delay/linear timing) — the line only exists where the ball has been.
+.splash-logo-world {
+  animation: splash-draw 0.9s linear both;
+}
+
+.splash-logo-mountain--a {
+  animation: splash-draw 0.4s linear 0.9s both;
+}
+
+.splash-logo-mountain--b {
+  animation: splash-draw 0.4s linear 1.3s both;
+}
+
+.splash-logo-sun {
+  fill: var(--lime);
+  opacity: 0;
+  transform-origin: 184.8px 44.8px;
+  animation: tennis-pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) 1.7s both;
+}
+
+.splash-wordmark {
+  opacity: 0;
+  animation: rally-rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) 1.75s both;
+}
+
+@keyframes splash-draw {
+  0% {
+    stroke-dashoffset: 150;
+  }
+  // Snaps straight to the reveal's starting point so the visible progress tracks the ball's constant speed for the whole animation,
+  // instead of spending the first third invisible before "catching up" — that's what made the ball look faster than the line.
+  3% {
+    stroke-dashoffset: 100;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+// Sits invisible at the start of its path until its turn, rides to the end, then hands off to the next ball.
+@keyframes splash-ball-ride {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  92% {
+    offset-distance: 92%;
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}

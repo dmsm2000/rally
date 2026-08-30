@@ -2,7 +2,11 @@
   <div class="mx-auto max-w-xl">
     <div class="mb-10 flex items-center justify-between gap-3">
       <a routerLink="/" class="inline-flex items-center gap-2 text-foreground" aria-label="Rally home">
-        <img [src]="theme.theme() === 'dark' ? '/assets/rally-logo-white.svg' : '/assets/rally-logo.svg'" alt="" class="size-7" />
+        <img
+          [src]="theme.theme() === 'dark' ? '/assets/rally-logo-white.svg' : '/assets/rally-logo.svg'"
+          alt=""
+          class="size-7"
+        />
         <span class="text-display text-xl leading-none">Rally</span>
       </a>
       <div class="flex items-center gap-2">
@@ -17,10 +21,15 @@
 
     <div class="mt-8 mb-2 flex items-center gap-2">
       @for (s of steps; track s.label; let i = $index) {
-        <div class="h-1.5 flex-1 rounded-full transition-colors" [class]="i <= step() ? 'bg-lime-deep' : 'bg-muted'"></div>
+        <div
+          class="h-1.5 flex-1 rounded-full transition-colors"
+          [class]="i <= step() ? 'bg-lime-deep' : 'bg-muted'"
+        ></div>
       }
     </div>
-    <p class="text-eyebrow mb-1 text-muted-foreground">{{ 'auth.stepOf' | translate:{ step: step() + 1, total: steps.length } }} · {{ steps[step()].label | translate }}</p>
+    <p class="text-eyebrow mb-1 text-muted-foreground">
+      {{ 'auth.stepOf' | translate: { step: step() + 1, total: steps.length } }} · {{ steps[step()].label | translate }}
+    </p>
     <p class="mb-6 text-sm text-muted-foreground">{{ steps[step()].tagline | translate }}</p>
 
     <form class="rounded-3xl border border-border bg-card p-6 sm:p-8" (ngSubmit)="onSubmit()">
@@ -28,7 +37,9 @@
         @case (0) {
           <div class="space-y-5">
             <label class="block">
-              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.name' | translate }}</span>
+              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                >* {{ 'auth.name' | translate }}</span
+              >
               <input
                 [ngModel]="name()"
                 (ngModelChange)="name.set($event)"
@@ -40,7 +51,9 @@
               />
             </label>
             <label class="block">
-              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.email' | translate }}</span>
+              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                >* {{ 'auth.email' | translate }}</span
+              >
               <input
                 [ngModel]="email()"
                 (ngModelChange)="email.set($event)"
@@ -52,7 +65,9 @@
               />
             </label>
             <label class="block">
-              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.password' | translate }}</span>
+              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                >* {{ 'auth.password' | translate }}</span
+              >
               <input
                 [ngModel]="password()"
                 (ngModelChange)="password.set($event)"
@@ -63,7 +78,9 @@
               />
             </label>
             <label class="block">
-              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.confirmPassword' | translate }}</span>
+              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                >* {{ 'auth.confirmPassword' | translate }}</span
+              >
               <input
                 [ngModel]="confirmPassword()"
                 (ngModelChange)="confirmPassword.set($event)"
@@ -73,7 +90,9 @@
                 class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
               />
               @if (passwordsMismatch()) {
-                <span class="mt-1.5 block text-xs font-semibold text-loss">{{ 'auth.passwordMismatch' | translate }}</span>
+                <span class="mt-1.5 block text-xs font-semibold text-loss">{{
+                  'auth.passwordMismatch' | translate
+                }}</span>
               }
             </label>
           </div>
@@ -81,7 +100,9 @@
         @case (1) {
           <div class="space-y-6">
             <label class="block max-w-[160px]">
-              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.age' | translate }}</span>
+              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                >* {{ 'auth.age' | translate }}</span
+              >
               <input
                 [ngModel]="age()"
                 (ngModelChange)="age.set($event)"
@@ -97,7 +118,9 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.genderQuestion' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (g of genders; track g.value) {
-                  <ui-chip [clickable]="true" [active]="gender() === g.value" (toggled)="gender.set(g.value)">{{ g.emoji }} {{ g.key | translate }}</ui-chip>
+                  <ui-chip [clickable]="true" [active]="gender() === g.value" (toggled)="gender.set(g.value)"
+                    >{{ g.emoji }} {{ g.key | translate }}</ui-chip
+                  >
                 }
               </div>
             </div>
@@ -105,7 +128,12 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.dominantHand' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (h of hands; track h.value) {
-                  <ui-chip [clickable]="true" [active]="dominantHand() === h.value" (toggled)="dominantHand.set(h.value)">{{ h.emoji }} {{ h.key | translate }}</ui-chip>
+                  <ui-chip
+                    [clickable]="true"
+                    [active]="dominantHand() === h.value"
+                    (toggled)="dominantHand.set(h.value)"
+                    >{{ h.emoji }} {{ h.key | translate }}</ui-chip
+                  >
                 }
               </div>
             </div>
@@ -113,7 +141,9 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.backhandQuestion' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (b of backhands; track b.value) {
-                  <ui-chip [clickable]="true" [active]="backhand() === b.value" (toggled)="backhand.set(b.value)">{{ b.emoji }} {{ b.key | translate }}</ui-chip>
+                  <ui-chip [clickable]="true" [active]="backhand() === b.value" (toggled)="backhand.set(b.value)"
+                    >{{ b.emoji }} {{ b.key | translate }}</ui-chip
+                  >
                 }
               </div>
             </div>
@@ -122,7 +152,9 @@
         @case (2) {
           <div class="space-y-5">
             <label class="block">
-              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.country' | translate }}</span>
+              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                >* {{ 'auth.country' | translate }}</span
+              >
               <select
                 [ngModel]="country()"
                 (ngModelChange)="setCountry($event)"
@@ -137,7 +169,9 @@
               </select>
             </label>
             <label class="block">
-              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.city' | translate }}</span>
+              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                >* {{ 'auth.city' | translate }}</span
+              >
               <select
                 [ngModel]="city()"
                 (ngModelChange)="city.set($event)"
@@ -146,17 +180,27 @@
                 [disabled]="!country()"
                 class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="" disabled>{{ (country() ? 'auth.selectCity' : 'auth.selectCountryFirst') | translate }}</option>
+                <option value="" disabled>
+                  {{ (country() ? 'auth.selectCity' : 'auth.selectCountryFirst') | translate }}
+                </option>
                 @for (c of availableCities(); track c) {
                   <option [value]="c">{{ c }}</option>
                 }
               </select>
             </label>
             <div>
-              <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.maxDistanceQuestion' | translate }}</p>
+              <p class="mb-2 text-xs font-semibold text-muted-foreground">
+                * {{ 'auth.maxDistanceQuestion' | translate }}
+              </p>
               <div class="flex flex-wrap gap-2">
                 @for (d of maxDistanceOptions; track d) {
-                  <ui-chip [clickable]="true" [active]="maxDistanceKm() === d" tone="cobalt" (toggled)="maxDistanceKm.set(d)">{{ d }}{{ d === 100 ? '+' : '' }} km</ui-chip>
+                  <ui-chip
+                    [clickable]="true"
+                    [active]="maxDistanceKm() === d"
+                    tone="cobalt"
+                    (toggled)="maxDistanceKm.set(d)"
+                    >{{ d }}{{ d === 100 ? '+' : '' }} km</ui-chip
+                  >
                 }
               </div>
             </div>
@@ -169,12 +213,16 @@
               <p class="mb-2 text-xs text-muted-foreground">{{ 'auth.levelHint' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (l of levels; track l) {
-                  <ui-chip [clickable]="true" [active]="level() === l" tone="lime" (toggled)="level.set(l)">{{ ('enums.level.' + l) | translate }}</ui-chip>
+                  <ui-chip [clickable]="true" [active]="level() === l" tone="lime" (toggled)="level.set(l)">{{
+                    'enums.level.' + l | translate
+                  }}</ui-chip>
                 }
               </div>
             </div>
             <div>
-              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.yearsPlaying' | translate }}</span>
+              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                >* {{ 'auth.yearsPlaying' | translate }}</span
+              >
               <div class="inline-flex items-center gap-4 rounded-xl border border-border bg-background px-4 py-2">
                 <button
                   type="button"
@@ -185,7 +233,9 @@
                 >
                   −
                 </button>
-                <span class="text-stat w-16 text-center text-xl">{{ years() === null ? '—' : years() === 40 ? '40+' : years() }}</span>
+                <span class="text-stat w-16 text-center text-xl">{{
+                  years() === null ? '—' : years() === 40 ? '40+' : years()
+                }}</span>
                 <button
                   type="button"
                   (click)="incrementYears()"
@@ -202,7 +252,9 @@
               <p class="mb-2 text-xs text-muted-foreground">{{ 'auth.styleHint' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (st of playStyles; track st.value) {
-                  <ui-chip [clickable]="true" [active]="playStyle() === st.value" (toggled)="playStyle.set(st.value)">{{ st.emoji }} {{ st.key | translate }}</ui-chip>
+                  <ui-chip [clickable]="true" [active]="playStyle() === st.value" (toggled)="playStyle.set(st.value)"
+                    >{{ st.emoji }} {{ st.key | translate }}</ui-chip
+                  >
                 }
               </div>
             </div>
@@ -210,7 +262,9 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.format' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (f of formats; track f) {
-                  <ui-chip [clickable]="true" [active]="format() === f" (toggled)="format.set(f)">{{ ('enums.format.' + f) | translate }}</ui-chip>
+                  <ui-chip [clickable]="true" [active]="format() === f" (toggled)="format.set(f)">{{
+                    'enums.format.' + f | translate
+                  }}</ui-chip>
                 }
               </div>
             </div>
@@ -218,7 +272,9 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.surface' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (s of surfaces; track s) {
-                  <ui-chip [clickable]="true" [active]="surface() === s" tone="clay" (toggled)="surface.set(s)">{{ s }}</ui-chip>
+                  <ui-chip [clickable]="true" [active]="surface() === s" tone="clay" (toggled)="surface.set(s)">{{
+                    s
+                  }}</ui-chip>
                 }
               </div>
             </div>
@@ -226,7 +282,9 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.courtPrefQuestion' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (c of courtPrefs; track c.value) {
-                  <ui-chip [clickable]="true" [active]="courtPref() === c.value" (toggled)="courtPref.set(c.value)">{{ c.emoji }} {{ c.key | translate }}</ui-chip>
+                  <ui-chip [clickable]="true" [active]="courtPref() === c.value" (toggled)="courtPref.set(c.value)"
+                    >{{ c.emoji }} {{ c.key | translate }}</ui-chip
+                  >
                 }
               </div>
             </div>
@@ -238,21 +296,34 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.frequency' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (f of frequencies; track f.value) {
-                  <ui-chip [clickable]="true" [active]="frequency() === f.value" (toggled)="frequency.set(f.value)">{{ f.key | translate }}</ui-chip>
+                  <ui-chip [clickable]="true" [active]="frequency() === f.value" (toggled)="frequency.set(f.value)">{{
+                    f.key | translate
+                  }}</ui-chip>
                 }
               </div>
             </div>
             <div>
               <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.coachedQuestion' | translate }}</p>
               <div class="flex flex-wrap gap-2">
-                <ui-chip [clickable]="true" [active]="coached() === true" tone="lime" (toggled)="setCoached(true)">🎾 {{ 'auth.coachedYes' | translate }}</ui-chip>
-                <ui-chip [clickable]="true" [active]="coached() === false" (toggled)="setCoached(false)">🙅 {{ 'auth.coachedNo' | translate }}</ui-chip>
+                <ui-chip [clickable]="true" [active]="coached() === true" tone="lime" (toggled)="setCoached(true)"
+                  >🎾 {{ 'auth.coachedYes' | translate }}</ui-chip
+                >
+                <ui-chip [clickable]="true" [active]="coached() === false" (toggled)="setCoached(false)"
+                  >🙅 {{ 'auth.coachedNo' | translate }}</ui-chip
+                >
               </div>
               @if (coached() === true) {
-                <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.coachedFrequencyQuestion' | translate }}</p>
+                <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">
+                  {{ 'auth.coachedFrequencyQuestion' | translate }}
+                </p>
                 <div class="flex flex-wrap gap-2">
                   @for (f of frequencies; track f.value) {
-                    <ui-chip [clickable]="true" [active]="coachedFrequency() === f.value" (toggled)="coachedFrequency.set(f.value)">{{ f.key | translate }}</ui-chip>
+                    <ui-chip
+                      [clickable]="true"
+                      [active]="coachedFrequency() === f.value"
+                      (toggled)="coachedFrequency.set(f.value)"
+                      >{{ f.key | translate }}</ui-chip
+                    >
                   }
                 </div>
               }
@@ -261,7 +332,13 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.timeOfDayQuestion' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (t of timesOfDayOptions; track t.value) {
-                  <ui-chip [clickable]="true" [active]="timesOfDay().includes(t.value)" tone="cobalt" (toggled)="toggleTimeOfDay(t.value)">{{ t.emoji }} {{ t.key | translate }}</ui-chip>
+                  <ui-chip
+                    [clickable]="true"
+                    [active]="timesOfDay().includes(t.value)"
+                    tone="cobalt"
+                    (toggled)="toggleTimeOfDay(t.value)"
+                    >{{ t.emoji }} {{ t.key | translate }}</ui-chip
+                  >
                 }
               </div>
             </div>
@@ -269,7 +346,13 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.availability' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (a of availabilityOptions; track a.value) {
-                  <ui-chip [clickable]="true" [active]="availability().includes(a.value)" tone="cobalt" (toggled)="toggleAvailability(a.value)">{{ a.key | translate }}</ui-chip>
+                  <ui-chip
+                    [clickable]="true"
+                    [active]="availability().includes(a.value)"
+                    tone="cobalt"
+                    (toggled)="toggleAvailability(a.value)"
+                    >{{ a.key | translate }}</ui-chip
+                  >
                 }
               </div>
             </div>
@@ -278,7 +361,9 @@
         @case (5) {
           <div class="space-y-6">
             <div>
-              <span class="mb-3 block text-xs font-semibold text-muted-foreground">{{ 'auth.avatarQuestion' | translate }}</span>
+              <span class="mb-3 block text-xs font-semibold text-muted-foreground">{{
+                'auth.avatarQuestion' | translate
+              }}</span>
               <rally-avatar-picker [(seed)]="avatarSeed" [(avatarStyle)]="avatarStyle" />
             </div>
             <label class="block">
@@ -299,7 +384,11 @@
 
       <div class="mt-8 flex items-center justify-between gap-3">
         @if (step() > 0) {
-          <button type="button" (click)="back()" class="cursor-pointer rounded-full border border-border px-6 py-3 text-xs font-extrabold tracking-wide uppercase hover:border-foreground">
+          <button
+            type="button"
+            (click)="back()"
+            class="cursor-pointer rounded-full border border-border px-6 py-3 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
+          >
             {{ 'auth.back' | translate }}
           </button>
         } @else {
@@ -327,7 +416,8 @@
     </form>
 
     <p class="mt-6 text-center text-sm text-muted-foreground">
-      {{ 'auth.haveAccount' | translate }} <a routerLink="/login" class="font-semibold text-foreground hover:underline">{{ 'auth.signIn' | translate }}</a>
+      {{ 'auth.haveAccount' | translate }}
+      <a routerLink="/login" class="font-semibold text-foreground hover:underline">{{ 'auth.signIn' | translate }}</a>
     </p>
   </div>
 </div>
