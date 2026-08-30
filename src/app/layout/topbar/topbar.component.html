@@ -47,6 +47,9 @@
     <div class="flex shrink-0 items-center justify-end gap-2">
       <rally-language-switcher />
       <rally-theme-toggle />
+      @if (!auth.isObserver()) {
+        <rally-notifications-bell />
+      }
       @if (auth.isObserver()) {
         <button
           type="button"

@@ -119,6 +119,18 @@ export const pt = {
     yourPost: 'A tua publicação',
     joinMatch: 'Quero jogar',
   },
+  messages: {
+    title: 'Mensagens',
+    emptyBody: 'Diz olá a partir do perfil de um jogador para começar a conversar.',
+    noMessagesYet: 'Ainda sem mensagens — diz olá!',
+    placeholder: 'Escreve uma mensagem…',
+    send: 'Enviar',
+  },
+  notifications: {
+    title: 'Notificações',
+    empty: 'Ainda não há notificações',
+    markAllRead: 'Marcar tudo como lido',
+  },
   world: {
     eyebrow: 'Mundo / Comunidade',
     title: 'O ténis está a espalhar-se pelo mundo',

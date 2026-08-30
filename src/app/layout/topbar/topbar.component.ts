@@ -3,7 +3,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { AvatarComponent } from '../../shared/ui';
-import { LanguageSwitcherComponent, ThemeToggleComponent } from '../../shared/components';
+import { LanguageSwitcherComponent, ThemeToggleComponent, NotificationsBellComponent } from '../../shared/components';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 interface NavItem {
@@ -14,7 +14,7 @@ interface NavItem {
 
 @Component({
   selector: 'rally-topbar',
-  imports: [RouterLink, RouterLinkActive, AvatarComponent, LanguageSwitcherComponent, ThemeToggleComponent, TranslatePipe],
+  imports: [RouterLink, RouterLinkActive, AvatarComponent, LanguageSwitcherComponent, ThemeToggleComponent, NotificationsBellComponent, TranslatePipe],
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.scss',
 })

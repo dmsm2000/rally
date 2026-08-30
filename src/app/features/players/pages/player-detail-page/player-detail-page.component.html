@@ -32,7 +32,7 @@
       <div class="mt-7 flex flex-wrap gap-3">
         @if (!auth.isObserver()) {
           <button type="button" class="rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase">{{ 'players.inviteToMatch' | translate }}</button>
-          <button type="button" class="rounded-full border border-border px-6 py-3 text-xs font-extrabold tracking-wide uppercase hover:border-foreground">{{ 'players.message' | translate }}</button>
+          <button type="button" (click)="message(p.id)" class="cursor-pointer rounded-full border border-border px-6 py-3 text-xs font-extrabold tracking-wide uppercase hover:border-foreground">{{ 'players.message' | translate }}</button>
         }
       </div>
     </div>

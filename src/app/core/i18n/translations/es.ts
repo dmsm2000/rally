@@ -119,6 +119,18 @@ export const es = {
     yourPost: 'Tu publicación',
     joinMatch: 'Quiero jugar',
   },
+  messages: {
+    title: 'Mensajes',
+    emptyBody: 'Saluda desde el perfil de un jugador para empezar a chatear.',
+    noMessagesYet: 'Sin mensajes todavía — ¡saluda!',
+    placeholder: 'Escribe un mensaje…',
+    send: 'Enviar',
+  },
+  notifications: {
+    title: 'Notificaciones',
+    empty: 'Todavía no hay notificaciones',
+    markAllRead: 'Marcar todo como leído',
+  },
   world: {
     eyebrow: 'Mundo / Comunidad',
     title: 'El tenis se está expandiendo por el mundo',

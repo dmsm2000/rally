@@ -5,3 +5,5 @@ export * from './feed.model';
 export * from './achievement.model';
 export * from './country.model';
 export * from './world.model';
+export * from './message.model';
+export * from './notification.model';

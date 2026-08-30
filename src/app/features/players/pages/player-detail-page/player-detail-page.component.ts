@@ -5,6 +5,7 @@ import { map } from 'rxjs';
 import { PlayersService } from '../../players.service';
 import { RallyDataService } from '../../../../core/data/rally-data.service';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { MessagesWidgetService } from '../../../../core/services/messages-widget.service';
 import { AvatarComponent, ChipComponent, MatchScoreComponent, StatComponent, SectionHeaderComponent } from '../../../../shared/ui';
 import { CourtCardComponent, MatchCardComponent, CountryBadgeComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
@@ -20,6 +21,7 @@ export class PlayerDetailPageComponent {
   private readonly players = inject(PlayersService);
   private readonly data = inject(RallyDataService);
   protected readonly auth = inject(AuthService);
+  private readonly messagesWidget = inject(MessagesWidgetService);
 
   private readonly playerId = toSignal(this.route.paramMap.pipe(map((params) => params.get('playerId') ?? '')), { initialValue: '' });
 
@@ -34,4 +36,8 @@ export class PlayerDetailPageComponent {
   });
   protected readonly unlockedAchievements = computed(() => this.data.achievements().filter((a) => a.unlocked));
   protected readonly featuredCourts = computed(() => this.data.courts().slice(0, 4));
+
+  protected message(playerId: string): void {
+    this.messagesWidget.openThread(playerId);
+  }
 }

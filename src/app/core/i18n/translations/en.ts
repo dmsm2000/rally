@@ -117,6 +117,18 @@ export const en = {
     yourPost: 'Your post',
     joinMatch: 'I want to play',
   },
+  messages: {
+    title: 'Messages',
+    emptyBody: 'Say hi from a player\'s profile to start chatting.',
+    noMessagesYet: 'No messages yet — say hi!',
+    placeholder: 'Write a message…',
+    send: 'Send',
+  },
+  notifications: {
+    title: 'Notifications',
+    empty: 'No notifications yet',
+    markAllRead: 'Mark all as read',
+  },
   world: {
     eyebrow: 'World / Community',
     title: 'Tennis is spreading across the world',

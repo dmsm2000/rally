@@ -1,0 +1,76 @@
+<div class="fixed right-4 bottom-20 z-50 flex flex-col items-end lg:right-6 lg:bottom-6">
+  @if (widget.isOpen()) {
+    <div class="mb-3 flex h-[28rem] w-80 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
+      @if (activePlayer(); as p) {
+        <div class="flex items-center gap-3 border-b border-border bg-ink px-4 py-3 text-bone">
+          <button type="button" (click)="widget.backToList()" aria-label="Back" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10">←</button>
+          <ui-avatar [initials]="p.initials" [accent]="p.accent" [seed]="p.avatarSeed" [avatarStyle]="p.avatarStyle" size="xs" />
+          <p class="min-w-0 flex-1 truncate text-sm font-bold">{{ p.name }}</p>
+          <button type="button" (click)="widget.close()" aria-label="Close" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10">✕</button>
+        </div>
+
+        <div class="flex-1 space-y-2 overflow-y-auto p-4">
+          @for (m of activeConversation()?.messages ?? []; track m.id) {
+            <div class="flex" [class.justify-end]="m.senderId === messages.me().id">
+              <div class="max-w-[80%] rounded-2xl px-3 py-2 text-sm" [class]="m.senderId === messages.me().id ? 'bg-lime text-ink' : 'bg-muted text-foreground'">
+                <p>{{ m.text }}</p>
+              </div>
+            </div>
+          } @empty {
+            <p class="text-center text-xs text-muted-foreground">{{ 'messages.noMessagesYet' | translate }}</p>
+          }
+        </div>
+
+        <form class="flex gap-2 border-t border-border p-3" (ngSubmit)="send()">
+          <input
+            [ngModel]="draft()"
+            (ngModelChange)="draft.set($event)"
+            name="draft"
+            [placeholder]="'messages.placeholder' | translate"
+            class="w-full rounded-full border border-border bg-background px-4 py-2 text-sm outline-none focus:border-foreground"
+          />
+          <button
+            type="submit"
+            [disabled]="!draft().trim()"
+            class="shrink-0 cursor-pointer rounded-full bg-foreground px-4 py-2 text-xs font-extrabold tracking-wide text-background uppercase disabled:pointer-events-none disabled:opacity-40"
+          >
+            {{ 'messages.send' | translate }}
+          </button>
+        </form>
+      } @else {
+        <div class="flex items-center justify-between border-b border-border px-4 py-3">
+          <p class="text-eyebrow text-muted-foreground">{{ 'messages.title' | translate }}</p>
+          <button type="button" (click)="widget.close()" aria-label="Close" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-muted">✕</button>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+          @for (row of rows(); track row.conversation.id) {
+            <button type="button" (click)="widget.openThread(row.player.id)" class="flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-muted">
+              <ui-avatar [initials]="row.player.initials" [accent]="row.player.accent" [seed]="row.player.avatarSeed" [avatarStyle]="row.player.avatarStyle" size="sm" />
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-bold">{{ row.player.name }}</p>
+                <p class="truncate text-xs text-muted-foreground">{{ row.lastMessage?.text ?? ('messages.noMessagesYet' | translate) }}</p>
+              </div>
+              @if (row.conversation.unread > 0) {
+                <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-lime text-[10px] font-extrabold text-ink">{{ row.conversation.unread }}</span>
+              }
+            </button>
+          } @empty {
+            <p class="px-4 py-8 text-center text-sm text-muted-foreground">{{ 'messages.emptyBody' | translate }}</p>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <button
+    type="button"
+    (click)="widget.toggle()"
+    [attr.aria-label]="'messages.title' | translate"
+    class="relative flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5"
+  >
+    💬
+    @if (messages.unreadTotal() > 0) {
+      <span class="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-clay px-1 text-[10px] font-extrabold text-bone">{{ messages.unreadTotal() }}</span>
+    }
+  </button>
+</div>

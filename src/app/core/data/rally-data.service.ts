@@ -1,8 +1,10 @@
 import { Injectable, signal } from '@angular/core';
-import { FeedItem, Match, MatchFormat, Player, TripIntent, WorldActivityItem } from '../models';
+import { AppNotification, ChatMessage, Conversation, FeedItem, Match, MatchFormat, Player, TripIntent, WorldActivityItem } from '../models';
 import {
   ACHIEVEMENTS,
+  CANNED_REPLIES,
   COMMUNITY_STATS,
+  CONVERSATIONS,
   COUNTRIES,
   COURTS,
   DESTINATIONS,
@@ -11,6 +13,7 @@ import {
   LEVELS,
   MATCHES,
   ME,
+  NOTIFICATIONS,
   PLAYERS,
   SURFACES,
   TRIP_INTENTS,
@@ -34,6 +37,8 @@ export class RallyDataService {
   private readonly _destinations = signal(DESTINATIONS);
   private readonly _worldActivity = signal(WORLD_ACTIVITY);
   private readonly _tripIntents = signal(TRIP_INTENTS);
+  private readonly _conversations = signal(CONVERSATIONS);
+  private readonly _notifications = signal(NOTIFICATIONS);
 
   readonly me = this._me.asReadonly();
   readonly players = this._players.asReadonly();
@@ -45,6 +50,9 @@ export class RallyDataService {
   readonly destinations = this._destinations.asReadonly();
   readonly worldActivity = this._worldActivity.asReadonly();
   readonly tripIntents = this._tripIntents.asReadonly();
+  readonly conversations = this._conversations.asReadonly();
+  readonly notifications = this._notifications.asReadonly();
+
 
   readonly levels = LEVELS;
   readonly surfaces = SURFACES;
@@ -175,5 +183,72 @@ export class RallyDataService {
       time: 'Agora mesmo',
     };
     this._feed.update((list) => [feedItem, ...list]);
+  }
+
+  conversationByPlayer(playerId: string) {
+    return this._conversations().find((c) => c.playerId === playerId);
+  }
+
+  conversationById(id: string) {
+    return this._conversations().find((c) => c.id === id);
+  }
+
+  // Finds (or lazily starts) the conversation with a player, e.g. from their "Message" button.
+  ensureConversation(playerId: string): string {
+    const existing = this.conversationByPlayer(playerId);
+    if (existing) {
+      return existing.id;
+    }
+    const conversation: Conversation = { id: `conv-${playerId}`, playerId, messages: [], unread: 0 };
+    this._conversations.update((list) => [conversation, ...list]);
+    return conversation.id;
+  }
+
+  // No-op (keeps the same array reference) when already read, so it never triggers a spurious signal change.
+  markConversationRead(conversationId: string): void {
+    this._conversations.update((list) => {
+      const conversation = list.find((c) => c.id === conversationId);
+      if (!conversation || conversation.unread === 0) {
+        return list;
+      }
+      return list.map((c) => (c.id === conversationId ? { ...c, unread: 0 } : c));
+    });
+  }
+
+  // Sends my message, then simulates the other player replying shortly after and raises a notification for it.
+  sendMessage(conversationId: string, text: string): void {
+    const message: ChatMessage = { id: `msg-${Date.now()}`, senderId: this._me().id, text, sentAt: 'Agora mesmo' };
+    this._conversations.update((list) => list.map((c) => (c.id === conversationId ? { ...c, messages: [...c.messages, message] } : c)));
+
+    const conversation = this.conversationById(conversationId);
+    if (!conversation) {
+      return;
+    }
+    const replyDelayMs = 1400;
+    setTimeout(() => {
+      const replyText = CANNED_REPLIES[conversation.messages.length % CANNED_REPLIES.length];
+      const reply: ChatMessage = { id: `msg-${Date.now()}-r`, senderId: conversation.playerId, text: replyText, sentAt: 'Agora mesmo' };
+      this._conversations.update((list) => list.map((c) => (c.id === conversationId ? { ...c, messages: [...c.messages, reply], unread: c.unread + 1 } : c)));
+
+      const notification: AppNotification = {
+        id: `notif-${Date.now()}`,
+        kind: 'message',
+        text: `${this.playerById(conversation.playerId)?.name ?? ''} sent you a message`,
+        detail: replyText,
+        time: 'Just now',
+        read: false,
+        link: `/messages/${conversation.playerId}`,
+        playerId: conversation.playerId,
+      };
+      this._notifications.update((list) => [notification, ...list]);
+    }, replyDelayMs);
+  }
+
+  markNotificationRead(id: string): void {
+    this._notifications.update((list) => list.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  }
+
+  markAllNotificationsRead(): void {
+    this._notifications.update((list) => list.map((n) => ({ ...n, read: true })));
   }
 }

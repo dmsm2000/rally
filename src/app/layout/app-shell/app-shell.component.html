@@ -4,4 +4,7 @@
     <router-outlet />
   </main>
   <rally-bottom-nav />
+  @if (!auth.isObserver()) {
+    <rally-messages-widget />
+  }
 </div>

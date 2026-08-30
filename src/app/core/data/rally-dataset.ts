@@ -1,4 +1,4 @@
-import { Achievement, CommunityStats, CountryEntry, Court, Destination, FeedItem, Match, Player, PlayerIntent, TripIntent, WorldActivityItem } from '../models';
+import { Achievement, AppNotification, CommunityStats, Conversation, CountryEntry, Court, Destination, FeedItem, Match, Player, PlayerIntent, TripIntent, WorldActivityItem } from '../models';
 
 /**
  * Static dataset acting as a stand-in for the future Supabase-backed tables.
@@ -498,3 +498,49 @@ export const TRIP_INTENTS: TripIntent[] = [
   { id: 'ti1', playerId: 'yuki', destinationId: 'london', fromDate: '10 Out', toDate: '14 Out', note: 'Vou estar em Londres em outubro, alguém disponível para me mostrar os courts locais?', status: 'open' },
   { id: 'ti2', playerId: 'marc', destinationId: 'tokyo', fromDate: '2 Nov', toDate: '6 Nov', note: 'Primeira vez em Tóquio — adorava jogar com alguém local!', status: 'open' },
 ];
+
+export const CONVERSATIONS: Conversation[] = [
+  {
+    id: 'conv-maria',
+    playerId: 'maria',
+    unread: 2,
+    messages: [
+      { id: 'msg1', senderId: 'maria', text: 'Hey! Up for a match this week?', sentAt: 'Yesterday · 18:20' },
+      { id: 'msg2', senderId: 'joao', text: 'Definitely, Thursday evening works for me.', sentAt: 'Yesterday · 18:45' },
+      { id: 'msg3', senderId: 'maria', text: "Perfect, I'll book the court at CTP.", sentAt: 'Yesterday · 18:47' },
+      { id: 'msg4', senderId: 'maria', text: 'Bring an extra can of balls just in case 🎾', sentAt: 'Today · 09:12' },
+    ],
+  },
+  {
+    id: 'conv-pedro',
+    playerId: 'pedro',
+    unread: 0,
+    messages: [
+      { id: 'msg5', senderId: 'pedro', text: 'Good game on Saturday!', sentAt: 'Sat · 12:10' },
+      { id: 'msg6', senderId: 'joao', text: 'That third set was brutal 😅 rematch soon?', sentAt: 'Sat · 12:30' },
+      { id: 'msg7', senderId: 'pedro', text: "Always. I'll bring my A-game next time.", sentAt: 'Sat · 12:32' },
+    ],
+  },
+  {
+    id: 'conv-ana',
+    playerId: 'ana',
+    unread: 1,
+    messages: [{ id: 'msg8', senderId: 'ana', text: 'Thinking of a Barcelona trip next month, you in?', sentAt: '2 days ago' }],
+  },
+];
+
+// Rotates a few friendly canned replies so a demo conversation always feels alive.
+export const CANNED_REPLIES = [
+  "Sounds good, what time works for you?",
+  "I'm in! Let's lock in a court.",
+  "Haha true. See you on the baseline 🎾",
+  "Can't wait for this one.",
+];
+
+export const NOTIFICATIONS: AppNotification[] = [
+  { id: 'n1', kind: 'message', text: 'Maria Costa sent you a message', detail: 'Bring an extra can of balls just in case 🎾', time: 'Just now', read: false, link: '/messages/maria', playerId: 'maria' },
+  { id: 'n2', kind: 'trip', text: 'Ana Ferreira wants to play in Barcelona', detail: 'Thinking of a Barcelona trip next month, you in?', time: '2 days ago', read: false, link: '/messages/ana', playerId: 'ana' },
+  { id: 'n3', kind: 'match', text: 'Pedro Almeida accepted your open match', detail: 'Foz Seaside Courts · Sat 5 Sep 09:30', time: 'Yesterday', read: true, link: '/matches/m2', playerId: 'pedro' },
+  { id: 'n4', kind: 'achievement', text: 'Achievement unlocked: Five Countries', detail: "You've now played in five different countries.", time: '3 days ago', read: true, link: '/passport' },
+];
+
