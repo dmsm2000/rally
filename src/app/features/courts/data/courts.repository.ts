@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { RallyDataService } from '../../../core/data/rally-data.service';
-import { Court } from '../../../core/models';
+import { Court, Surface } from '../../../core/models';
 
 @Injectable({ providedIn: 'root' })
 export class CourtsRepository {
@@ -16,5 +16,20 @@ export class CourtsRepository {
 
   get surfaces(): readonly string[] {
     return this.data.surfaces;
+  }
+
+  createCourt(input: {
+    name: string;
+    city: string;
+    country: string;
+    flag: string;
+    surface: Surface;
+    indoor: boolean;
+    courts: number;
+    price: string;
+    hours: string;
+    image?: string;
+  }): Court {
+    return this.data.createCourt(input);
   }
 }

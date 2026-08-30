@@ -3,10 +3,13 @@ import {
   AppNotification,
   ChatMessage,
   Conversation,
+  Court,
   FeedItem,
   Match,
   MatchFormat,
   Player,
+  SessionType,
+  Surface,
   TripIntent,
   WorldActivityItem
 } from '../models';
@@ -29,6 +32,14 @@ import {
   TRIP_INTENTS,
   WORLD_ACTIVITY
 } from './rally-dataset';
+
+// Fallback cover photo for a newly added court, picked by surface when the player doesn't attach one.
+const SURFACE_IMAGE: Record<Surface, string> = {
+  Clay: '/assets/court-clay.jpg',
+  Hard: '/assets/court-hard.jpg',
+  Grass: '/assets/court-grass.jpg',
+  Carpet: '/assets/court-indoor.jpg'
+};
 
 /**
  * Data-access boundary standing in for Supabase. Feature repositories depend on this
@@ -105,25 +116,40 @@ export class RallyDataService {
   }
 
   // Posting an open match also drops a matching post in the feed, same as a real capture/challenge would.
-  createOpenMatch(input: { courtId: string; date: string; time: string; format: MatchFormat; note: string }): Match {
+  createOpenMatch(input: {
+    courtId: string;
+    city?: string;
+    radiusKm?: number;
+    date: string;
+    time: string;
+    format: MatchFormat;
+    sessionType: SessionType;
+    durationMinutes?: number;
+    note: string;
+  }): Match {
     const match: Match = {
       id: `open-${Date.now()}`,
       status: 'open',
       date: input.date,
       time: input.time,
       courtId: input.courtId,
+      city: input.courtId ? undefined : input.city,
+      radiusKm: input.courtId ? undefined : input.radiusKm,
       format: input.format,
       playerA: this._me().id,
-      note: input.note
+      note: input.note,
+      sessionType: input.sessionType,
+      durationMinutes: input.durationMinutes
     };
     this._matches.update(list => [match, ...list]);
 
+    const location = input.courtId ? this.courtById(input.courtId)?.name ?? '' : `${input.city ?? ''} · ±${input.radiusKm ?? 0}km`;
     const feedItem: FeedItem = {
       id: `feed-${Date.now()}`,
       playerId: this._me().id,
       kind: 'challenge',
       text: input.note,
-      detail: `${this.courtById(input.courtId)?.name ?? ''} · ${input.date} ${input.time}`,
+      detail: `${location} · ${input.date} ${input.time}`,
       time: 'Agora mesmo'
     };
     this._feed.update(list => [feedItem, ...list]);
@@ -144,6 +170,54 @@ export class RallyDataService {
     };
     this._feed.update(list => [feedItem, ...list]);
     return feedItem;
+  }
+
+  // Adding a court to the shared registry also drops a "discovered this court" post in the feed.
+  createCourt(input: {
+    name: string;
+    city: string;
+    country: string;
+    flag: string;
+    surface: Surface;
+    indoor: boolean;
+    courts: number;
+    price: string;
+    hours: string;
+    image?: string;
+  }): Court {
+    const court: Court = {
+      id: `court-${Date.now()}`,
+      name: input.name,
+      city: input.city,
+      country: input.country,
+      flag: input.flag || '🎾',
+      surface: input.surface,
+      indoor: input.indoor,
+      courts: input.courts || 1,
+      rating: 0,
+      reviews: 0,
+      price: input.price || '—',
+      hours: input.hours || '—',
+      image: input.image || SURFACE_IMAGE[input.surface],
+      distanceKm: 0,
+      facilities: [],
+      playAgain: 0,
+      coords: { x: 50, y: 50 }
+    };
+    this._courts.update(list => [court, ...list]);
+
+    const feedItem: FeedItem = {
+      id: `feed-${Date.now()}`,
+      playerId: this._me().id,
+      kind: 'court',
+      text: `${this._me().name} discovered ${court.name}.`,
+      detail: `${court.flag} ${court.city}, ${court.country}`,
+      time: 'Agora mesmo',
+      image: court.image
+    };
+    this._feed.update(list => [feedItem, ...list]);
+
+    return court;
   }
 
   // Accepting an open match books it for both players and announces the new game in the feed.

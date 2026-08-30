@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { RallyDataService } from '../../../core/data/rally-data.service';
-import { CommunityStats, Court, Match, MatchFormat, Player } from '../../../core/models';
+import { CommunityStats, Court, Match, MatchFormat, Player, SessionType } from '../../../core/models';
 
 @Injectable({ providedIn: 'root' })
 export class MatchesRepository {
@@ -34,7 +34,17 @@ export class MatchesRepository {
     return this.data.courts();
   }
 
-  createOpenMatch(input: { courtId: string; date: string; time: string; format: MatchFormat; note: string }): Match {
+  createOpenMatch(input: {
+    courtId: string;
+    city?: string;
+    radiusKm?: number;
+    date: string;
+    time: string;
+    format: MatchFormat;
+    sessionType: SessionType;
+    durationMinutes?: number;
+    note: string;
+  }): Match {
     return this.data.createOpenMatch(input);
   }
 

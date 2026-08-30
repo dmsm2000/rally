@@ -27,15 +27,47 @@
   </div>
 </section>
 
-@if (!auth.isObserver()) {
-  <section class="mb-10 rounded-3xl border border-border bg-card p-6 sm:p-8">
-    <div>
-      <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'profile.changeAvatar' | translate }}</p>
-      <rally-avatar-picker [(seed)]="draftAvatarSeed" [(avatarStyle)]="draftAvatarStyle" />
-    </div>
+<section class="mb-10 grid gap-4 sm:grid-cols-2">
+  <div class="rounded-2xl border border-border bg-card p-5">
+    <p class="text-eyebrow text-muted-foreground">{{ 'profile.winRate' | translate }}</p>
+    <p class="text-stat mt-2 text-4xl">{{ winRatePct() }}%</p>
+    <p class="mt-2 text-xs text-muted-foreground">{{ 'profile.winRateNote' | translate: { wins: winCount(), matches: completedCount(), surface: bestSurfaceLabel(), pct: winRatePct() } }}</p>
+  </div>
+  <a routerLink="/passport" class="rounded-2xl border border-border bg-ink p-5 text-bone transition-transform hover:-translate-y-0.5">
+    <p class="text-eyebrow text-bone/60">{{ 'profile.milestonesEyebrow' | translate }}</p>
+    <p class="mt-2 font-display text-lg font-extrabold tracking-tight uppercase">{{ 'profile.tennisPassport' | translate }}</p>
+    <p class="mt-2 text-xs text-bone/70">
+      {{ passportService.visitedCountries().length }} {{ 'profile.countriesSuffix' | translate }} · {{ passportService.unlockedAchievements().length }}/{{ passportService.achievements().length }} {{ 'achievements.title' | translate }}
+    </p>
+    <p class="mt-4 text-xs font-bold text-lime">{{ 'profile.openPassport' | translate }} →</p>
+  </a>
+</section>
 
-    <div class="mt-8 space-y-6 border-t border-border pt-6">
+<section class="mb-10">
+  <ui-section-header [eyebrow]="'profile.historyEyebrow' | translate" [title]="'profile.yourMatches' | translate" [action]="'profile.seeAll' | translate" to="/matches" />
+  @if (recentMatches().length) {
+    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+      @for (m of recentMatches(); track m.id) {
+        <rally-match-card [match]="m" [compact]="true" />
+      }
+    </div>
+  } @else {
+    <p class="text-sm text-muted-foreground">{{ 'matches.emptyBody' | translate }}</p>
+  }
+</section>
+
+@if (!auth.isObserver()) {
+  <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+    <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'profile.changeAvatar' | translate }}</p>
+    <rally-avatar-picker [(seed)]="draftAvatarSeed" [(avatarStyle)]="draftAvatarStyle" />
+  </section>
+
+  <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+    <div class="mb-6">
       <p class="text-eyebrow text-muted-foreground">{{ 'auth.steps.traits' | translate }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'auth.taglines.traits' | translate }}</p>
+    </div>
+    <div class="space-y-6">
       <label class="block max-w-[160px]">
         <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.age' | translate }}</span>
         <input
@@ -48,6 +80,14 @@
           class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground"
         />
       </label>
+      <div>
+        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.genderQuestion' | translate }}</p>
+        <div class="flex flex-wrap gap-2">
+          @for (g of genders; track g.value) {
+            <ui-chip [clickable]="true" [active]="draftGender() === g.value" (toggled)="draftGender.set(g.value)">{{ g.emoji }} {{ g.key | translate }}</ui-chip>
+          }
+        </div>
+      </div>
       <div>
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.dominantHand' | translate }}</p>
         <div class="flex flex-wrap gap-2">
@@ -65,9 +105,14 @@
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="mt-8 space-y-5 border-t border-border pt-6">
+  <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+    <div class="mb-6">
       <p class="text-eyebrow text-muted-foreground">{{ 'auth.steps.location' | translate }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'auth.taglines.location' | translate }}</p>
+    </div>
+    <div class="space-y-5">
       <label class="block">
         <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{ 'auth.country' | translate }}</span>
         <select
@@ -104,9 +149,14 @@
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="mt-8 space-y-6 border-t border-border pt-6">
+  <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+    <div class="mb-6">
       <p class="text-eyebrow text-muted-foreground">{{ 'auth.steps.game' | translate }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'auth.taglines.game' | translate }}</p>
+    </div>
+    <div class="space-y-6">
       <div>
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.level' | translate }}</p>
         <div class="flex flex-wrap gap-2">
@@ -156,9 +206,14 @@
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="mt-8 space-y-6 border-t border-border pt-6">
+  <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+    <div class="mb-6">
       <p class="text-eyebrow text-muted-foreground">{{ 'auth.steps.schedule' | translate }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'auth.taglines.schedule' | translate }}</p>
+    </div>
+    <div class="space-y-6">
       <div>
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.frequency' | translate }}</p>
         <div class="flex flex-wrap gap-2">
@@ -199,40 +254,43 @@
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="mt-8 border-t border-border pt-6">
-      <label class="block">
-        <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{ 'profile.bioLabel' | translate }}</span>
-        <textarea
-          [ngModel]="draftBio()"
-          (ngModelChange)="draftBio.set($event)"
-          name="bio"
-          rows="3"
-          class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground"
-        ></textarea>
-      </label>
-    </div>
+  <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+    <label class="block">
+      <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{ 'profile.bioLabel' | translate }}</span>
+      <textarea
+        [ngModel]="draftBio()"
+        (ngModelChange)="draftBio.set($event)"
+        name="bio"
+        rows="3"
+        class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground"
+      ></textarea>
+    </label>
+  </section>
 
-    <div class="mt-6 flex flex-wrap justify-end gap-3">
-      @if (saved()) {
-        <span class="animate-tennis-pop self-center text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+  <div class="mb-10 flex flex-wrap items-center justify-end gap-3 rounded-2xl border border-border bg-card p-5">
+    @if (saved()) {
+      <span class="animate-tennis-pop self-center text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+    }
+    <button type="button" (click)="save()" [disabled]="!canSave()" class="cursor-pointer rounded-full bg-lime px-6 py-3 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40">
+      {{ 'profile.saveChanges' | translate }}
+    </button>
+  </div>
+}
+
+@if (auth.isObserver()) {
+  <section>
+    <ui-section-header [eyebrow]="'profile.preferencesEyebrow' | translate" [title]="'profile.howYouPlay' | translate" />
+    <div class="flex flex-wrap gap-2">
+      <ui-chip tone="lime">{{ ('enums.level.' + draftLevel()) | translate }}</ui-chip>
+      <ui-chip>{{ ('enums.format.' + draftFormat()) | translate }}</ui-chip>
+      <ui-chip>{{ draftSurface() }} {{ 'stats.courts' | translate }}</ui-chip>
+      <ui-chip>{{ draftFrequency() }}</ui-chip>
+      @for (a of draftAvailability(); track a) {
+        <ui-chip tone="cobalt">{{ a }}</ui-chip>
       }
-      <button type="button" (click)="save()" [disabled]="!canSave()" class="cursor-pointer rounded-full bg-lime px-6 py-3 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40">
-        {{ 'profile.saveChanges' | translate }}
-      </button>
     </div>
   </section>
 }
 
-<section>
-  <ui-section-header [eyebrow]="'profile.preferencesEyebrow' | translate" [title]="'profile.howYouPlay' | translate" />
-  <div class="flex flex-wrap gap-2">
-    <ui-chip tone="lime">{{ ('enums.level.' + draftLevel()) | translate }}</ui-chip>
-    <ui-chip>{{ ('enums.format.' + draftFormat()) | translate }}</ui-chip>
-    <ui-chip>{{ draftSurface() }} {{ 'stats.courts' | translate }}</ui-chip>
-    <ui-chip>{{ draftFrequency() }}</ui-chip>
-    @for (a of draftAvailability(); track a) {
-      <ui-chip tone="cobalt">{{ a }}</ui-chip>
-    }
-  </div>
-</section>

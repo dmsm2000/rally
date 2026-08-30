@@ -34,6 +34,7 @@ export interface Player {
   avatarStyle?: string;
   /** Extra questions collected at registration, editable later from the profile. */
   age?: number;
+  gender?: string;
   dominantHand?: string;
   backhand?: string;
   playStyle?: string;

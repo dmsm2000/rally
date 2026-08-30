@@ -8,6 +8,7 @@ import { Format, Level, Surface } from '../../../../core/models';
 import {
   Backhand,
   CourtPref,
+  Gender,
   Hand,
   PlayStyle,
   TimeOfDay,
@@ -21,6 +22,7 @@ import {
   COUNTRIES,
   HANDS,
   BACKHANDS,
+  GENDERS,
   PLAY_STYLES,
   COURT_PREFS,
   TIMES_OF_DAY,
@@ -55,6 +57,7 @@ export class RegisterPageComponent {
   protected readonly countries = COUNTRIES;
   protected readonly hands = HANDS;
   protected readonly backhands = BACKHANDS;
+  protected readonly genders = GENDERS;
   protected readonly playStyles = PLAY_STYLES;
   protected readonly courtPrefs = COURT_PREFS;
   protected readonly timesOfDayOptions = TIMES_OF_DAY;
@@ -75,6 +78,7 @@ export class RegisterPageComponent {
   protected readonly password = signal('');
   protected readonly confirmPassword = signal('');
   protected readonly age = signal<number | null>(null);
+  protected readonly gender = signal<Gender | null>(null);
   protected readonly dominantHand = signal<Hand | null>(null);
   protected readonly backhand = signal<Backhand | null>(null);
   protected readonly city = signal('');
@@ -169,6 +173,7 @@ export class RegisterPageComponent {
     this.auth.register({
       name: this.name(),
       age: this.age() ?? undefined,
+      gender: this.gender() ?? undefined,
       dominantHand: this.dominantHand() ?? undefined,
       backhand: this.backhand() ?? undefined,
       city: this.city(),

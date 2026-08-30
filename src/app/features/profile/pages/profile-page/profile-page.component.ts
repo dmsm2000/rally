@@ -1,15 +1,19 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProfileService } from '../../profile.service';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { TranslationService } from '../../../../core/i18n/translation.service';
+import { MatchesService } from '../../../matches/matches.service';
+import { PassportService } from '../../../passport/passport.service';
 import { AvatarComponent, ChipComponent, StatComponent, SectionHeaderComponent } from '../../../../shared/ui';
-import { AvatarPickerComponent } from '../../../../shared/components';
+import { AvatarPickerComponent, MatchCardComponent } from '../../../../shared/components';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
 import { Format, Level, Surface } from '../../../../core/models';
 import {
   Backhand,
   CourtPref,
+  Gender,
   Hand,
   PlayStyle,
   TimeOfDay,
@@ -23,6 +27,7 @@ import {
   COUNTRIES,
   HANDS,
   BACKHANDS,
+  GENDERS,
   PLAY_STYLES,
   COURT_PREFS,
   TIMES_OF_DAY,
@@ -31,14 +36,53 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'rally-profile-page',
-  imports: [FormsModule, AvatarComponent, ChipComponent, StatComponent, SectionHeaderComponent, AvatarPickerComponent, TranslatePipe],
+  imports: [FormsModule, RouterLink, AvatarComponent, ChipComponent, StatComponent, SectionHeaderComponent, AvatarPickerComponent, MatchCardComponent, TranslatePipe],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.scss',
 })
 export class ProfilePageComponent {
   protected readonly profile = inject(ProfileService);
   protected readonly auth = inject(AuthService);
+  protected readonly matchesService = inject(MatchesService);
+  protected readonly passportService = inject(PassportService);
+  private readonly translation = inject(TranslationService);
   private readonly router = inject(Router);
+
+  private readonly myMatches = computed(() => {
+    const meId = this.profile.me().id;
+    return this.matchesService.all().filter((m) => m.playerA === meId || m.playerB === meId);
+  });
+  protected readonly recentMatches = computed(() => this.myMatches().slice(0, 6));
+  private readonly myCompletedMatches = computed(() => this.myMatches().filter((m) => m.status === 'complete'));
+  private readonly myWins = computed(() => this.myCompletedMatches().filter((m) => m.winner === this.profile.me().id));
+  protected readonly winRatePct = computed(() => (this.myCompletedMatches().length ? Math.round((this.myWins().length / this.myCompletedMatches().length) * 100) : 0));
+  protected readonly winCount = computed(() => this.myWins().length);
+  protected readonly completedCount = computed(() => this.myCompletedMatches().length);
+
+  // Surface the player has won on most often, to back up the win-rate stat with something concrete.
+  protected readonly bestSurface = computed(() => {
+    const bySurface = new Map<string, number>();
+    for (const m of this.myWins()) {
+      const surface = this.matchesService.courtById(m.courtId)?.surface;
+      if (surface) {
+        bySurface.set(surface, (bySurface.get(surface) ?? 0) + 1);
+      }
+    }
+    let best: string | undefined;
+    let max = 0;
+    for (const [surface, count] of bySurface) {
+      if (count > max) {
+        max = count;
+        best = surface;
+      }
+    }
+    return best;
+  });
+
+  protected readonly bestSurfaceLabel = computed(() => {
+    const surface = this.bestSurface();
+    return surface ? this.translation.t('enums.surface.' + surface) : '—';
+  });
 
   protected readonly levels = LEVELS;
   protected readonly formats = FORMATS;
@@ -49,11 +93,13 @@ export class ProfilePageComponent {
   protected readonly countries = COUNTRIES;
   protected readonly hands = HANDS;
   protected readonly backhands = BACKHANDS;
+  protected readonly genders = GENDERS;
   protected readonly playStyles = PLAY_STYLES;
   protected readonly courtPrefs = COURT_PREFS;
   protected readonly timesOfDayOptions = TIMES_OF_DAY;
 
   protected readonly draftAge = signal<number | null>(this.profile.me().age ?? null);
+  protected readonly draftGender = signal<Gender | null>((this.profile.me().gender as Gender) ?? null);
   protected readonly draftDominantHand = signal<Hand | null>((this.profile.me().dominantHand as Hand) ?? null);
   protected readonly draftBackhand = signal<Backhand | null>((this.profile.me().backhand as Backhand) ?? null);
   protected readonly draftCity = signal(this.profile.me().city);
@@ -114,6 +160,7 @@ export class ProfilePageComponent {
   protected save(): void {
     this.profile.updateMe({
       age: this.draftAge() ?? undefined,
+      gender: this.draftGender() ?? undefined,
       dominantHand: this.draftDominantHand() ?? undefined,
       backhand: this.draftBackhand() ?? undefined,
       city: this.draftCity(),

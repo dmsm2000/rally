@@ -7,6 +7,7 @@ import { Format, Level, Surface } from '../models';
 
 export type Hand = 'Right' | 'Left' | 'Ambidextrous';
 export type Backhand = 'OneHanded' | 'TwoHanded';
+export type Gender = 'Male' | 'Female' | 'NonBinary' | 'PreferNotToSay';
 export type PlayStyle = 'AggressiveBaseliner' | 'Counterpuncher' | 'ServeAndVolleyer' | 'AllCourt';
 export type CourtPref = 'Indoor' | 'Outdoor' | 'NoPreference';
 export type TimeOfDay = 'Morning' | 'Afternoon' | 'Evening';
@@ -78,6 +79,13 @@ export const HANDS: ChipOption<Hand>[] = [
 export const BACKHANDS: ChipOption<Backhand>[] = [
   { value: 'OneHanded', emoji: '☝️', key: 'auth.backhandOne' },
   { value: 'TwoHanded', emoji: '✌️', key: 'auth.backhandTwo' },
+];
+
+export const GENDERS: ChipOption<Gender>[] = [
+  { value: 'Male', emoji: '👨', key: 'auth.genderMale' },
+  { value: 'Female', emoji: '👩', key: 'auth.genderFemale' },
+  { value: 'NonBinary', emoji: '🌈', key: 'auth.genderNonBinary' },
+  { value: 'PreferNotToSay', emoji: '🤐', key: 'auth.genderPreferNotToSay' },
 ];
 
 export const PLAY_STYLES: ChipOption<PlayStyle>[] = [
