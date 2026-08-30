@@ -9,6 +9,10 @@ export class MessagesRepository {
     return this.data.me();
   }
 
+  typingPlayerId() {
+    return this.data.typingPlayerId();
+  }
+
   conversations() {
     return this.data.conversations();
   }

@@ -11,7 +11,7 @@
   <div class="flex items-start gap-3 pr-16">
     <span
       class="flex size-11 shrink-0 items-center justify-center rounded-xl border text-lg"
-      [class]="achievement().unlocked ? tierStyle().badge : 'border-border bg-muted grayscale'"
+      [class]="achievement().unlocked ? tierStyle().badge + ' group-hover:animate-tennis-bounce' : 'border-border bg-muted grayscale'"
     >
       {{ achievement().unlocked ? achievement().icon : '🔒' }}
     </span>

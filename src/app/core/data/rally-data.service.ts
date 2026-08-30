@@ -39,6 +39,7 @@ export class RallyDataService {
   private readonly _tripIntents = signal(TRIP_INTENTS);
   private readonly _conversations = signal(CONVERSATIONS);
   private readonly _notifications = signal(NOTIFICATIONS);
+  private readonly _typingPlayerId = signal<string | null>(null);
 
   readonly me = this._me.asReadonly();
   readonly players = this._players.asReadonly();
@@ -52,6 +53,8 @@ export class RallyDataService {
   readonly tripIntents = this._tripIntents.asReadonly();
   readonly conversations = this._conversations.asReadonly();
   readonly notifications = this._notifications.asReadonly();
+  /** The player currently "typing" a reply — only ever set while the canned auto-reply is pending. */
+  readonly typingPlayerId = this._typingPlayerId.asReadonly();
 
 
   readonly levels = LEVELS;
@@ -215,7 +218,7 @@ export class RallyDataService {
     });
   }
 
-  // Sends my message, then simulates the other player replying shortly after and raises a notification for it.
+  // Sends my message, then simulates the other player "typing" and replying shortly after, and raises a notification for it.
   sendMessage(conversationId: string, text: string): void {
     const message: ChatMessage = { id: `msg-${Date.now()}`, senderId: this._me().id, text, sentAt: 'Agora mesmo' };
     this._conversations.update((list) => list.map((c) => (c.id === conversationId ? { ...c, messages: [...c.messages, message] } : c)));
@@ -224,11 +227,13 @@ export class RallyDataService {
     if (!conversation) {
       return;
     }
-    const replyDelayMs = 1400;
+    const replyDelayMs = 1800;
+    this._typingPlayerId.set(conversation.playerId);
     setTimeout(() => {
       const replyText = CANNED_REPLIES[conversation.messages.length % CANNED_REPLIES.length];
       const reply: ChatMessage = { id: `msg-${Date.now()}-r`, senderId: conversation.playerId, text: replyText, sentAt: 'Agora mesmo' };
       this._conversations.update((list) => list.map((c) => (c.id === conversationId ? { ...c, messages: [...c.messages, reply], unread: c.unread + 1 } : c)));
+      this._typingPlayerId.update((current) => (current === conversation.playerId ? null : current));
 
       const notification: AppNotification = {
         id: `notif-${Date.now()}`,

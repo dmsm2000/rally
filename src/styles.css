@@ -146,3 +146,39 @@
 @utility animate-rise {
   animation: rally-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+
+/* A little tennis ball bounce — used for typing dots, the chat bubble and other playful hover moments. */
+@keyframes tennis-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-7px) scale(1.05);
+  }
+}
+
+@utility animate-tennis-bounce {
+  animation: tennis-bounce 0.9s ease-in-out infinite;
+}
+
+/* A quick "point won" pop — used when a badge/confirmation first appears. */
+@keyframes tennis-pop {
+  0% {
+    transform: scale(0.4) rotate(-12deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@utility animate-tennis-pop {
+  animation: tennis-pop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}

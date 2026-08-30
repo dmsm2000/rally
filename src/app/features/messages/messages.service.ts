@@ -16,6 +16,7 @@ export class MessagesService {
   );
 
   readonly unreadTotal = computed(() => this.repository.conversations().reduce((sum, c) => sum + c.unread, 0));
+  readonly typingPlayerId = computed(() => this.repository.typingPlayerId());
 
   playerById(id: string | undefined) {
     return this.repository.playerById(id);
