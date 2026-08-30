@@ -1,14 +1,3 @@
 :host {
   display: contents;
 }
-
-// Reads as an empty tennis-ball can: a solid cap on one end, then the clear cylinder body.
-.tube {
-  position: relative;
-  overflow: hidden;
-}
-
-.tube-cap {
-  background-color: color-mix(in oklch, currentColor 16%, transparent);
-  border-right: 1.5px solid color-mix(in oklch, currentColor 45%, transparent);
-}
