@@ -12,14 +12,14 @@ export const en = {
     yourProfile: 'Your profile',
     language: 'Language',
     toggleTheme: 'Toggle dark mode',
-    exitObserver: 'Stop observing',
+    exitObserver: 'Stop observing'
   },
   stats: {
     wins: 'Wins',
     matches: 'Matches',
     courts: 'Courts',
     countries: 'Countries',
-    playersMet: 'Players met',
+    playersMet: 'Players met'
   },
   players: {
     eyebrow: 'Player discovery',
@@ -43,7 +43,7 @@ export const en = {
     passport: 'Passport',
     achievements: 'Achievements',
     notFound: 'Player not found.',
-    backToPlayers: 'Back to players',
+    backToPlayers: 'Back to players'
   },
   courts: {
     eyebrow: 'Court discovery',
@@ -74,7 +74,7 @@ export const en = {
     backToCourts: 'Back to courts',
     collected: 'Collected',
     rating: 'Rating',
-    reviews: 'Reviews',
+    reviews: 'Reviews'
   },
   matches: {
     eyebrow: 'Matches / Community',
@@ -115,19 +115,19 @@ export const en = {
     composerHint: 'This is automatically posted to the feed for the community to see.',
     openLabel: 'Open',
     yourPost: 'Your post',
-    joinMatch: 'I want to play',
+    joinMatch: 'I want to play'
   },
   messages: {
     title: 'Messages',
-    emptyBody: 'Say hi from a player\'s profile to start chatting.',
+    emptyBody: "Say hi from a player's profile to start chatting.",
     noMessagesYet: 'No messages yet — say hi!',
     placeholder: 'Write a message…',
-    send: 'Send',
+    send: 'Send'
   },
   notifications: {
     title: 'Notifications',
     empty: 'No notifications yet',
-    markAllRead: 'Mark all as read',
+    markAllRead: 'Mark all as read'
   },
   world: {
     eyebrow: 'World / Community',
@@ -144,8 +144,6 @@ export const en = {
     hotspotsEyebrow: 'Nearby places',
     hotspotsTitle: 'Community hotspots',
     playersLookingForGames: '{players} players looking for games · {courts} courts',
-    activityEyebrow: 'Right now',
-    activityTitle: "What's happening around the world",
     tripEyebrow: 'Plan a trip',
     tripTitle: "I'll be around — show me the local tennis scene?",
     tripDestination: 'Pick a destination',
@@ -157,7 +155,7 @@ export const en = {
     hostEyebrow: 'Volunteer',
     hostTitle: 'Who needs a local host',
     hostEmpty: 'No open requests right now.',
-    volunteer: "I'll show you around!",
+    volunteer: "I'll show you around!"
   },
   feed: {
     greeting: 'Good evening',
@@ -171,8 +169,12 @@ export const en = {
     tabFollowing: 'Following',
     tabYourCity: 'Your city',
     tabAroundWorld: 'Around the world',
-    suggestedPlayers: 'Suggested players',
-    trending: 'Trending',
+    composerPlaceholder: "What's happening on the court today?",
+    composerAddMedia: 'Photo / clip',
+    composerPublish: 'Post',
+    removeMedia: 'Remove',
+    emptyTitle: 'Nothing here yet',
+    emptyBody: 'Play a match with someone to start following their posts here.'
   },
   passport: {
     eyebrow: 'Tennis passport',
@@ -187,9 +189,9 @@ export const en = {
     collectionEyebrow: 'Collection',
     courtsInPassport: 'Courts in the passport',
     allCourts: 'All courts',
-    playersMetEyebrow: 'People I\'ve met',
-    playersMetTitle: 'Players I\'ve played with',
-    playersMetEmpty: "You haven't played anyone yet — this list grows with every match.",
+    playersMetEyebrow: "People I've met",
+    playersMetTitle: "Players I've played with",
+    playersMetEmpty: "You haven't played anyone yet — this list grows with every match."
   },
   achievements: {
     eyebrow: 'Milestones',
@@ -205,8 +207,8 @@ export const en = {
       bronze: 'Bronze',
       silver: 'Silver',
       gold: 'Gold',
-      world: 'World',
-    },
+      world: 'World'
+    }
   },
   profile: {
     yourProfile: 'Your profile',
@@ -227,10 +229,10 @@ export const en = {
     bioLabel: 'Bio',
     saveChanges: 'Save changes',
     saved: 'Saved',
-    logout: 'Log out',
+    logout: 'Log out'
   },
   avatar: {
-    generateAnother: 'Generate another',
+    generateAnother: 'Generate another'
   },
   auth: {
     eyebrow: 'Join Rally',
@@ -243,15 +245,15 @@ export const en = {
       location: 'Location',
       game: 'Your game',
       schedule: 'Schedule',
-      finish: 'Last thing',
+      finish: 'Last thing'
     },
     taglines: {
-      account: "The boring bit first — we promise it gets more fun.",
+      account: 'The boring bit first — we promise it gets more fun.',
       traits: 'A few quick, slightly random questions about you.',
       location: 'So we know which courts to point you to.',
       game: 'The important stuff — how you actually play.',
       schedule: "Help us find you a partner who's free when you are.",
-      finish: "One last thing, then you're in.",
+      finish: "One last thing, then you're in."
     },
     name: 'Full name',
     namePlaceholder: 'e.g. João Silva',
@@ -288,7 +290,7 @@ export const en = {
     availWeekends: 'Weekends',
     bio: 'Short bio',
     avatarQuestion: 'Pick your avatar',
-    bioPlaceholder: 'Play style, favourite shot, what you\'re looking for on Rally…',
+    bioPlaceholder: "Play style, favourite shot, what you're looking for on Rally…",
     bioHint: 'Optional — shown on your profile to help other players match with you.',
     age: 'Age',
     agePlaceholder: 'e.g. 27',
@@ -312,7 +314,7 @@ export const en = {
     coachedYes: 'Yes, I get coached',
     coachedNo: 'Nope, self-taught',
     coachedFrequencyQuestion: 'How many times a week?',
-    timeOfDayQuestion: "When are you at your most dangerous?",
+    timeOfDayQuestion: 'When are you at your most dangerous?',
     morning: 'Morning',
     afternoon: 'Afternoon',
     evening: 'Evening',
@@ -326,7 +328,7 @@ export const en = {
     loginLead: "Enter your details and we'll get you back on court.",
     noAccount: 'New to Rally?',
     or: 'or',
-    enterAsObserver: 'Continue as an observer',
+    enterAsObserver: 'Continue as an observer'
   },
   enums: {
     level: {
@@ -334,18 +336,18 @@ export const en = {
       Improver: 'Improver',
       Intermediate: 'Intermediate',
       Advanced: 'Advanced',
-      Competitive: 'Competitive',
+      Competitive: 'Competitive'
     },
     format: {
       Singles: 'Singles',
       Doubles: 'Doubles',
-      Both: 'Both',
+      Both: 'Both'
     },
     surface: {
       Clay: 'Clay',
       Hard: 'Hard',
       Grass: 'Grass',
-      Carpet: 'Carpet',
+      Carpet: 'Carpet'
     },
     indoor: 'Indoor',
     outdoor: 'Outdoor',
@@ -353,9 +355,9 @@ export const en = {
       win: 'Win',
       loss: 'Loss',
       live: 'Live',
-      upcoming: 'Upcoming',
-    },
-  },
+      upcoming: 'Upcoming'
+    }
+  }
 };
 
 export type Translations = typeof en;

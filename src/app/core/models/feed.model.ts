@@ -1,4 +1,4 @@
-export type FeedKind = 'match' | 'court' | 'review' | 'milestone' | 'meet' | 'challenge' | 'trip';
+export type FeedKind = 'match' | 'court' | 'review' | 'milestone' | 'meet' | 'challenge' | 'trip' | 'highlight';
 
 export interface FeedStat {
   label: string;
@@ -13,5 +13,6 @@ export interface FeedItem {
   detail?: string;
   time: string;
   image?: string;
+  video?: string;
   stat?: FeedStat[];
 }

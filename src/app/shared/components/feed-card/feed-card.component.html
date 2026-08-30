@@ -1,12 +1,20 @@
 <article class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
   <div class="flex items-center gap-3 p-4">
-    <ui-avatar [initials]="player()?.initials ?? ''" [accent]="player()?.accent ?? 'ink'" [seed]="player()?.avatarSeed" [avatarStyle]="player()?.avatarStyle" size="sm" />
+    <ui-avatar
+      [initials]="player()?.initials ?? ''"
+      [accent]="player()?.accent ?? 'ink'"
+      [seed]="player()?.avatarSeed"
+      [avatarStyle]="player()?.avatarStyle"
+      size="sm"
+    />
     <div class="min-w-0 flex-1">
       <p class="text-sm font-semibold">{{ item().text }}</p>
       <p class="text-eyebrow mt-0.5 text-muted-foreground">{{ item().time }}</p>
     </div>
   </div>
-  @if (item().image) {
+  @if (item().video) {
+    <video [src]="item().video" controls playsinline class="aspect-16/8 w-full bg-ink object-contain"></video>
+  } @else if (item().image) {
     <img [src]="item().image" alt="" loading="lazy" class="aspect-16/8 w-full object-cover" />
   }
   @if (item().detail) {

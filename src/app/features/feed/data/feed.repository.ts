@@ -10,7 +10,7 @@ export class FeedRepository {
     return this.data.feed();
   }
 
-  suggestedPlayers() {
-    return this.data.players().slice(0, 2);
+  createPost(input: { text: string; image?: string; video?: string }): FeedItem {
+    return this.data.createFeedPost(input);
   }
 }

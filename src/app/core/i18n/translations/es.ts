@@ -14,14 +14,14 @@ export const es = {
     yourProfile: 'Tu perfil',
     language: 'Idioma',
     toggleTheme: 'Alternar modo oscuro',
-    exitObserver: 'Dejar de observar',
+    exitObserver: 'Dejar de observar'
   },
   stats: {
     wins: 'Victorias',
     matches: 'Partidos',
     courts: 'Pistas',
     countries: 'Países',
-    playersMet: 'Jugadores conocidos',
+    playersMet: 'Jugadores conocidos'
   },
   players: {
     eyebrow: 'Descubrir jugadores',
@@ -45,7 +45,7 @@ export const es = {
     passport: 'Pasaporte',
     achievements: 'Logros',
     notFound: 'Jugador no encontrado.',
-    backToPlayers: 'Volver a jugadores',
+    backToPlayers: 'Volver a jugadores'
   },
   courts: {
     eyebrow: 'Descubrir pistas',
@@ -76,7 +76,7 @@ export const es = {
     backToCourts: 'Volver a pistas',
     collected: 'Coleccionada',
     rating: 'Valoración',
-    reviews: 'Reseñas',
+    reviews: 'Reseñas'
   },
   matches: {
     eyebrow: 'Partidos / Comunidad',
@@ -117,19 +117,19 @@ export const es = {
     composerHint: 'Esto se publica automáticamente en el feed para que la comunidad lo vea.',
     openLabel: 'Abierto',
     yourPost: 'Tu publicación',
-    joinMatch: 'Quiero jugar',
+    joinMatch: 'Quiero jugar'
   },
   messages: {
     title: 'Mensajes',
     emptyBody: 'Saluda desde el perfil de un jugador para empezar a chatear.',
     noMessagesYet: 'Sin mensajes todavía — ¡saluda!',
     placeholder: 'Escribe un mensaje…',
-    send: 'Enviar',
+    send: 'Enviar'
   },
   notifications: {
     title: 'Notificaciones',
     empty: 'Todavía no hay notificaciones',
-    markAllRead: 'Marcar todo como leído',
+    markAllRead: 'Marcar todo como leído'
   },
   world: {
     eyebrow: 'Mundo / Comunidad',
@@ -146,8 +146,6 @@ export const es = {
     hotspotsEyebrow: 'Lugares cercanos',
     hotspotsTitle: 'Hotspots de la comunidad',
     playersLookingForGames: '{players} jugadores buscando partido · {courts} pistas',
-    activityEyebrow: 'Ahora mismo',
-    activityTitle: 'Qué está pasando en el mundo',
     tripEyebrow: 'Planea un viaje',
     tripTitle: 'Voy a estar por ahí — ¿me enseñas el tenis local?',
     tripDestination: 'Elige un destino',
@@ -159,22 +157,27 @@ export const es = {
     hostEyebrow: 'Ofrécete',
     hostTitle: 'Quién busca un anfitrión local',
     hostEmpty: 'No hay solicitudes abiertas ahora mismo.',
-    volunteer: '¡Te lo enseño yo!',
+    volunteer: '¡Te lo enseño yo!'
   },
   feed: {
     greeting: 'Buenas tardes',
     heroTitleLine1: 'Seis jugadores',
     heroTitleLine2: 'cerca de ti quieren',
     heroTitleLine3: 'jugar esta noche.',
-    heroCopy: 'Las pistas están abiertas hasta las 23:00 en Clube de Ténis do Porto. Tu puntuación subió 4 puestos esta semana.',
+    heroCopy:
+      'Las pistas están abiertas hasta las 23:00 en Clube de Ténis do Porto. Tu puntuación subió 4 puestos esta semana.',
     findGame: 'Buscar partido',
     exploreWorld: 'Explorar el mundo',
     tabEveryone: 'Todos',
     tabFollowing: 'Siguiendo',
     tabYourCity: 'Tu ciudad',
     tabAroundWorld: 'Por el mundo',
-    suggestedPlayers: 'Jugadores sugeridos',
-    trending: 'Tendencias',
+    composerPlaceholder: '¿Qué está pasando hoy en la pista?',
+    composerAddMedia: 'Foto / clip',
+    composerPublish: 'Publicar',
+    removeMedia: 'Quitar',
+    emptyTitle: 'Todavía no hay nada aquí',
+    emptyBody: 'Juega un partido con alguien para empezar a seguir sus publicaciones aquí.'
   },
   passport: {
     eyebrow: 'Pasaporte de tenis',
@@ -191,7 +194,7 @@ export const es = {
     allCourts: 'Todas las pistas',
     playersMetEyebrow: 'Personas que conocí',
     playersMetTitle: 'Jugadores con los que ya jugué',
-    playersMetEmpty: 'Todavía no has jugado con nadie — esta lista crecerá con cada partido.',
+    playersMetEmpty: 'Todavía no has jugado con nadie — esta lista crecerá con cada partido.'
   },
   achievements: {
     eyebrow: 'Hitos',
@@ -207,8 +210,8 @@ export const es = {
       bronze: 'Bronce',
       silver: 'Plata',
       gold: 'Oro',
-      world: 'Mundial',
-    },
+      world: 'Mundial'
+    }
   },
   profile: {
     yourProfile: 'Tu perfil',
@@ -229,10 +232,10 @@ export const es = {
     bioLabel: 'Biografía',
     saveChanges: 'Guardar cambios',
     saved: 'Guardado',
-    logout: 'Cerrar sesión',
+    logout: 'Cerrar sesión'
   },
   avatar: {
-    generateAnother: 'Generar otro',
+    generateAnother: 'Generar otro'
   },
   auth: {
     eyebrow: 'Únete a Rally',
@@ -245,7 +248,7 @@ export const es = {
       location: 'Ubicación',
       game: 'Tu juego',
       schedule: 'Agenda',
-      finish: 'Últimos detalles',
+      finish: 'Últimos detalles'
     },
     taglines: {
       account: 'Lo aburrido primero — prometemos que lo demás es más divertido.',
@@ -253,7 +256,7 @@ export const es = {
       location: 'Para saber qué pistas recomendarte.',
       game: 'Lo importante — cómo juegas de verdad.',
       schedule: 'Ayúdanos a encontrarte un compañero libre cuando tú lo estés.',
-      finish: 'Solo una cosa más y ya estás dentro.',
+      finish: 'Solo una cosa más y ya estás dentro.'
     },
     name: 'Nombre completo',
     namePlaceholder: 'ej. João Silva',
@@ -328,7 +331,7 @@ export const es = {
     loginLead: 'Introduce tus datos y te devolvemos a la pista.',
     noAccount: '¿Eres nuevo en Rally?',
     or: 'o',
-    enterAsObserver: 'Continuar como observador',
+    enterAsObserver: 'Continuar como observador'
   },
   enums: {
     level: {
@@ -336,18 +339,18 @@ export const es = {
       Improver: 'En progreso',
       Intermediate: 'Intermedio',
       Advanced: 'Avanzado',
-      Competitive: 'Competitivo',
+      Competitive: 'Competitivo'
     },
     format: {
       Singles: 'Individuales',
       Doubles: 'Dobles',
-      Both: 'Ambos',
+      Both: 'Ambos'
     },
     surface: {
       Clay: 'Tierra batida',
       Hard: 'Dura',
       Grass: 'Hierba',
-      Carpet: 'Moqueta',
+      Carpet: 'Moqueta'
     },
     indoor: 'Cubierta',
     outdoor: 'Exterior',
@@ -355,7 +358,7 @@ export const es = {
       win: 'Victoria',
       loss: 'Derrota',
       live: 'En directo',
-      upcoming: 'Próximo',
-    },
-  },
+      upcoming: 'Próximo'
+    }
+  }
 } satisfies Translations;

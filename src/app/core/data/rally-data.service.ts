@@ -1,5 +1,15 @@
 import { Injectable, signal } from '@angular/core';
-import { AppNotification, ChatMessage, Conversation, FeedItem, Match, MatchFormat, Player, TripIntent, WorldActivityItem } from '../models';
+import {
+  AppNotification,
+  ChatMessage,
+  Conversation,
+  FeedItem,
+  Match,
+  MatchFormat,
+  Player,
+  TripIntent,
+  WorldActivityItem
+} from '../models';
 import {
   ACHIEVEMENTS,
   CANNED_REPLIES,
@@ -56,7 +66,6 @@ export class RallyDataService {
   /** The player currently "typing" a reply — only ever set while the canned auto-reply is pending. */
   readonly typingPlayerId = this._typingPlayerId.asReadonly();
 
-
   readonly levels = LEVELS;
   readonly surfaces = SURFACES;
   readonly heroImage = HERO_IMAGE;
@@ -71,7 +80,7 @@ export class RallyDataService {
   }
 
   updateMe(partial: Partial<Player>): void {
-    this._me.update((player) => ({ ...player, ...partial }));
+    this._me.update(player => ({ ...player, ...partial }));
   }
 
   courtById(id: string) {
@@ -80,6 +89,19 @@ export class RallyDataService {
 
   matchById(id: string) {
     return this._matches().find(m => m.id === id);
+  }
+
+  // There's no manual "follow" — you're connected to (and "follow") anyone you've shared a court with.
+  playersMetBy(playerId: string): string[] {
+    const ids = new Set<string>();
+    for (const m of this._matches()) {
+      if (m.playerA === playerId && m.playerB) {
+        ids.add(m.playerB);
+      } else if (m.playerB === playerId) {
+        ids.add(m.playerA);
+      }
+    }
+    return [...ids];
   }
 
   // Posting an open match also drops a matching post in the feed, same as a real capture/challenge would.
@@ -92,9 +114,9 @@ export class RallyDataService {
       courtId: input.courtId,
       format: input.format,
       playerA: this._me().id,
-      note: input.note,
+      note: input.note
     };
-    this._matches.update((list) => [match, ...list]);
+    this._matches.update(list => [match, ...list]);
 
     const feedItem: FeedItem = {
       id: `feed-${Date.now()}`,
@@ -102,11 +124,26 @@ export class RallyDataService {
       kind: 'challenge',
       text: input.note,
       detail: `${this.courtById(input.courtId)?.name ?? ''} · ${input.date} ${input.time}`,
-      time: 'Agora mesmo',
+      time: 'Agora mesmo'
     };
-    this._feed.update((list) => [feedItem, ...list]);
+    this._feed.update(list => [feedItem, ...list]);
 
     return match;
+  }
+
+  // A player-authored feed post — a highlight, clip or photo from the moment, no match/court attached.
+  createFeedPost(input: { text: string; image?: string; video?: string }): FeedItem {
+    const feedItem: FeedItem = {
+      id: `feed-${Date.now()}`,
+      playerId: this._me().id,
+      kind: 'highlight',
+      text: input.text,
+      time: 'Agora mesmo',
+      image: input.image,
+      video: input.video
+    };
+    this._feed.update(list => [feedItem, ...list]);
+    return feedItem;
   }
 
   // Accepting an open match books it for both players and announces the new game in the feed.
@@ -115,7 +152,9 @@ export class RallyDataService {
     if (!match || match.status !== 'open') {
       return;
     }
-    this._matches.update((list) => list.map((m) => (m.id === matchId ? { ...m, status: 'upcoming', playerB: this._me().id } : m)));
+    this._matches.update(list =>
+      list.map(m => (m.id === matchId ? { ...m, status: 'upcoming', playerB: this._me().id } : m))
+    );
 
     const feedItem: FeedItem = {
       id: `feed-${Date.now()}`,
@@ -123,14 +162,14 @@ export class RallyDataService {
       kind: 'match',
       text: `${this._me().name} accepted ${this.playerById(match.playerA)?.name ?? ''}'s open match.`,
       detail: `${this.courtById(match.courtId)?.name ?? ''} · ${match.date} ${match.time}`,
-      time: 'Agora mesmo',
+      time: 'Agora mesmo'
     };
-    this._feed.update((list) => [feedItem, ...list]);
+    this._feed.update(list => [feedItem, ...list]);
   }
 
   // Posting a trip intent also drops a live pin on the community map, same as the open-match/feed pairing above.
   createTripIntent(input: { destinationId: string; fromDate: string; toDate: string; note: string }): void {
-    const destination = this.destinations().find((d) => d.id === input.destinationId);
+    const destination = this.destinations().find(d => d.id === input.destinationId);
     if (!destination) {
       return;
     }
@@ -142,9 +181,9 @@ export class RallyDataService {
       fromDate: input.fromDate,
       toDate: input.toDate,
       note: input.note,
-      status: 'open',
+      status: 'open'
     };
-    this._tripIntents.update((list) => [tripIntent, ...list]);
+    this._tripIntents.update(list => [tripIntent, ...list]);
 
     const activityItem: WorldActivityItem = {
       id: `trip-${Date.now()}`,
@@ -153,9 +192,9 @@ export class RallyDataService {
       kind: 'trip',
       text: input.note,
       time: 'Agora mesmo',
-      coords: destination.coords,
+      coords: destination.coords
     };
-    this._worldActivity.update((list) => [activityItem, ...list]);
+    this._worldActivity.update(list => [activityItem, ...list]);
 
     const feedItem: FeedItem = {
       id: `feed-${Date.now()}`,
@@ -163,37 +202,37 @@ export class RallyDataService {
       kind: 'trip',
       text: input.note,
       detail: `${destination.flag} ${destination.city} · ${input.fromDate} – ${input.toDate}`,
-      time: 'Agora mesmo',
+      time: 'Agora mesmo'
     };
-    this._feed.update((list) => [feedItem, ...list]);
+    this._feed.update(list => [feedItem, ...list]);
   }
 
   // Volunteering to host confirms the trip intent and announces the pairing in the feed.
   volunteerForTrip(tripId: string): void {
-    const trip = this._tripIntents().find((t) => t.id === tripId);
+    const trip = this._tripIntents().find(t => t.id === tripId);
     if (!trip || trip.status !== 'open') {
       return;
     }
-    this._tripIntents.update((list) => list.map((t) => (t.id === tripId ? { ...t, status: 'matched' } : t)));
+    this._tripIntents.update(list => list.map(t => (t.id === tripId ? { ...t, status: 'matched' } : t)));
 
-    const destination = this.destinations().find((d) => d.id === trip.destinationId);
+    const destination = this.destinations().find(d => d.id === trip.destinationId);
     const feedItem: FeedItem = {
       id: `feed-${Date.now()}`,
       playerId: this._me().id,
       kind: 'trip',
       text: `${this._me().name} volunteered to show ${this.playerById(trip.playerId)?.name ?? ''} around ${destination?.city ?? ''}.`,
       detail: `${destination?.flag ?? ''} ${destination?.city ?? ''} · ${trip.fromDate} – ${trip.toDate}`,
-      time: 'Agora mesmo',
+      time: 'Agora mesmo'
     };
-    this._feed.update((list) => [feedItem, ...list]);
+    this._feed.update(list => [feedItem, ...list]);
   }
 
   conversationByPlayer(playerId: string) {
-    return this._conversations().find((c) => c.playerId === playerId);
+    return this._conversations().find(c => c.playerId === playerId);
   }
 
   conversationById(id: string) {
-    return this._conversations().find((c) => c.id === id);
+    return this._conversations().find(c => c.id === id);
   }
 
   // Finds (or lazily starts) the conversation with a player, e.g. from their "Message" button.
@@ -203,25 +242,27 @@ export class RallyDataService {
       return existing.id;
     }
     const conversation: Conversation = { id: `conv-${playerId}`, playerId, messages: [], unread: 0 };
-    this._conversations.update((list) => [conversation, ...list]);
+    this._conversations.update(list => [conversation, ...list]);
     return conversation.id;
   }
 
   // No-op (keeps the same array reference) when already read, so it never triggers a spurious signal change.
   markConversationRead(conversationId: string): void {
-    this._conversations.update((list) => {
-      const conversation = list.find((c) => c.id === conversationId);
+    this._conversations.update(list => {
+      const conversation = list.find(c => c.id === conversationId);
       if (!conversation || conversation.unread === 0) {
         return list;
       }
-      return list.map((c) => (c.id === conversationId ? { ...c, unread: 0 } : c));
+      return list.map(c => (c.id === conversationId ? { ...c, unread: 0 } : c));
     });
   }
 
   // Sends my message, then simulates the other player "typing" and replying shortly after, and raises a notification for it.
   sendMessage(conversationId: string, text: string): void {
     const message: ChatMessage = { id: `msg-${Date.now()}`, senderId: this._me().id, text, sentAt: 'Agora mesmo' };
-    this._conversations.update((list) => list.map((c) => (c.id === conversationId ? { ...c, messages: [...c.messages, message] } : c)));
+    this._conversations.update(list =>
+      list.map(c => (c.id === conversationId ? { ...c, messages: [...c.messages, message] } : c))
+    );
 
     const conversation = this.conversationById(conversationId);
     if (!conversation) {
@@ -231,9 +272,16 @@ export class RallyDataService {
     this._typingPlayerId.set(conversation.playerId);
     setTimeout(() => {
       const replyText = CANNED_REPLIES[conversation.messages.length % CANNED_REPLIES.length];
-      const reply: ChatMessage = { id: `msg-${Date.now()}-r`, senderId: conversation.playerId, text: replyText, sentAt: 'Agora mesmo' };
-      this._conversations.update((list) => list.map((c) => (c.id === conversationId ? { ...c, messages: [...c.messages, reply], unread: c.unread + 1 } : c)));
-      this._typingPlayerId.update((current) => (current === conversation.playerId ? null : current));
+      const reply: ChatMessage = {
+        id: `msg-${Date.now()}-r`,
+        senderId: conversation.playerId,
+        text: replyText,
+        sentAt: 'Agora mesmo'
+      };
+      this._conversations.update(list =>
+        list.map(c => (c.id === conversationId ? { ...c, messages: [...c.messages, reply], unread: c.unread + 1 } : c))
+      );
+      this._typingPlayerId.update(current => (current === conversation.playerId ? null : current));
 
       const notification: AppNotification = {
         id: `notif-${Date.now()}`,
@@ -243,17 +291,17 @@ export class RallyDataService {
         time: 'Just now',
         read: false,
         link: `/messages/${conversation.playerId}`,
-        playerId: conversation.playerId,
+        playerId: conversation.playerId
       };
-      this._notifications.update((list) => [notification, ...list]);
+      this._notifications.update(list => [notification, ...list]);
     }, replyDelayMs);
   }
 
   markNotificationRead(id: string): void {
-    this._notifications.update((list) => list.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    this._notifications.update(list => list.map(n => (n.id === id ? { ...n, read: true } : n)));
   }
 
   markAllNotificationsRead(): void {
-    this._notifications.update((list) => list.map((n) => ({ ...n, read: true })));
+    this._notifications.update(list => list.map(n => ({ ...n, read: true })));
   }
 }
