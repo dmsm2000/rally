@@ -4,7 +4,7 @@ import { Achievement, AppNotification, CommunityStats, Conversation, CountryEntr
  * Static dataset acting as a stand-in for the future Supabase-backed tables.
  * Only `RallyDataService` should import this file; features must go through repositories.
  */
-const IMG = '/assets';
+const IMG = 'assets';
 
 export const ME: Player = {
   id: 'joao',

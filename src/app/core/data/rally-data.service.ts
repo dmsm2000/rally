@@ -35,10 +35,10 @@ import {
 
 // Fallback cover photo for a newly added court, picked by surface when the player doesn't attach one.
 const SURFACE_IMAGE: Record<Surface, string> = {
-  Clay: '/assets/court-clay.jpg',
-  Hard: '/assets/court-hard.jpg',
-  Grass: '/assets/court-grass.jpg',
-  Carpet: '/assets/court-indoor.jpg'
+  Clay: 'assets/court-clay.jpg',
+  Hard: 'assets/court-hard.jpg',
+  Grass: 'assets/court-grass.jpg',
+  Carpet: 'assets/court-indoor.jpg'
 };
 
 /**
