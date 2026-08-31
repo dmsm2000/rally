@@ -20,6 +20,7 @@
     "@angular/router": "^22.1.0",
     "@dicebear/core": "^10.7.0",
     "@dicebear/styles": "^10.6.0",
+    "@supabase/supabase-js": "^2.112.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

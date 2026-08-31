@@ -79,6 +79,9 @@ export class RegisterPageComponent {
   ];
 
   protected readonly step = signal(0);
+  protected readonly submitting = signal(false);
+  protected readonly error = signal<string | null>(null);
+  protected readonly confirmationPending = signal(false);
 
   protected readonly name = signal('');
   protected readonly email = signal('');
@@ -182,11 +185,13 @@ export class RegisterPageComponent {
     this.step.update(s => Math.max(0, s - 1));
   }
 
-  protected onSubmit(): void {
-    if (!this.canContinue()) {
+  protected async onSubmit(): Promise<void> {
+    if (!this.canContinue() || this.submitting()) {
       return;
     }
-    this.auth.register({
+    this.submitting.set(true);
+    this.error.set(null);
+    const result = await this.auth.register(this.email(), this.password(), {
       name: this.name(),
       age: this.age() ?? undefined,
       gender: this.gender() ?? undefined,
@@ -210,6 +215,15 @@ export class RegisterPageComponent {
       avatarSeed: this.avatarSeed(),
       avatarStyle: this.avatarStyle()
     });
+    this.submitting.set(false);
+    if (!result.success) {
+      this.error.set(result.error ?? 'auth.errorGeneric');
+      return;
+    }
+    if (result.needsEmailConfirmation) {
+      this.confirmationPending.set(true);
+      return;
+    }
     this.router.navigateByUrl('/');
   }
 }

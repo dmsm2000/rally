@@ -19,16 +19,27 @@ export class LoginPageComponent {
 
   protected readonly email = signal('');
   protected readonly password = signal('');
+  protected readonly submitting = signal(false);
+  protected readonly error = signal<string | null>(null);
 
   private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  protected readonly canSubmit = computed(() => this.emailPattern.test(this.email()) && this.password().length > 0);
+  protected readonly canSubmit = computed(
+    () => !this.submitting() && this.emailPattern.test(this.email()) && this.password().length > 0
+  );
 
-  protected onSubmit(): void {
+  protected async onSubmit(): Promise<void> {
     if (!this.canSubmit()) {
       return;
     }
-    this.auth.login();
+    this.submitting.set(true);
+    this.error.set(null);
+    const result = await this.auth.login(this.email(), this.password());
+    this.submitting.set(false);
+    if (!result.success) {
+      this.error.set(result.error ?? 'auth.errorGeneric');
+      return;
+    }
     this.router.navigateByUrl('/');
   }
 

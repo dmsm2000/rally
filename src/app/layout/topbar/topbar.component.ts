@@ -54,8 +54,8 @@ export class TopbarComponent {
     this.indicatorWidth.set(link.offsetWidth);
   }
 
-  protected exitObserverMode(): void {
-    this.auth.logout();
+  protected async exitObserverMode(): Promise<void> {
+    await this.auth.logout();
     this.router.navigateByUrl('/login');
   }
 }

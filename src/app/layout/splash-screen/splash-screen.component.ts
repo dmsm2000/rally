@@ -3,6 +3,7 @@ import { Component, DestroyRef, OnDestroy, OnInit, inject, signal } from '@angul
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
+import { AuthService } from '../../core/auth/auth.service';
 
 // How long the ball keeps hopping before the logo settles in, and how long the whole splash stays up after that.
 const FADE_START_MS = 2500;
@@ -21,9 +22,10 @@ const COURT_PHOTOS = [
 
 /**
  * Brand intro: a ball bouncing across a random court photo to draw the Rally logo.
- * Shown once on a fresh page load (unless that load lands on a pre-authentication route),
- * and again right after the user completes login/register and is routed away from those pages
- * (since the root component never remounts on SPA navigation, we replay it manually here).
+ * Only shown for an already-authenticated (or observer) session landing outside the
+ * pre-authentication routes, and again right after login/register completes and routes
+ * away from those pages (since the root component never remounts on SPA navigation,
+ * we replay it manually here).
  */
 @Component({
   selector: 'rally-splash-screen',
@@ -31,24 +33,25 @@ const COURT_PHOTOS = [
   styleUrl: './splash-screen.component.scss'
 })
 export class SplashScreenComponent implements OnInit, OnDestroy {
-  protected readonly visible = signal(true);
+  protected readonly visible = signal(false);
   protected readonly fading = signal(false);
   protected readonly photoSrc = COURT_PHOTOS[Math.floor(Math.random() * COURT_PHOTOS.length)];
 
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly auth = inject(AuthService);
 
   private fadeTimer?: ReturnType<typeof setTimeout>;
   private removeTimer?: ReturnType<typeof setTimeout>;
   private wasOnHiddenRoute = false;
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    await this.auth.whenReady();
+
     // Location.path() strips the app's base href (e.g. GitHub Pages' /rally/), unlike window.location.pathname.
     this.wasOnHiddenRoute = HIDDEN_PATHS.some(path => this.location.path().startsWith(path));
-    if (this.wasOnHiddenRoute) {
-      this.visible.set(false);
-    } else {
+    if (!this.wasOnHiddenRoute && this.auth.isAuthenticated()) {
       this.play();
     }
 
@@ -59,7 +62,7 @@ export class SplashScreenComponent implements OnInit, OnDestroy {
       )
       .subscribe(event => {
         const onHiddenRoute = HIDDEN_PATHS.some(path => event.urlAfterRedirects.startsWith(path));
-        if (this.wasOnHiddenRoute && !onHiddenRoute) {
+        if (this.wasOnHiddenRoute && !onHiddenRoute && this.auth.isAuthenticated()) {
           this.play();
         }
         this.wasOnHiddenRoute = onHiddenRoute;

@@ -360,7 +360,13 @@ export const es = {
     loginLead: 'Introduce tus datos y te devolvemos a la pista.',
     noAccount: '¿Eres nuevo en Rally?',
     or: 'o',
-    enterAsObserver: 'Continuar como observador'
+    enterAsObserver: 'Continuar como observador',
+    signingIn: 'Iniciando sesión…',
+    creatingAccount: 'Creando cuenta…',
+    errorGeneric: 'Algo salió mal. Inténtalo de nuevo.',
+    checkEmailEyebrow: 'Ya casi',
+    checkEmailTitle: 'Revisa tu correo',
+    checkEmailLead: 'Enviamos un enlace de confirmación a {email}. Confírmalo y luego inicia sesión.'
   },
   enums: {
     level: {

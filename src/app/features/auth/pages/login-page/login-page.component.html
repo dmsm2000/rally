@@ -42,12 +42,16 @@
         </label>
       </div>
 
+      @if (error(); as message) {
+        <p class="mt-4 text-sm font-semibold text-loss">{{ message | translate }}</p>
+      }
+
       <button
         type="submit"
         [disabled]="!canSubmit()"
         class="mt-6 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ 'auth.signIn' | translate }}
+        {{ (submitting() ? 'auth.signingIn' : 'auth.signIn') | translate }}
       </button>
     </form>
 

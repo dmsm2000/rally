@@ -357,7 +357,13 @@ export const en = {
     loginLead: "Enter your details and we'll get you back on court.",
     noAccount: 'New to Rally?',
     or: 'or',
-    enterAsObserver: 'Continue as an observer'
+    enterAsObserver: 'Continue as an observer',
+    signingIn: 'Signing in…',
+    creatingAccount: 'Creating account…',
+    errorGeneric: 'Something went wrong. Please try again.',
+    checkEmailEyebrow: 'Almost there',
+    checkEmailTitle: 'Check your inbox',
+    checkEmailLead: "We sent a confirmation link to {email}. Confirm it, then sign in."
   },
   enums: {
     level: {

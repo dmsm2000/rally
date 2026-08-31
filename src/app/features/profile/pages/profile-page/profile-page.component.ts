@@ -203,8 +203,8 @@ export class ProfilePageComponent {
     setTimeout(() => this.saved.set(false), 2000);
   }
 
-  protected logout(): void {
-    this.auth.logout();
+  protected async logout(): Promise<void> {
+    await this.auth.logout();
     this.router.navigateByUrl('/login');
   }
 }

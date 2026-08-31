@@ -31,6 +31,18 @@ jobs:
 
       - run: npm ci
 
+      # environment.ts is gitignored (holds the Supabase URL/anon key) — generate it here
+      # from repo secrets (Settings → Secrets and variables → Actions → SUPABASE_URL / SUPABASE_ANON_KEY).
+      - name: Generate environment.ts
+        run: |
+          cat > src/environments/environment.ts <<EOF
+          export const environment = {
+            production: true,
+            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
+            supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}'
+          };
+          EOF
+
       - run: npx ng build --configuration production --base-href /rally/
 
       # SPA fallback: GitHub Pages has no server-side rewrites, so unknown

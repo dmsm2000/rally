@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/auth/auth.guard';
 import { noObserverGuard } from './core/auth/no-observer.guard';
 import { AppShellComponent } from './layout/app-shell/app-shell.component';
 
@@ -9,6 +10,7 @@ export const routes: Routes = [
   {
     path: '',
     component: AppShellComponent,
+    canActivate: [authGuard],
     children: [
       { path: '', loadChildren: () => import('./features/feed/feed.routes').then(m => m.FEED_ROUTES) },
       { path: 'players', loadChildren: () => import('./features/players/players.routes').then(m => m.PLAYERS_ROUTES) },
