@@ -72,6 +72,25 @@ export class AuthService {
     return { success: true };
   }
 
+  /** Sends the "reset your password" email — `redirectTo` must be an allow-listed URL in Supabase Auth settings. */
+  async requestPasswordReset(email: string): Promise<AuthResult> {
+    const redirectTo = new URL('reset-password', document.baseURI).toString();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  }
+
+  /** Call once the user lands on /reset-password with the recovery link's session already established. */
+  async updatePassword(newPassword: string): Promise<AuthResult> {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  }
+
   /** Read-only guest session — no sign-up required, no write actions allowed. */
   loginAsObserver(): void {
     this._isObserver.set(true);

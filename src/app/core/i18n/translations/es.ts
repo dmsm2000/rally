@@ -366,7 +366,24 @@ export const es = {
     errorGeneric: 'Algo salió mal. Inténtalo de nuevo.',
     checkEmailEyebrow: 'Ya casi',
     checkEmailTitle: 'Revisa tu correo',
-    checkEmailLead: 'Enviamos un enlace de confirmación a {email}. Confírmalo y luego inicia sesión.'
+    checkEmailLead: 'Enviamos un enlace de confirmación a {email}. Confírmalo y luego inicia sesión.',
+    forgotPassword: '¿Olvidaste tu contraseña?',
+    forgotPasswordEyebrow: 'No te preocupes',
+    forgotPasswordTitle: 'Restablece tu contraseña',
+    forgotPasswordLead: 'Ingresa tu correo y te enviaremos un enlace para elegir una nueva contraseña.',
+    sendResetLink: 'Enviar enlace',
+    sendingResetLink: 'Enviando…',
+    backToSignIn: 'Volver a iniciar sesión',
+    resetSentTitle: 'Enlace enviado',
+    resetSentLead: 'Enviamos un enlace de restablecimiento a {email}. Ábrelo para elegir una nueva contraseña.',
+    resetPasswordEyebrow: 'Ya casi',
+    resetPasswordTitle: 'Elige una nueva contraseña',
+    resetPasswordLead: 'Elige algo que recuerdes, al menos 6 caracteres.',
+    newPassword: 'Nueva contraseña',
+    savePassword: 'Guardar contraseña',
+    savingPassword: 'Guardando…',
+    resetDoneTitle: 'Contraseña actualizada',
+    resetDoneLead: 'Tu contraseña fue cambiada. Inicia sesión con la nueva contraseña.'
   },
   enums: {
     level: {

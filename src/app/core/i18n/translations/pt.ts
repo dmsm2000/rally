@@ -366,7 +366,24 @@ export const pt = {
     errorGeneric: 'Algo correu mal. Tenta novamente.',
     checkEmailEyebrow: 'Quase lá',
     checkEmailTitle: 'Verifica o teu email',
-    checkEmailLead: 'Enviámos um link de confirmação para {email}. Confirma-o e depois inicia sessão.'
+    checkEmailLead: 'Enviámos um link de confirmação para {email}. Confirma-o e depois inicia sessão.',
+    forgotPassword: 'Esqueceste-te da password?',
+    forgotPasswordEyebrow: 'Sem problema',
+    forgotPasswordTitle: 'Repor a password',
+    forgotPasswordLead: 'Indica o teu email e enviamos-te um link para definires uma nova password.',
+    sendResetLink: 'Enviar link',
+    sendingResetLink: 'A enviar…',
+    backToSignIn: 'Voltar ao login',
+    resetSentTitle: 'Link enviado',
+    resetSentLead: 'Enviámos um link de reposição de password para {email}. Abre-o para escolheres uma nova password.',
+    resetPasswordEyebrow: 'Quase lá',
+    resetPasswordTitle: 'Escolhe uma nova password',
+    resetPasswordLead: 'Escolhe algo que te lembres, pelo menos 6 caracteres.',
+    newPassword: 'Nova password',
+    savePassword: 'Guardar password',
+    savingPassword: 'A guardar…',
+    resetDoneTitle: 'Password atualizada',
+    resetDoneLead: 'A tua password foi alterada. Inicia sessão com a nova password.'
   },
   enums: {
     level: {

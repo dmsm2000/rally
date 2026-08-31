@@ -10,7 +10,7 @@ const FADE_START_MS = 2500;
 const REMOVE_MS = 3000;
 
 // Pre-authentication routes render their own screen — the brand intro would only get in the way there.
-const HIDDEN_PATHS = ['/login', '/register'];
+const HIDDEN_PATHS = ['/login', '/register', '/forgot-password', '/reset-password'];
 
 const COURT_PHOTOS = [
   'assets/court-clay.jpg',

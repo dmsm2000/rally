@@ -363,7 +363,24 @@ export const en = {
     errorGeneric: 'Something went wrong. Please try again.',
     checkEmailEyebrow: 'Almost there',
     checkEmailTitle: 'Check your inbox',
-    checkEmailLead: "We sent a confirmation link to {email}. Confirm it, then sign in."
+    checkEmailLead: "We sent a confirmation link to {email}. Confirm it, then sign in.",
+    forgotPassword: 'Forgot your password?',
+    forgotPasswordEyebrow: 'No worries',
+    forgotPasswordTitle: 'Reset your password',
+    forgotPasswordLead: "Enter your email and we'll send you a link to set a new password.",
+    sendResetLink: 'Send reset link',
+    sendingResetLink: 'Sending…',
+    backToSignIn: 'Back to sign in',
+    resetSentTitle: 'Link sent',
+    resetSentLead: 'We sent a password reset link to {email}. Open it to choose a new password.',
+    resetPasswordEyebrow: 'Almost there',
+    resetPasswordTitle: 'Choose a new password',
+    resetPasswordLead: 'Pick something you\'ll remember, at least 6 characters.',
+    newPassword: 'New password',
+    savePassword: 'Save password',
+    savingPassword: 'Saving…',
+    resetDoneTitle: 'Password updated',
+    resetDoneLead: 'Your password was changed. Sign in with your new password.'
   },
   enums: {
     level: {

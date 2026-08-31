@@ -8,6 +8,14 @@ export const routes: Routes = [
   { path: 'register', loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES) },
   { path: 'login', loadChildren: () => import('./features/auth/auth.routes').then(m => m.LOGIN_ROUTES) },
   {
+    path: 'forgot-password',
+    loadChildren: () => import('./features/auth/auth.routes').then(m => m.FORGOT_PASSWORD_ROUTES)
+  },
+  {
+    path: 'reset-password',
+    loadChildren: () => import('./features/auth/auth.routes').then(m => m.RESET_PASSWORD_ROUTES)
+  },
+  {
     path: '',
     component: AppShellComponent,
     canActivate: [authGuard],
