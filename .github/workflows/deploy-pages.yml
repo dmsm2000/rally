@@ -25,9 +25,11 @@ jobs:
           node-version: 22
           cache: npm
 
-      # npm ci occasionally dies mid-install with "Exit handler never called!"
-      # (a known npm CLI race, npm/cli#4028) — retry instead of failing the deploy.
-      - run: npm ci || npm ci || npm ci
+      # Runner's bundled npm can hit a known crash ("Exit handler never
+      # called!", npm/cli#4028) — upgrading npm first avoids it.
+      - run: npm install -g npm@latest
+
+      - run: npm ci
 
       - run: npx ng build --configuration production --base-href /rally/
 
