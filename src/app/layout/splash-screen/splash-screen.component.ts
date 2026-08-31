@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, DestroyRef, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
@@ -22,18 +23,20 @@ const HIDDEN_PATHS = ['/login', '/register'];
   styleUrl: './splash-screen.component.scss'
 })
 export class SplashScreenComponent implements OnInit, OnDestroy {
-  private readonly router = inject(Router);
-  private readonly destroyRef = inject(DestroyRef);
-
   protected readonly visible = signal(true);
   protected readonly fading = signal(false);
+
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  private readonly destroyRef = inject(DestroyRef);
 
   private fadeTimer?: ReturnType<typeof setTimeout>;
   private removeTimer?: ReturnType<typeof setTimeout>;
   private wasOnHiddenRoute = false;
 
   ngOnInit(): void {
-    this.wasOnHiddenRoute = HIDDEN_PATHS.some(path => window.location.pathname.startsWith(path));
+    // Location.path() strips the app's base href (e.g. GitHub Pages' /rally/), unlike window.location.pathname.
+    this.wasOnHiddenRoute = HIDDEN_PATHS.some(path => this.location.path().startsWith(path));
     if (this.wasOnHiddenRoute) {
       this.visible.set(false);
     } else {
