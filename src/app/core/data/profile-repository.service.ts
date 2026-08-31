@@ -121,4 +121,10 @@ export class ProfileRepositoryService {
       memberNumber: String(row.member_number).padStart(6, '0')
     };
   }
+
+  /** Permanently deletes the signed-in user's auth account (cascades to their profile row too). */
+  async deleteOwnAccount(): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase.rpc('delete_own_account');
+    return error ? { success: false, error: error.message } : { success: true };
+  }
 }

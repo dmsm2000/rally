@@ -409,3 +409,18 @@
     </div>
   </section>
 }
+
+@if (!auth.isObserver()) {
+  <section class="rounded-2xl border border-border bg-card p-5">
+    <p class="text-sm text-muted-foreground">{{ 'profile.dangerZoneLead' | translate }}</p>
+    <button
+      type="button"
+      (click)="deleteAccount()"
+      [disabled]="deletingAccount()"
+      class="mt-4 cursor-pointer rounded-full border border-loss px-4 py-2 text-xs font-extrabold tracking-wide text-loss uppercase hover:bg-loss hover:text-white disabled:pointer-events-none disabled:opacity-40"
+    >
+      {{ (deletingAccount() ? 'profile.deletingAccount' : 'profile.deleteAccount') | translate }}
+    </button>
+  </section>
+}
+

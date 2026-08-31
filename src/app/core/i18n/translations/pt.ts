@@ -257,7 +257,13 @@ export const pt = {
     bioLabel: 'Bio',
     saveChanges: 'Guardar alterações',
     saved: 'Guardado',
-    logout: 'Terminar sessão'
+    logout: 'Terminar sessão',
+    dangerZoneLead: 'Apagar a tua conta remove o teu perfil e login para sempre. Isto não pode ser desfeito.',
+    deleteAccount: 'Apagar conta',
+    deleteAccountConfirmLead: 'Tens a certeza? Isto vai apagar a tua conta e perfil permanentemente.',
+    deleteAccountConfirmButton: 'Sim, apagar a minha conta',
+    deletingAccount: 'A apagar…',
+    cancel: 'Cancelar'
   },
   avatar: {
     generateAnother: 'Gerar outro'

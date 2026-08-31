@@ -96,6 +96,16 @@ export class AuthService {
     return { success: true };
   }
 
+  /** Permanently deletes the signed-in user's account (see supabase/migrations/0002_delete_own_account.sql). */
+  async deleteAccount(): Promise<AuthResult> {
+    const result = await this.profiles.deleteOwnAccount();
+    if (!result.success) {
+      return { success: false, error: result.error };
+    }
+    await supabase.auth.signOut();
+    return { success: true };
+  }
+
   /** Best-effort: a failed insert (e.g. table/RLS not set up yet) shouldn't block the rest of the app. */
   private async saveProfileRow(userId: string, profile: RegisterProfile): Promise<void> {
     const result = await this.profiles.insert(userId, profile);

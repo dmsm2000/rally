@@ -7,3 +7,4 @@ export * from './empty-state/empty-state.component';
 export * from './match-score/match-score.component';
 export * from './toast/toast-container.component';
 export * from './icon/icon.component';
+export * from './confirm-dialog/confirm-dialog.component';

@@ -1,0 +1,31 @@
+@if (dialog.active(); as request) {
+  <div class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4" role="presentation">
+    <div
+      class="animate-tennis-pop w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-xl"
+      role="alertdialog"
+      aria-modal="true"
+    >
+      @if (request.title) {
+        <p class="text-eyebrow text-muted-foreground">{{ request.title }}</p>
+      }
+      <p class="mt-1 text-sm text-foreground">{{ request.message }}</p>
+      <div class="mt-6 flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          (click)="dialog.respond(false)"
+          class="cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
+        >
+          {{ request.cancelLabel }}
+        </button>
+        <button
+          type="button"
+          (click)="dialog.respond(true)"
+          class="cursor-pointer rounded-full px-4 py-2 text-xs font-extrabold tracking-wide uppercase"
+          [class]="request.tone === 'destructive' ? 'bg-loss text-white' : 'bg-lime text-ink'"
+        >
+          {{ request.confirmLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

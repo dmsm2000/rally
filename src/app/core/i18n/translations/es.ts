@@ -257,7 +257,13 @@ export const es = {
     bioLabel: 'Biografía',
     saveChanges: 'Guardar cambios',
     saved: 'Guardado',
-    logout: 'Cerrar sesión'
+    logout: 'Cerrar sesión',
+    dangerZoneLead: 'Eliminar tu cuenta borra tu perfil y acceso para siempre. Esto no se puede deshacer.',
+    deleteAccount: 'Eliminar cuenta',
+    deleteAccountConfirmLead: '¿Seguro? Esto eliminará tu cuenta y perfil de forma permanente.',
+    deleteAccountConfirmButton: 'Sí, eliminar mi cuenta',
+    deletingAccount: 'Eliminando…',
+    cancel: 'Cancelar'
   },
   avatar: {
     generateAnother: 'Generar otro'

@@ -29,6 +29,8 @@ import {
 import { TranslationService } from '../../../../core/i18n/translation.service';
 import { Format, Level, Surface } from '../../../../core/models';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
+import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { AvatarPickerComponent, MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { AvatarComponent, ChipComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
@@ -58,6 +60,8 @@ export class ProfilePageComponent {
   protected readonly matchesService = inject(MatchesService);
   protected readonly passportService = inject(PassportService);
   private readonly translation = inject(TranslationService);
+  private readonly toast = inject(ToastService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly router = inject(Router);
 
   private readonly myMatches = computed(() => {
@@ -207,6 +211,28 @@ export class ProfilePageComponent {
 
   protected async logout(): Promise<void> {
     await this.auth.logout();
+    this.router.navigateByUrl('/login');
+  }
+
+  protected readonly deletingAccount = signal(false);
+
+  protected async deleteAccount(): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      message: this.translation.t('profile.deleteAccountConfirmLead'),
+      confirmLabel: this.translation.t('profile.deleteAccountConfirmButton'),
+      cancelLabel: this.translation.t('profile.cancel'),
+      tone: 'destructive'
+    });
+    if (!confirmed) {
+      return;
+    }
+    this.deletingAccount.set(true);
+    const result = await this.auth.deleteAccount();
+    this.deletingAccount.set(false);
+    if (!result.success) {
+      this.toast.error(this.translation.t(result.error ?? 'auth.errorGeneric'));
+      return;
+    }
     this.router.navigateByUrl('/login');
   }
 }

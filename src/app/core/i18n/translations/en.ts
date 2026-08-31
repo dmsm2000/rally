@@ -254,7 +254,13 @@ export const en = {
     bioLabel: 'Bio',
     saveChanges: 'Save changes',
     saved: 'Saved',
-    logout: 'Log out'
+    logout: 'Log out',
+    dangerZoneLead: 'Deleting your account removes your profile and login permanently. This cannot be undone.',
+    deleteAccount: 'Delete account',
+    deleteAccountConfirmLead: 'Are you sure? This will permanently delete your account and profile.',
+    deleteAccountConfirmButton: 'Yes, delete my account',
+    deletingAccount: 'Deleting…',
+    cancel: 'Cancel'
   },
   avatar: {
     generateAnother: 'Generate another'
