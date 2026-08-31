@@ -283,8 +283,10 @@ export const pt = {
       schedule: 'Ajuda-nos a encontrar-te um parceiro livre quando tu também estás.',
       finish: 'Só mais uma coisa e ficas pronto.'
     },
-    name: 'Nome completo',
-    namePlaceholder: 'ex. João Silva',
+    firstName: 'Primeiro nome',
+    firstNamePlaceholder: 'ex. João',
+    lastName: 'Último nome',
+    lastNamePlaceholder: 'ex. Silva',
     email: 'Email',
     emailPlaceholder: 'tu@exemplo.com',
     password: 'Palavra-passe',

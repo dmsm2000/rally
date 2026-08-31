@@ -4,12 +4,14 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import {
   AVAILABILITY_OPTIONS,
+  AvailabilityOption,
   Backhand,
   BACKHANDS,
   COUNTRIES,
   COURT_PREFS,
   CourtPref,
   FORMATS,
+  Frequency,
   FREQUENCIES,
   Gender,
   GENDERS,
@@ -123,11 +125,11 @@ export class ProfilePageComponent {
   protected readonly draftFormat = signal<Format | null>(this.profile.me().format);
   protected readonly draftSurface = signal<Surface | null>(this.profile.me().surface);
   protected readonly draftCourtPref = signal<CourtPref | null>((this.profile.me().courtPref as CourtPref) ?? null);
-  protected readonly draftFrequency = signal<string | null>(this.profile.me().frequency);
+  protected readonly draftFrequency = signal<Frequency | null>(this.profile.me().frequency as Frequency);
   protected readonly draftCoached = signal<boolean | null>(this.profile.me().coached ?? null);
-  protected readonly draftCoachedFrequency = signal<string | null>(this.profile.me().coachedFrequency ?? null);
+  protected readonly draftCoachedFrequency = signal<Frequency | null>((this.profile.me().coachedFrequency as Frequency) ?? null);
   protected readonly draftTimesOfDay = signal<TimeOfDay[]>((this.profile.me().timesOfDay as TimeOfDay[]) ?? []);
-  protected readonly draftAvailability = signal<string[]>(this.profile.me().availability);
+  protected readonly draftAvailability = signal<AvailabilityOption[]>(this.profile.me().availability as AvailabilityOption[]);
   protected readonly draftBio = signal(this.profile.me().bio);
   protected readonly draftAvatarSeed = signal(this.profile.me().avatarSeed ?? this.profile.me().id);
   protected readonly draftAvatarStyle = signal<AvatarStyleId>(
@@ -156,7 +158,7 @@ export class ProfilePageComponent {
     this.draftYears.set(Math.max(0, (this.draftYears() ?? 1) - 1));
   }
 
-  protected toggleDraftAvailability(option: string): void {
+  protected toggleDraftAvailability(option: AvailabilityOption): void {
     const current = this.draftAvailability();
     this.draftAvailability.set(current.includes(option) ? current.filter(a => a !== option) : [...current, option]);
   }

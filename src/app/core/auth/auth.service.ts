@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Session } from '@supabase/supabase-js';
+import { ProfileRepositoryService } from '../data/profile-repository.service';
 import { RallyDataService } from '../data/rally-data.service';
 import { Player } from '../models';
 import { supabase } from './supabase.client';
@@ -11,13 +12,22 @@ export interface AuthResult {
   error?: string;
 }
 
+type RegisterProfile = Partial<Player> & { firstName: string; lastName: string };
+
+// Written when signUp() returns no session yet (email confirmation pending) — RLS would reject the
+// profiles-table insert at that point since there's no authenticated user yet. Flushed once a real
+// session shows up (confirmed + logged in), see flushPendingProfile().
+const PENDING_PROFILE_KEY = 'rally.pendingProfile';
+
 /**
- * Wraps Supabase Auth (email/password for now). Player *profile* data (name, level, city...)
- * still lives in the mock `RallyDataService` — only the session/identity is real.
+ * Wraps Supabase Auth (email/password for now). The registration form's answers are written to
+ * the real `profiles` table (see ProfileRepositoryService) — but the rest of the app still reads
+ * the player it displays from the mock `RallyDataService`, so this is not yet a full data swap.
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly data = inject(RallyDataService);
+  private readonly profiles = inject(ProfileRepositoryService);
 
   private readonly _session = signal<Session | null>(null);
   private readonly _isObserver = signal(false);
@@ -27,6 +37,9 @@ export class AuthService {
   private readonly initialLoad: Promise<void> = supabase.auth.getSession().then(({ data }) => {
     this._session.set(data.session);
     this._ready.set(true);
+    if (data.session) {
+      this.refreshProfile(data.session.user.id);
+    }
   });
 
   readonly isAuthenticated = computed(() => this._isObserver() || this._session() !== null);
@@ -41,6 +54,8 @@ export class AuthService {
       this._session.set(session);
       if (session) {
         this._isObserver.set(false);
+        this.flushPendingProfile(session.user.id);
+        this.refreshProfile(session.user.id);
       }
     });
   }
@@ -50,13 +65,22 @@ export class AuthService {
     return this.initialLoad;
   }
 
-  async register(email: string, password: string, profile?: Partial<Player>): Promise<AuthResult> {
+  async register(email: string, password: string, profile?: RegisterProfile): Promise<AuthResult> {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       return { success: false, error: error.message };
     }
     if (profile) {
       this.data.updateMe(profile);
+      if (data.user) {
+        if (data.session) {
+          // Already authenticated (email confirmation disabled) — safe to write now.
+          await this.saveProfileRow(data.user.id, profile);
+        } else {
+          // No session yet — stash it and finish writing once the user actually confirms + signs in.
+          localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify({ userId: data.user.id, profile }));
+        }
+      }
     }
     this._isObserver.set(false);
     // With email confirmation enabled (Supabase default), signUp succeeds but returns no session yet.
@@ -70,6 +94,41 @@ export class AuthService {
     }
     this._isObserver.set(false);
     return { success: true };
+  }
+
+  /** Best-effort: a failed insert (e.g. table/RLS not set up yet) shouldn't block the rest of the app. */
+  private async saveProfileRow(userId: string, profile: RegisterProfile): Promise<void> {
+    const result = await this.profiles.insert(userId, profile);
+    if (!result.success) {
+      console.error('Failed to save profile row:', result.error);
+    } else if (result.memberNumber) {
+      this.data.updateMe({ memberNumber: result.memberNumber });
+    }
+  }
+
+  /** Loads the real profile row (if one exists yet) so login always shows the actual saved profile. */
+  private async refreshProfile(userId: string): Promise<void> {
+    const profile = await this.profiles.getByUserId(userId);
+    if (profile) {
+      this.data.updateMe(profile);
+    }
+  }
+
+  /** Completes a registration's profile-row write once a real session for that user shows up. */
+  private flushPendingProfile(userId: string): void {
+    const raw = localStorage.getItem(PENDING_PROFILE_KEY);
+    if (!raw) {
+      return;
+    }
+    localStorage.removeItem(PENDING_PROFILE_KEY);
+    try {
+      const pending: { userId: string; profile: RegisterProfile } = JSON.parse(raw);
+      if (pending.userId === userId) {
+        void this.saveProfileRow(userId, pending.profile);
+      }
+    } catch (err) {
+      console.error('Failed to parse pending profile:', err);
+    }
   }
 
   /** Sends the "reset your password" email — `redirectTo` must be an allow-listed URL in Supabase Auth settings. */

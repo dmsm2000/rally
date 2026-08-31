@@ -48,20 +48,36 @@
       @switch (step()) {
         @case (0) {
           <div class="space-y-5">
-            <label class="block">
-              <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
-                >* {{ 'auth.name' | translate }}</span
-              >
-              <input
-                [ngModel]="name()"
-                (ngModelChange)="name.set($event)"
-                name="name"
-                type="text"
-                autocomplete="name"
-                [placeholder]="'auth.namePlaceholder' | translate"
-                class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
-              />
-            </label>
+            <div class="flex gap-3">
+              <label class="block flex-1">
+                <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                  >* {{ 'auth.firstName' | translate }}</span
+                >
+                <input
+                  [ngModel]="firstName()"
+                  (ngModelChange)="firstName.set($event)"
+                  name="firstName"
+                  type="text"
+                  autocomplete="given-name"
+                  [placeholder]="'auth.firstNamePlaceholder' | translate"
+                  class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+                />
+              </label>
+              <label class="block flex-1">
+                <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                  >* {{ 'auth.lastName' | translate }}</span
+                >
+                <input
+                  [ngModel]="lastName()"
+                  (ngModelChange)="lastName.set($event)"
+                  name="lastName"
+                  type="text"
+                  autocomplete="family-name"
+                  [placeholder]="'auth.lastNamePlaceholder' | translate"
+                  class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+                />
+              </label>
+            </div>
             <label class="block">
               <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
                 >* {{ 'auth.email' | translate }}</span
@@ -130,7 +146,7 @@
               />
             </label>
             <div>
-              <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.genderQuestion' | translate }}</p>
+              <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.genderQuestion' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (g of genders; track g.value) {
                   <ui-chip [clickable]="true" [active]="gender() === g.value" (toggled)="gender.set(g.value)"
@@ -140,7 +156,7 @@
               </div>
             </div>
             <div>
-              <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.dominantHand' | translate }}</p>
+              <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.dominantHand' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (h of hands; track h.value) {
                   <ui-chip
@@ -318,7 +334,7 @@
               </div>
             </div>
             <div>
-              <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.coachedQuestion' | translate }}</p>
+              <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.coachedQuestion' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 <ui-chip [clickable]="true" [active]="coached() === true" tone="lime" (toggled)="setCoached(true)"
                   >🎾 {{ 'auth.coachedYes' | translate }}</ui-chip
@@ -329,7 +345,7 @@
               </div>
               @if (coached() === true) {
                 <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">
-                  {{ 'auth.coachedFrequencyQuestion' | translate }}
+                  * {{ 'auth.coachedFrequencyQuestion' | translate }}
                 </p>
                 <div class="flex flex-wrap gap-2">
                   @for (f of frequencies; track f.value) {
@@ -358,7 +374,7 @@
               </div>
             </div>
             <div>
-              <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.availability' | translate }}</p>
+              <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.availability' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (a of availabilityOptions; track a.value) {
                   <ui-chip

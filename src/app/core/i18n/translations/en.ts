@@ -280,8 +280,10 @@ export const en = {
       schedule: "Help us find you a partner who's free when you are.",
       finish: "One last thing, then you're in."
     },
-    name: 'Full name',
-    namePlaceholder: 'e.g. João Silva',
+    firstName: 'First name',
+    firstNamePlaceholder: 'e.g. João',
+    lastName: 'Last name',
+    lastNamePlaceholder: 'e.g. Silva',
     email: 'Email',
     emailPlaceholder: 'you@example.com',
     password: 'Password',

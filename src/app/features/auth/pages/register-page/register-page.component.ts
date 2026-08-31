@@ -4,12 +4,14 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import {
   AVAILABILITY_OPTIONS,
+  AvailabilityOption,
   Backhand,
   BACKHANDS,
   COUNTRIES,
   COURT_PREFS,
   CourtPref,
   FORMATS,
+  Frequency,
   FREQUENCIES,
   Gender,
   GENDERS,
@@ -87,7 +89,8 @@ export class RegisterPageComponent {
   protected readonly confirmationPending = signal(false);
   protected readonly emailFieldError = signal(false);
 
-  protected readonly name = signal('');
+  protected readonly firstName = signal('');
+  protected readonly lastName = signal('');
   protected readonly email = signal('');
   protected readonly password = signal('');
   protected readonly confirmPassword = signal('');
@@ -104,11 +107,11 @@ export class RegisterPageComponent {
   protected readonly format = signal<Format | null>('Both');
   protected readonly surface = signal<Surface | null>(null);
   protected readonly courtPref = signal<CourtPref | null>('NoPreference');
-  protected readonly frequency = signal<string | null>(null);
+  protected readonly frequency = signal<Frequency | null>(null);
   protected readonly coached = signal<boolean | null>(null);
-  protected readonly coachedFrequency = signal<string | null>(null);
+  protected readonly coachedFrequency = signal<Frequency | null>(null);
   protected readonly timesOfDay = signal<TimeOfDay[]>([]);
-  protected readonly availability = signal<string[]>([]);
+  protected readonly availability = signal<AvailabilityOption[]>([]);
   protected readonly bio = signal('');
   protected readonly avatarSeed = signal('rally-player');
   protected readonly avatarStyle = signal<AvatarStyleId>(AVATAR_STYLES[0]);
@@ -119,6 +122,8 @@ export class RegisterPageComponent {
     () => this.confirmPassword().length > 0 && this.password() !== this.confirmPassword()
   );
 
+  protected readonly fullName = computed(() => `${this.firstName().trim()} ${this.lastName().trim()}`.trim());
+
   protected readonly availableCities = computed(
     () => this.countries.find(c => c.name === this.country())?.cities ?? []
   );
@@ -127,19 +132,24 @@ export class RegisterPageComponent {
     switch (this.step()) {
       case 0:
         return (
-          this.name().trim().length > 1 &&
+          this.firstName().trim().length > 1 &&
+          this.lastName().trim().length > 1 &&
           this.emailPattern.test(this.email()) &&
           this.password().length >= 6 &&
           this.password() === this.confirmPassword()
         );
       case 1:
-        return this.age() !== null;
+        return this.age() !== null && !!this.gender() && !!this.dominantHand();
       case 2:
         return this.country().length > 0 && this.city().length > 0 && this.maxDistanceKm() !== null;
       case 3:
         return !!this.level() && this.years() !== null;
       case 4:
-        return !!this.frequency() && this.availability().length > 0;
+        return (
+          !!this.frequency() &&
+          this.coached() !== null &&
+          (this.coached() === false || !!this.coachedFrequency())
+        );
       default:
         return true;
     }
@@ -163,7 +173,7 @@ export class RegisterPageComponent {
     this.years.set(Math.max(0, (this.years() ?? 1) - 1));
   }
 
-  protected toggleAvailability(option: string): void {
+  protected toggleAvailability(option: AvailabilityOption): void {
     const current = this.availability();
     this.availability.set(current.includes(option) ? current.filter(a => a !== option) : [...current, option]);
   }
@@ -184,7 +194,7 @@ export class RegisterPageComponent {
     if (this.canContinue() && this.step() < this.steps.length - 1) {
       const nextStep = this.step() + 1;
       if (nextStep === this.steps.length - 1) {
-        this.avatarSeed.update(seed => (seed === 'rally-player' ? this.name().trim() || seed : seed));
+        this.avatarSeed.update(seed => (seed === 'rally-player' ? this.fullName() || seed : seed));
       }
       this.step.set(nextStep);
     }
@@ -200,7 +210,9 @@ export class RegisterPageComponent {
     }
     this.submitting.set(true);
     const result = await this.auth.register(this.email(), this.password(), {
-      name: this.name(),
+      name: this.fullName(),
+      firstName: this.firstName().trim(),
+      lastName: this.lastName().trim(),
       age: this.age() ?? undefined,
       gender: this.gender() ?? undefined,
       dominantHand: this.dominantHand() ?? undefined,

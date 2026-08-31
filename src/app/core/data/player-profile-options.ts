@@ -11,6 +11,15 @@ export type Gender = 'Male' | 'Female' | 'NonBinary' | 'PreferNotToSay';
 export type PlayStyle = 'AggressiveBaseliner' | 'Counterpuncher' | 'ServeAndVolleyer' | 'AllCourt';
 export type CourtPref = 'Indoor' | 'Outdoor' | 'NoPreference';
 export type TimeOfDay = 'Morning' | 'Afternoon' | 'Evening';
+export type Frequency = 'Daily' | '3–4 times a week' | 'Twice a week' | 'Once a week' | 'A few times a month';
+export type AvailabilityOption =
+  | 'Early mornings'
+  | 'Weekday mornings'
+  | 'Weekday evenings'
+  | 'Late evenings'
+  | 'Saturdays'
+  | 'Sunday mornings'
+  | 'Weekends';
 
 export interface ChipOption<T extends string> {
   value: T;
@@ -18,8 +27,8 @@ export interface ChipOption<T extends string> {
   key: string;
 }
 
-export interface TextOption {
-  value: string;
+export interface TextOption<T extends string = string> {
+  value: T;
   key: string;
 }
 
@@ -33,7 +42,7 @@ export const LEVELS: Level[] = ['Beginner', 'Improver', 'Intermediate', 'Advance
 export const FORMATS: Format[] = ['Singles', 'Doubles', 'Both'];
 export const SURFACES: Surface[] = ['Clay', 'Hard', 'Grass', 'Carpet'];
 
-export const FREQUENCIES: TextOption[] = [
+export const FREQUENCIES: TextOption<Frequency>[] = [
   { value: 'Daily', key: 'auth.freqDaily' },
   { value: '3–4 times a week', key: 'auth.freq3to4' },
   { value: 'Twice a week', key: 'auth.freqTwice' },
@@ -41,7 +50,7 @@ export const FREQUENCIES: TextOption[] = [
   { value: 'A few times a month', key: 'auth.freqFewMonth' }
 ];
 
-export const AVAILABILITY_OPTIONS: TextOption[] = [
+export const AVAILABILITY_OPTIONS: TextOption<AvailabilityOption>[] = [
   { value: 'Early mornings', key: 'auth.availEarlyMorning' },
   { value: 'Weekday mornings', key: 'auth.availWeekdayMorning' },
   { value: 'Weekday evenings', key: 'auth.availWeekdayEvening' },
