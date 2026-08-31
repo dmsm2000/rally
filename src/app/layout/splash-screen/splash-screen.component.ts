@@ -11,8 +11,16 @@ const REMOVE_MS = 3000;
 // Pre-authentication routes render their own screen — the brand intro would only get in the way there.
 const HIDDEN_PATHS = ['/login', '/register'];
 
+const COURT_PHOTOS = [
+  'assets/court-clay.jpg',
+  'assets/court-grass.jpg',
+  'assets/court-hard.jpg',
+  'assets/court-indoor.jpg',
+  'assets/court-urban.jpg'
+];
+
 /**
- * Brand intro: a ball bouncing across clay/hard/grass courts, then the Rally logo.
+ * Brand intro: a ball bouncing across a random court photo to draw the Rally logo.
  * Shown once on a fresh page load (unless that load lands on a pre-authentication route),
  * and again right after the user completes login/register and is routed away from those pages
  * (since the root component never remounts on SPA navigation, we replay it manually here).
@@ -25,6 +33,7 @@ const HIDDEN_PATHS = ['/login', '/register'];
 export class SplashScreenComponent implements OnInit, OnDestroy {
   protected readonly visible = signal(true);
   protected readonly fading = signal(false);
+  protected readonly photoSrc = COURT_PHOTOS[Math.floor(Math.random() * COURT_PHOTOS.length)];
 
   private readonly router = inject(Router);
   private readonly location = inject(Location);

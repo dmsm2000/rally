@@ -72,8 +72,9 @@
   html,
   body {
     height: 100%;
-    /* clip (not hidden) avoids the UA forcing overflow-y to auto, which breaks position: sticky */
-    overflow-x: clip;
+    /* The app shell owns all scrolling internally (its own overflow-y-auto pane) — the document itself never scrolls,
+       which avoids the browser's own rubber-band overscroll dragging the whole page (fixed/sticky chrome included). */
+    overflow: hidden;
   }
 
   body {
@@ -82,7 +83,9 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
   h1,

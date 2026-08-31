@@ -10,17 +10,23 @@
   }
 }
 
-// Abstract court line markings, stretched to fill each panel (not meant to be geometrically exact).
-.splash-court-lines {
-  fill: none;
-  stroke: var(--bone);
-  stroke-opacity: 0.4;
-  stroke-width: 1.5;
+.splash-photo {
+  opacity: 0;
+  object-position: center;
+  animation: splash-photo-in 0.6s ease both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+  }
 }
 
-.splash-court-net {
-  stroke-opacity: 0.6;
-  stroke-dasharray: 3 3;
+@keyframes splash-photo-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .splash-ball {
@@ -43,17 +49,17 @@
 
 // Each ball rides along the exact same path its shape draws, so the bounce is literally what traces the logo.
 .splash-ball--world {
-  offset-path: path('M100.8 39.2A72.8 72.8 0 1 1 100.7 39.2Z');
+  offset-path: path('M112 39.2A72.8 72.8 0 1 1 111.9 39.2Z');
   animation: splash-ball-ride 0.9s linear both;
 }
 
 .splash-ball--mountain-a {
-  offset-path: path('M36.4 77.28C72.8 95.2 98 126 106.4 176.4');
+  offset-path: path('M47.6 77.28C84 95.2 109.2 126 117.6 176.4');
   animation: splash-ball-ride 0.4s linear 0.9s both;
 }
 
 .splash-ball--mountain-b {
-  offset-path: path('M124.32 145.6C126 112 140 86.8 165.2 67.2');
+  offset-path: path('M135.52 145.6C137.2 112 151.2 86.8 176.4 67.2');
   animation: splash-ball-ride 0.4s linear 1.3s both;
 }
 
@@ -83,7 +89,7 @@
 .splash-logo-sun {
   fill: var(--lime);
   opacity: 0;
-  transform-origin: 184.8px 44.8px;
+  transform-origin: 196px 44.8px;
   animation: tennis-pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) 1.7s both;
 }
 
