@@ -1,0 +1,5 @@
+// display:contents so this wrapper doesn't introduce its own box — the <svg> becomes
+// the direct flex/grid item in whatever layout hosts <ui-icon>, avoiding alignment quirks.
+:host {
+  display: contents;
+}

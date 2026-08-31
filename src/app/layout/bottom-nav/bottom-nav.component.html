@@ -15,40 +15,7 @@
         class="nav-link flex flex-col items-center gap-1 py-2.5 text-muted-foreground"
       >
         <span #iconWrap class="nav-icon relative z-10 flex size-9 items-center justify-center rounded-full">
-          @switch (item.icon) {
-            @case ('home') {
-              <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M4 11.5 12 4l8 7.5" />
-                <path d="M6 10v9h5v-5h2v5h5v-9" />
-              </svg>
-            }
-            @case ('world') {
-              <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="8" />
-                <path d="M4 12h16M12 4c2.4 2.2 3.6 5 3.6 8s-1.2 5.8-3.6 8c-2.4-2.2-3.6-5-3.6-8s1.2-5.8 3.6-8Z" />
-              </svg>
-            }
-            @case ('courts') {
-              <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="4" y="5" width="16" height="14" rx="1.5" />
-                <path d="M12 5v14M4 12h16" />
-              </svg>
-            }
-            @case ('passport') {
-              <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="5" y="3" width="14" height="18" rx="2" />
-                <circle cx="12" cy="10" r="3" />
-                <path d="M9 17h6" />
-              </svg>
-            }
-            @case ('matches') {
-              <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="7" cy="7" r="2.5" />
-                <circle cx="17" cy="17" r="2.5" />
-                <path d="M9.5 9.5 14.5 14.5" />
-              </svg>
-            }
-          }
+          <ui-icon [name]="item.icon" className="size-5" />
         </span>
         <span class="nav-label relative z-10 text-[10px] font-bold tracking-wide uppercase">{{ item.label | translate }}</span>
       </a>

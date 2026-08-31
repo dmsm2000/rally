@@ -135,6 +135,14 @@
   }
 }
 
+/* IconComponent inlines real .svg files via [innerHTML] — that content skips Angular's
+   emulated style encapsulation, so this sizing rule has to live in the global stylesheet. */
+.ui-icon-svg svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 @keyframes rally-rise {
   from {
     opacity: 0;
@@ -148,6 +156,63 @@
 
 @utility animate-rise {
   animation: rally-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Toast entrance — drops in from above, where the stack is docked (top-center). */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-toast-in {
+  animation: toast-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Error toasts get extra emphasis: drops in further, then a quick attention-grabbing shake. */
+@keyframes toast-in-alert {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  65% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@utility animate-toast-in-alert {
+  animation: toast-in-alert 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Toast exit — mirrors toast-in; duration must match EXIT_MS in toast-container.component.ts. */
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@utility animate-toast-out {
+  animation: toast-out 0.25s ease-in both;
 }
 
 /* A little tennis ball bounce — used for typing dots, the chat bubble and other playful hover moments. */

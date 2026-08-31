@@ -24,8 +24,10 @@ import {
   TimeOfDay,
   TIMES_OF_DAY
 } from '../../../../core/data/player-profile-options';
+import { TranslationService } from '../../../../core/i18n/translation.service';
 import { Format, Level, Surface } from '../../../../core/models';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { AvatarPickerComponent, LanguageSwitcherComponent, ThemeToggleComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
@@ -53,6 +55,8 @@ interface RegisterStep {
 export class RegisterPageComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
+  private readonly i18n = inject(TranslationService);
   protected readonly theme = inject(ThemeService);
 
   protected readonly levels = LEVELS;
@@ -80,8 +84,8 @@ export class RegisterPageComponent {
 
   protected readonly step = signal(0);
   protected readonly submitting = signal(false);
-  protected readonly error = signal<string | null>(null);
   protected readonly confirmationPending = signal(false);
+  protected readonly emailFieldError = signal(false);
 
   protected readonly name = signal('');
   protected readonly email = signal('');
@@ -141,6 +145,11 @@ export class RegisterPageComponent {
     }
   });
 
+  protected setEmail(value: string): void {
+    this.email.set(value);
+    this.emailFieldError.set(false);
+  }
+
   protected setCountry(name: string): void {
     this.country.set(name);
     this.city.set('');
@@ -190,7 +199,6 @@ export class RegisterPageComponent {
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     const result = await this.auth.register(this.email(), this.password(), {
       name: this.name(),
       age: this.age() ?? undefined,
@@ -217,7 +225,8 @@ export class RegisterPageComponent {
     });
     this.submitting.set(false);
     if (!result.success) {
-      this.error.set(result.error ?? 'auth.errorGeneric');
+      this.emailFieldError.set(true);
+      this.toast.error(this.i18n.t(result.error ?? 'auth.errorGeneric'));
       return;
     }
     if (result.needsEmailConfirmation) {

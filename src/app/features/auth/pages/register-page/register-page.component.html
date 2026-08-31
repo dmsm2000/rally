@@ -68,12 +68,15 @@
               >
               <input
                 [ngModel]="email()"
-                (ngModelChange)="email.set($event)"
+                (ngModelChange)="setEmail($event)"
                 name="email"
                 type="email"
                 autocomplete="email"
                 [placeholder]="'auth.emailPlaceholder' | translate"
-                class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+                [class]="
+                  'w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground ' +
+                  (emailFieldError() ? 'border-loss' : 'border-border')
+                "
               />
             </label>
             <label class="block">
@@ -425,10 +428,6 @@
           </button>
         }
       </div>
-
-      @if (error(); as message) {
-        <p class="mt-4 text-sm font-semibold text-loss">{{ message | translate }}</p>
-      }
     </form>
 
     <p class="mt-6 text-center text-sm text-muted-foreground">

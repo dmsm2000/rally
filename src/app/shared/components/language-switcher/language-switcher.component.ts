@@ -2,10 +2,11 @@ import { Component, ElementRef, HostListener, inject, signal } from '@angular/co
 import { TranslationService } from '../../../core/i18n/translation.service';
 import { Locale, LOCALE_FLAGS, LOCALE_LABELS } from '../../../core/i18n/locale';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { IconComponent } from '../../ui';
 
 @Component({
   selector: 'rally-language-switcher',
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, IconComponent],
   templateUrl: './language-switcher.component.html',
   styleUrl: './language-switcher.component.scss',
 })

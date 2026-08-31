@@ -8,15 +8,7 @@
   >
     <span class="text-base leading-none">{{ flags[i18n.locale()] }}</span>
     <span class="hidden sm:inline">{{ labels[i18n.locale()] }}</span>
-    <svg viewBox="0 0 20 20" class="size-3" fill="none" aria-hidden="true">
-      <path
-        d="M5 7.5 10 12.5 15 7.5"
-        stroke="currentColor"
-        stroke-width="1.6"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
+    <ui-icon name="chevron-down" className="size-3" />
   </button>
 
   @if (open()) {
