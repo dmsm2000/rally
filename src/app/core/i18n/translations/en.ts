@@ -195,6 +195,7 @@ export const en = {
   },
   passport: {
     eyebrow: 'Tennis passport',
+    memberNumber: 'Member No. {number}',
     titleLine1: 'My tennis',
     titleLine2: 'world',
     tabOverview: 'Overview',
@@ -236,6 +237,7 @@ export const en = {
   },
   profile: {
     yourProfile: 'Your profile',
+    memberNumber: 'Member No. {number}',
     yearsPlaying: '{years} years playing',
     preferencesEyebrow: 'Preferences',
     howYouPlay: 'How you play',

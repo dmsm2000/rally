@@ -17,6 +17,11 @@
             {{ 'enums.level.' + draftLevel() | translate }} ·
             {{ 'profile.yearsPlaying' | translate: { years: draftYears() ?? 0 } }}
           </p>
+          @if (profile.me().memberNumber; as memberNumber) {
+            <p class="mt-1 font-mono text-xs tracking-widest text-bone/50">
+              {{ 'profile.memberNumber' | translate: { number: memberNumber } }}
+            </p>
+          }
         </div>
       </div>
       <button

@@ -198,6 +198,7 @@ export const es = {
   },
   passport: {
     eyebrow: 'Pasaporte de tenis',
+    memberNumber: 'N.º de socio {number}',
     titleLine1: 'Mi',
     titleLine2: 'mundo del tenis',
     tabOverview: 'Resumen',
@@ -239,6 +240,7 @@ export const es = {
   },
   profile: {
     yourProfile: 'Tu perfil',
+    memberNumber: 'N.º de socio {number}',
     yearsPlaying: '{years} años jugando',
     preferencesEyebrow: 'Preferencias',
     howYouPlay: 'Cómo juegas',

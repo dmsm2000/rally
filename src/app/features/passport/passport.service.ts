@@ -17,6 +17,7 @@ export class PassportService {
   readonly tabs = PASSPORT_TABS;
   readonly activeTab = signal<string>(PASSPORT_TABS[0]);
 
+  readonly me = this.data.me;
   readonly countries = this.data.countries;
   readonly visitedCountries = computed(() => this.countries().filter(c => c.visited));
   readonly lockedCountries = computed(() => this.countries().filter(c => !c.visited));

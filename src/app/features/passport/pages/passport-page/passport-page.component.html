@@ -2,6 +2,11 @@
   <img src="assets/court-grass.jpg" alt="" class="absolute inset-0 size-full object-cover opacity-35" />
   <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/85 to-ink/40"></div>
   <div class="court-grid-ink relative p-6 sm:p-10">
+    @if (passport.me().memberNumber; as memberNumber) {
+      <p class="absolute top-6 right-6 font-mono text-xs tracking-widest text-bone/60 sm:top-10 sm:right-10">
+        {{ 'passport.memberNumber' | translate: { number: memberNumber } }}
+      </p>
+    }
     <p class="text-eyebrow text-bone/60">{{ 'passport.eyebrow' | translate }}</p>
     <h1 class="text-display mt-3 text-5xl sm:text-7xl">
       {{ 'passport.titleLine1' | translate }}<br /><span class="text-lime">{{

@@ -29,6 +29,8 @@ export interface Player {
   bio: string;
   stats: PlayerStats;
   accent: Accent;
+  /** Rally club membership number, e.g. "000482" — shown on the passport cover and profile header. */
+  memberNumber?: string;
   /** DiceBear generation inputs; the same seed + style always renders the same avatar. */
   avatarSeed?: string;
   avatarStyle?: string;

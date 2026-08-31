@@ -25,6 +25,7 @@ export const ME: Player = {
   bio: 'Play for the rally, stay for the coffee after. Always up for a hitting session in a new city — currently plotting a tennis trip through Spain.',
   stats: { wins: 67, matches: 124, courts: 23, countries: 7 },
   accent: 'lime',
+  memberNumber: '000482',
   avatarSeed: 'joao',
   avatarStyle: 'lorelei',
 };
