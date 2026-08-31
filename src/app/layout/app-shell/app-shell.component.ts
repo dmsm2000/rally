@@ -1,9 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { TopbarComponent } from '../topbar/topbar.component';
 import { BottomNavComponent } from '../bottom-nav/bottom-nav.component';
 import { MessagesWidgetComponent } from '../../features/messages/messages-widget/messages-widget.component';
+
+// Below this viewport width the topbar auto-hides on scroll (mobile-only behaviour).
+const MOBILE_BREAKPOINT_PX = 1024;
+// Matches the topbar's h-16 height — the max distance it can slide out of view.
+const TOPBAR_HEIGHT_PX = 64;
 
 @Component({
   selector: 'rally-shell',
@@ -13,4 +18,19 @@ import { MessagesWidgetComponent } from '../../features/messages/messages-widget
 })
 export class AppShellComponent {
   protected readonly auth = inject(AuthService);
+  protected readonly topbarHideOffset = signal(0);
+
+  private lastScrollTop = 0;
+
+  // Tracks the topbar 1:1 with scroll delta so it slides off/on screen with the gesture (mobile only).
+  protected onMainScroll(event: Event): void {
+    const scrollTop = (event.target as HTMLElement).scrollTop;
+    if (window.innerWidth >= MOBILE_BREAKPOINT_PX || scrollTop <= 0) {
+      this.topbarHideOffset.set(0);
+    } else {
+      const delta = scrollTop - this.lastScrollTop;
+      this.topbarHideOffset.set(Math.min(TOPBAR_HEIGHT_PX, Math.max(0, this.topbarHideOffset() + delta)));
+    }
+    this.lastScrollTop = scrollTop;
+  }
 }

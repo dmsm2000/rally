@@ -1,6 +1,6 @@
 <div class="flex h-dvh flex-col overflow-hidden">
-  <rally-topbar />
-  <main class="flex-1 overflow-y-auto">
+  <rally-topbar [hideOffset]="topbarHideOffset()" />
+  <main class="flex-1 overflow-y-auto pt-16" (scroll)="onMainScroll($event)">
     <div class="mx-auto max-w-7xl px-5 py-6">
       <router-outlet />
     </div>

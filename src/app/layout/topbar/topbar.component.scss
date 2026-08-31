@@ -2,6 +2,11 @@
   display: block;
 }
 
+// Translated in real time from the shell's scroll handler, so it tracks the gesture 1:1 (no easing/lag).
+.topbar {
+  will-change: transform;
+}
+
 // Shared pill that slides behind the active nav link, tennis-ball style: lime fill with two curved white seams.
 .nav-indicator {
   position: absolute;

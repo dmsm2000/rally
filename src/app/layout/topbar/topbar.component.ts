@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
@@ -19,6 +19,9 @@ interface NavItem {
   styleUrl: './topbar.component.scss',
 })
 export class TopbarComponent {
+  // Pixels (0..header height) the shell wants the bar translated up, tracking scroll on mobile.
+  readonly hideOffset = input(0);
+
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
 
