@@ -5,9 +5,9 @@ import { MessagesRepository } from './data/messages.repository';
 export class MessagesService {
   private readonly repository = inject(MessagesRepository);
 
-  readonly me = computed(() => this.repository.me());
+  readonly myId = computed(() => this.repository.myId());
 
-  // Pairs each conversation with its player, most recently started/updated first.
+  // Pairs each conversation with its player, most recently active first.
   readonly conversations = computed(() =>
     this.repository
       .conversations()
@@ -26,8 +26,8 @@ export class MessagesService {
     return this.repository.conversationByPlayer(playerId);
   }
 
-  ensureConversationWithPlayer(playerId: string): string {
-    return this.repository.ensureConversation(playerId);
+  ensureConversationWithPlayer(playerId: string): Promise<string> {
+    return this.repository.ensureConversationWithPlayer(playerId);
   }
 
   markRead(conversationId: string): void {
@@ -40,5 +40,17 @@ export class MessagesService {
       return;
     }
     this.repository.sendMessage(conversationId, trimmed);
+  }
+
+  joinTypingChannel(conversationId: string): void {
+    this.repository.joinTypingChannel(conversationId);
+  }
+
+  leaveTypingChannel(): void {
+    this.repository.leaveTypingChannel();
+  }
+
+  notifyTyping(): void {
+    this.repository.notifyTyping();
   }
 }

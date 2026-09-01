@@ -170,7 +170,8 @@ export const es = {
     emptyBody: 'Saluda desde el perfil de un jugador para empezar a chatear.',
     noMessagesYet: 'Sin mensajes todavía — ¡saluda!',
     placeholder: 'Escribe un mensaje…',
-    send: 'Enviar'
+    send: 'Enviar',
+    sendFailed: 'No se pudo enviar el mensaje. Inténtalo de nuevo.'
   },
   notifications: {
     title: 'Notificaciones',

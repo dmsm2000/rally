@@ -2,7 +2,6 @@ import {
   Achievement,
   AppNotification,
   CommunityStats,
-  Conversation,
   CountryEntry,
   Court,
   Destination,
@@ -715,46 +714,6 @@ export const TRIP_INTENTS: TripIntent[] = [
     note: 'Primeira vez em Tóquio — adorava jogar com alguém local!',
     status: 'open'
   }
-];
-
-export const CONVERSATIONS: Conversation[] = [
-  {
-    id: 'conv-maria',
-    playerId: 'maria',
-    unread: 2,
-    messages: [
-      { id: 'msg1', senderId: 'maria', text: 'Hey! Up for a match this week?', sentAt: 'Yesterday · 18:20' },
-      { id: 'msg2', senderId: 'joao', text: 'Definitely, Thursday evening works for me.', sentAt: 'Yesterday · 18:45' },
-      { id: 'msg3', senderId: 'maria', text: "Perfect, I'll book the court at CTP.", sentAt: 'Yesterday · 18:47' },
-      { id: 'msg4', senderId: 'maria', text: 'Bring an extra can of balls just in case 🎾', sentAt: 'Today · 09:12' }
-    ]
-  },
-  {
-    id: 'conv-pedro',
-    playerId: 'pedro',
-    unread: 0,
-    messages: [
-      { id: 'msg5', senderId: 'pedro', text: 'Good game on Saturday!', sentAt: 'Sat · 12:10' },
-      { id: 'msg6', senderId: 'joao', text: 'That third set was brutal 😅 rematch soon?', sentAt: 'Sat · 12:30' },
-      { id: 'msg7', senderId: 'pedro', text: "Always. I'll bring my A-game next time.", sentAt: 'Sat · 12:32' }
-    ]
-  },
-  {
-    id: 'conv-ana',
-    playerId: 'ana',
-    unread: 1,
-    messages: [
-      { id: 'msg8', senderId: 'ana', text: 'Thinking of a Barcelona trip next month, you in?', sentAt: '2 days ago' }
-    ]
-  }
-];
-
-// Rotates a few friendly canned replies so a demo conversation always feels alive.
-export const CANNED_REPLIES = [
-  'Sounds good, what time works for you?',
-  "I'm in! Let's lock in a court.",
-  'Haha true. See you on the baseline 🎾',
-  "Can't wait for this one."
 ];
 
 export const NOTIFICATIONS: AppNotification[] = [

@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, ElementRef, HostListener, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MessagesService } from '../messages.service';
@@ -7,7 +8,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'rally-messages-widget',
-  imports: [FormsModule, AvatarComponent, TranslatePipe],
+  imports: [FormsModule, AvatarComponent, TranslatePipe, DatePipe],
   templateUrl: './messages-widget.component.html',
   styleUrl: './messages-widget.component.scss',
 })
@@ -34,28 +35,42 @@ export class MessagesWidgetComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
 
   constructor() {
-    // Opening a thread (from the list, a player's "Message" button or a notification) starts it and marks it read.
-    // The ensure/markRead calls read+write the conversations signal, so they run untracked to avoid re-triggering this effect.
-    effect(() => {
+    // Opening a thread (from the list, a player's "Message" button or a notification) starts it,
+    // marks it read, and joins its live typing channel — left again as soon as the thread closes
+    // or another one opens. The ensure/markRead calls read+write the conversations signal, so they
+    // run untracked to avoid re-triggering this effect.
+    effect(onCleanup => {
       const playerId = this.widget.activePlayerId();
       if (!playerId) {
         return;
       }
       untracked(() => {
-        const conversationId = this.messages.ensureConversationWithPlayer(playerId);
-        this.messages.markRead(conversationId);
+        void (async () => {
+          const conversationId = await this.messages.ensureConversationWithPlayer(playerId);
+          this.messages.markRead(conversationId);
+          this.messages.joinTypingChannel(conversationId);
+        })();
       });
+      onCleanup(() => this.messages.leaveTypingChannel());
     });
   }
 
-  protected send(): void {
+  protected onDraftChange(value: string): void {
+    this.draft.set(value);
+    if (value.trim()) {
+      this.messages.notifyTyping();
+    }
+  }
+
+  protected async send(): Promise<void> {
     const playerId = this.widget.activePlayerId();
-    if (!playerId) {
+    const text = this.draft();
+    if (!playerId || !text.trim()) {
       return;
     }
-    const conversationId = this.messages.ensureConversationWithPlayer(playerId);
-    this.messages.send(conversationId, this.draft());
     this.draft.set('');
+    const conversationId = await this.messages.ensureConversationWithPlayer(playerId);
+    this.messages.send(conversationId, text);
   }
 
   @HostListener('document:click', ['$event'])

@@ -170,7 +170,8 @@ export const pt = {
     emptyBody: 'Diz olá a partir do perfil de um jogador para começar a conversar.',
     noMessagesYet: 'Ainda sem mensagens — diz olá!',
     placeholder: 'Escreve uma mensagem…',
-    send: 'Enviar'
+    send: 'Enviar',
+    sendFailed: 'Não foi possível enviar a mensagem. Tenta novamente.'
   },
   notifications: {
     title: 'Notificações',

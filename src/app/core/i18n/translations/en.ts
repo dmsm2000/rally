@@ -168,7 +168,8 @@ export const en = {
     emptyBody: "Say hi from a player's profile to start chatting.",
     noMessagesYet: 'No messages yet — say hi!',
     placeholder: 'Write a message…',
-    send: 'Send'
+    send: 'Send',
+    sendFailed: "Couldn't send your message. Please try again."
   },
   notifications: {
     title: 'Notifications',
