@@ -135,6 +135,16 @@
   }
 }
 
+/* TwemojiRendererService replaces raw emoji characters with these <img> tags app-wide, so every
+   platform (iOS/Android/desktop) renders the exact same emoji artwork instead of its own font. */
+img.emoji {
+  display: inline-block;
+  height: 1em;
+  width: 1em;
+  margin: 0 0.05em 0 0.1em;
+  vertical-align: -0.1em;
+}
+
 /* IconComponent inlines real .svg files via [innerHTML] — that content skips Angular's
    emulated style encapsulation, so this sizing rule has to live in the global stylesheet. */
 .ui-icon-svg svg {

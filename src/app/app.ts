@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SplashScreenComponent } from './layout/splash-screen/splash-screen.component';
+import { TwemojiRendererService } from './core/services/twemoji-renderer.service';
 import { ConfirmDialogComponent, ToastContainerComponent } from './shared/ui';
 
 @Component({
@@ -9,4 +10,10 @@ import { ConfirmDialogComponent, ToastContainerComponent } from './shared/ui';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {}
+export class App implements OnInit {
+  private readonly twemoji = inject(TwemojiRendererService);
+
+  ngOnInit(): void {
+    this.twemoji.start();
+  }
+}
