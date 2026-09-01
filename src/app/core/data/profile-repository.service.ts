@@ -48,9 +48,20 @@ export interface DiscoverableProfile {
   lastName: string;
   city: string | null;
   country: string | null;
+  gender: Gender | null;
   level: Level | null;
+  years: number | null;
   format: Format | null;
   surface: Surface | null;
+  dominantHand: Hand | null;
+  backhand: Backhand | null;
+  playStyle: PlayStyle | null;
+  courtPref: CourtPref | null;
+  frequency: Frequency | null;
+  coached: boolean | null;
+  coachedFrequency: Frequency | null;
+  timesOfDay: TimeOfDay[] | null;
+  availability: AvailabilityOption[] | null;
   bio: string | null;
   avatarSeed: string | null;
   avatarStyle: AvatarStyleId | null;
@@ -63,9 +74,20 @@ interface DiscoverableProfileRow {
   last_name: string;
   city: string | null;
   country: string | null;
+  gender: Gender | null;
   level: Level | null;
+  years: number | null;
   format: Format | null;
   surface: Surface | null;
+  dominant_hand: Hand | null;
+  backhand: Backhand | null;
+  play_style: PlayStyle | null;
+  court_pref: CourtPref | null;
+  frequency: Frequency | null;
+  coached: boolean | null;
+  coached_frequency: Frequency | null;
+  times_of_day: TimeOfDay[] | null;
+  availability: AvailabilityOption[] | null;
   bio: string | null;
   avatar_seed: string | null;
   avatar_style: AvatarStyleId | null;
@@ -155,9 +177,20 @@ export class ProfileRepositoryService {
           lastName: profile.last_name,
           city: profile.city,
           country: profile.country,
+          gender: profile.gender,
           level: profile.level,
+          years: profile.years,
           format: profile.format,
           surface: profile.surface,
+          dominantHand: profile.dominant_hand,
+          backhand: profile.backhand,
+          playStyle: profile.play_style,
+          courtPref: profile.court_pref,
+          frequency: profile.frequency,
+          coached: profile.coached,
+          coachedFrequency: profile.coached_frequency,
+          timesOfDay: profile.times_of_day,
+          availability: profile.availability,
           bio: profile.bio,
           avatarSeed: profile.avatar_seed,
           avatarStyle: profile.avatar_style

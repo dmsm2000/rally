@@ -3,10 +3,21 @@
     <div class="h-28 bg-muted sm:h-36"></div>
     <div class="-mt-12 px-6 pb-6 sm:px-8">
       <div class="flex flex-wrap items-end gap-5">
-        <ui-avatar [initials]="p.initials" [accent]="p.accent" [seed]="p.avatarSeed" [avatarStyle]="p.avatarStyle" size="xl" [ring]="true" />
+        <ui-avatar
+          [initials]="p.initials"
+          [accent]="p.accent"
+          [seed]="p.avatarSeed"
+          [avatarStyle]="p.avatarStyle"
+          [badge]="profileBadge(p.gender)"
+          [badgeClass]="genderClass(p.gender)"
+          size="xl"
+          [ring]="true"
+        />
         <div class="flex-1">
           <h1 class="text-display text-3xl sm:text-5xl">{{ p.name }}</h1>
-          <p class="mt-1 text-sm text-muted-foreground">{{ p.flag }} {{ p.city }}, {{ p.country }} · {{ p.years }} years playing</p>
+          <p class="mt-1 text-sm text-muted-foreground">
+            {{ p.flag }} {{ p.city }}, {{ p.country }} · {{ 'profile.yearsPlaying' | translate: { years: p.years } }}
+          </p>
         </div>
         @if (!auth.isObserver()) {
           <div class="flex items-center gap-3">
@@ -16,16 +27,6 @@
               <p class="max-w-40 text-xs text-muted-foreground">{{ p.matchReason }}</p>
             </div>
           </div>
-        }
-      </div>
-
-      <div class="mt-6 flex flex-wrap gap-2">
-        <ui-chip tone="lime">{{ ('enums.level.' + p.level) | translate }}</ui-chip>
-        <ui-chip>{{ ('enums.format.' + p.format) | translate }}</ui-chip>
-        <ui-chip>{{ p.surface }} {{ 'stats.courts' | translate }}</ui-chip>
-        <ui-chip>{{ p.frequency }}</ui-chip>
-        @for (a of p.availability; track a) {
-          <ui-chip tone="cobalt">{{ a }}</ui-chip>
         }
       </div>
 
@@ -40,54 +41,81 @@
     </div>
   </section>
 
-  <section class="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
-    <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="p.stats.wins" [label]="'stats.wins' | translate" /></div>
-    <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="p.stats.matches" [label]="'stats.matches' | translate" /></div>
-    <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="p.stats.courts" [label]="'stats.courts' | translate" /></div>
-    <div class="rounded-2xl border border-border bg-card p-5"><ui-stat [value]="p.stats.countries" [label]="'stats.countries' | translate" /></div>
-  </section>
-
   <div class="grid gap-12 lg:grid-cols-[1fr_340px]">
     <div class="space-y-12">
       <section>
-        <ui-section-header [eyebrow]="'players.matchHistoryEyebrow' | translate" [title]="'players.recentMatches' | translate" />
-        <div class="grid gap-4 sm:grid-cols-2">
-          @for (m of history(); track m.id) {
-            <rally-match-card [match]="m" />
-          }
+        <ui-section-header [eyebrow]="'players.matchHistoryEyebrow' | translate" [title]="'players.matches' | translate" />
+        <div class="mb-5 flex gap-2 border-b border-border">
+          <button type="button" (click)="matchTab.set('upcoming')" [class.border-foreground]="matchTab() === 'upcoming'" [class.text-foreground]="matchTab() === 'upcoming'" class="cursor-pointer border-b-2 border-transparent px-1 pb-3 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">{{ 'players.matchesUpcoming' | translate }}</button>
+          <button type="button" (click)="matchTab.set('complete')" [class.border-foreground]="matchTab() === 'complete'" [class.text-foreground]="matchTab() === 'complete'" class="cursor-pointer border-b-2 border-transparent px-1 pb-3 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">{{ 'players.matchesPast' | translate }}</button>
+          <button type="button" (click)="matchTab.set('open')" [class.border-foreground]="matchTab() === 'open'" [class.text-foreground]="matchTab() === 'open'" class="cursor-pointer border-b-2 border-transparent px-1 pb-3 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">{{ 'players.matchesOpen' | translate }}</button>
         </div>
+        <ui-empty-state [title]="'players.matchesEmptyTitle' | translate" [body]="'players.matchesEmptyBody' | translate" />
       </section>
 
       <section>
         <ui-section-header [eyebrow]="'players.collectedEyebrow' | translate" [title]="'players.courtsDiscovered' | translate" />
-        <div class="grid gap-4 sm:grid-cols-2">
-          @for (c of featuredCourts(); track c.id) {
-            <rally-court-card [court]="c" />
-          }
-        </div>
+        <ui-empty-state [title]="'players.courtsEmptyTitle' | translate" [body]="'players.courtsEmptyBody' | translate" />
       </section>
     </div>
 
     <aside class="space-y-10">
-      <section>
+      <section class="rounded-2xl border border-border bg-card p-5">
         <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'players.passport' | translate }}</p>
-        <div class="flex flex-wrap gap-2">
-          @for (c of visitedCountries(); track c.name) {
-            <rally-country-badge [flag]="c.flag" [name]="c.name" />
-          }
+        <div class="grid grid-cols-2 gap-4">
+          <ui-stat [value]="0" [label]="'stats.countries' | translate" />
+          <ui-stat [value]="0" [label]="'stats.courts' | translate" />
         </div>
+        <p class="mt-5 text-sm text-muted-foreground">{{ 'players.passportEmptyBody' | translate }}</p>
       </section>
-      <section>
-        <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'players.achievements' | translate }}</p>
-        <div class="space-y-2">
-          @for (a of unlockedAchievements(); track a.id) {
-            <div class="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
-              <span class="text-lg">{{ a.icon }}</span>
-              <p class="text-xs font-bold tracking-wide uppercase">{{ a.name }}</p>
+      <section class="rounded-2xl border border-border bg-card p-5">
+        <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'players.playingProfile' | translate }}</p>
+        <dl class="space-y-4 text-sm">
+          <div class="flex items-start justify-between gap-4"><dt class="text-muted-foreground">{{ 'players.filterLevel' | translate }}</dt><dd class="text-right font-semibold">{{ ('enums.level.' + p.level) | translate }}</dd></div>
+          <div class="flex items-start justify-between gap-4"><dt class="text-muted-foreground">{{ 'players.filterFormat' | translate }}</dt><dd class="text-right font-semibold">{{ ('enums.format.' + p.format) | translate }}</dd></div>
+          <div class="flex items-start justify-between gap-4"><dt class="text-muted-foreground">{{ 'players.filterSurface' | translate }}</dt><dd class="text-right font-semibold">{{ ('enums.surface.' + p.surface) | translate }}</dd></div>
+          @if (p.dominantHand) { <div class="flex items-start justify-between gap-4"><dt class="text-muted-foreground">{{ 'players.dominantHand' | translate }}</dt><dd class="text-right font-semibold">{{ preferenceKey(p.dominantHand) | translate }}</dd></div> }
+          @if (p.backhand) { <div class="flex items-start justify-between gap-4"><dt class="text-muted-foreground">{{ 'players.backhand' | translate }}</dt><dd class="text-right font-semibold">{{ preferenceKey(p.backhand) | translate }}</dd></div> }
+          @if (p.playStyle) { <div class="flex items-start justify-between gap-4"><dt class="text-muted-foreground">{{ 'players.playStyle' | translate }}</dt><dd class="text-right font-semibold">{{ preferenceKey(p.playStyle) | translate }}</dd></div> }
+          @if (p.courtPref) { <div class="flex items-start justify-between gap-4"><dt class="text-muted-foreground">{{ 'players.courtPreference' | translate }}</dt><dd class="text-right font-semibold">{{ preferenceKey(p.courtPref) | translate }}</dd></div> }
+        </dl>
+        @if (p.timesOfDay?.length) {
+          <div class="mt-5 border-t border-border pt-4">
+            <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'players.preferredTimes' | translate }}</p>
+            <div class="flex flex-wrap gap-2">
+              @for (time of p.timesOfDay; track time) { <ui-chip [subtle]="true">{{ preferenceKey(time) | translate }}</ui-chip> }
+            </div>
+          </div>
+        }
+        @if (p.availability.length) {
+          <div class="mt-5 border-t border-border pt-4">
+            <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'players.availability' | translate }}</p>
+            <div class="flex flex-wrap gap-2">
+              @for (slot of p.availability; track slot) { <ui-chip [subtle]="true">{{ slot }}</ui-chip> }
+            </div>
+          </div>
+        }
+      </section>
+      @if (p.frequency || p.coached !== undefined) {
+        <section class="rounded-2xl border border-border bg-card p-5">
+          <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'players.training' | translate }}</p>
+          @if (p.frequency) {
+            <div>
+              <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'players.gameFrequency' | translate }}</p>
+              <ui-chip [subtle]="true">{{ p.frequency }}</ui-chip>
             </div>
           }
-        </div>
-      </section>
+          @if (p.coached !== undefined) {
+            <div class="mt-4 border-t border-border pt-4">
+              <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'players.coaching' | translate }}</p>
+              <div class="flex flex-wrap gap-2">
+                <ui-chip [subtle]="true">{{ (p.coached ? 'auth.coachedYes' : 'auth.coachedNo') | translate }}</ui-chip>
+                @if (p.coachedFrequency) { <ui-chip [subtle]="true">{{ p.coachedFrequency }}</ui-chip> }
+              </div>
+            </div>
+          }
+        </section>
+      }
     </aside>
   </div>
 } @else {

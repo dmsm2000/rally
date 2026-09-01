@@ -48,6 +48,12 @@ export class AvatarComponent {
   readonly ring = input(false);
   readonly seed = input<string | undefined>(undefined);
   readonly avatarStyle = input<string | undefined>(undefined);
+  /** Small status marker on generated avatars; defaults to the Rally tennis ball. */
+  readonly badge = input('🎾');
+  /** Hide the badge when another control occupies the same avatar corner. */
+  readonly showBadge = input(true);
+  /** Optional colour override for a badge with semantic meaning, such as gender. */
+  readonly badgeClass = input('bg-lime text-ink');
 
   protected readonly classes = computed(() =>
     [ACCENT_CLASSES[this.accent()] ?? ACCENT_CLASSES['ink'], SIZE_CLASSES[this.size()], this.ring() ? 'ring-2 ring-background' : ''].join(' '),
@@ -63,7 +69,7 @@ export class AvatarComponent {
   });
 
   // Skip the badge at the smallest sizes, where it would just look like noise.
-  protected readonly showBadge = computed(() => !!this.avatarUri() && BADGE_PX[this.size()] > 0);
+  protected readonly canShowBadge = computed(() => this.showBadge() && !!this.avatarUri() && BADGE_PX[this.size()] > 0);
 
   protected readonly badgePx = computed(() => BADGE_PX[this.size()]);
 }

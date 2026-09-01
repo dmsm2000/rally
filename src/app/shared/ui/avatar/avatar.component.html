@@ -1,15 +1,16 @@
 @if (avatarUri(); as uri) {
   <span class="relative inline-flex shrink-0">
     <img [src]="uri" alt="" class="shrink-0 rounded-full object-cover" [class]="classes()" />
-    @if (showBadge()) {
+    @if (canShowBadge()) {
       <span
-        class="absolute -right-0.5 -bottom-0.5 flex items-center justify-center rounded-full bg-lime leading-none ring-2 ring-background"
+        class="absolute -right-0.5 -bottom-0.5 flex items-center justify-center rounded-full leading-none ring-2 ring-background"
+        [class]="badgeClass()"
         [style.width.px]="badgePx()"
         [style.height.px]="badgePx()"
         [style.fontSize.px]="badgePx() * 0.6"
         aria-hidden="true"
       >
-        🎾
+        {{ badge() }}
       </span>
     }
   </span>
