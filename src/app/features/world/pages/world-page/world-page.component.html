@@ -1,15 +1,7 @@
-<section
-  class="animate-rise relative mb-6 min-h-[460px] overflow-hidden rounded-3xl border border-border bg-ink text-bone lg:min-h-[560px]"
->
-  <rally-map
-    class="absolute inset-0"
-    [className]="'size-full rounded-none border-0 bg-ink'"
-    [markers]="markers()"
-    [selected]="world.selectedId()"
-    (markerSelect)="world.select($event)"
-  />
-  <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink via-ink/75 via-60% to-ink/20"></div>
-  <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/50 to-transparent"></div>
+<section class="animate-rise relative mb-6 overflow-hidden rounded-3xl border border-border bg-ink text-bone">
+  <img src="assets/world-hero.jpg" alt="" class="absolute inset-0 size-full object-cover opacity-45" />
+  <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink via-ink/85 via-60% to-ink/35"></div>
+  <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent"></div>
 
   <div class="court-grid-ink relative p-6 sm:p-10 lg:p-14">
     <p class="text-eyebrow text-bone/60">{{ 'world.eyebrow' | translate }}</p>
@@ -26,64 +18,132 @@
         [value]="world.communityStats.countriesUnlocked"
         [label]="'world.statCountriesUnlocked' | translate"
       />
-      <ui-stat size="sm" [value]="world.communityStats.activePlayers" [label]="'world.statActivePlayers' | translate" />
+      <ui-stat size="sm" [value]="players.activeCount()" [label]="'world.statActivePlayers' | translate" />
     </div>
-  </div>
-
-  <div
-    class="relative mx-6 mb-6 flex flex-wrap items-center gap-4 rounded-xl border border-bone/15 bg-ink/70 px-4 py-3 backdrop-blur sm:mx-10 sm:mb-10 lg:mx-14"
-  >
-    <span class="text-eyebrow flex items-center gap-2 text-bone/70"
-      ><span class="size-2.5 rounded-full border-2 bg-lime border-lime-deep"></span
-      >{{ 'world.legendPlayers' | translate }}</span
-    >
-    <span class="text-eyebrow flex items-center gap-2 text-bone/70"
-      ><span class="size-2.5 rounded-full border-2 bg-clay border-clay"></span
-      >{{ 'world.legendCourts' | translate }}</span
-    >
-    <span class="text-eyebrow flex items-center gap-2 text-bone/70"
-      ><span class="size-2.5 rounded-full border-2 bg-cobalt border-cobalt"></span
-      >{{ 'world.legendActivity' | translate }}</span
-    >
-    <span class="text-eyebrow flex items-center gap-2 text-bone/70"
-      ><span class="size-2.5 rounded-full border-2 border-dashed border-bone/40"></span
-      >{{ 'world.legendLocked' | translate }}</span
-    >
   </div>
 </section>
 
 <section class="mb-14">
   <ui-section-header [eyebrow]="'players.eyebrow' | translate" [title]="'players.title' | translate" />
 
-  <div class="mb-6 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-3">
-    <span class="shrink-0 text-muted-foreground">⌕</span>
-    <input
-      [ngModel]="players.query()"
-      (ngModelChange)="players.query.set($event)"
-      [placeholder]="'players.searchPlaceholder' | translate"
-      class="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-    />
+  <div class="mb-3 flex gap-2">
+    <div
+      class="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm transition-colors focus-within:border-foreground"
+    >
+      <ui-icon name="search" className="size-4 shrink-0 text-muted-foreground" />
+      <input
+        [ngModel]="players.query()"
+        (ngModelChange)="players.query.set($event)"
+        [placeholder]="'players.searchPlaceholder' | translate"
+        class="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+      />
+    </div>
+    <button
+      type="button"
+      (click)="players.filtersOpen.set(!players.filtersOpen())"
+      [attr.aria-label]="'players.filters' | translate"
+      [attr.title]="'players.filters' | translate"
+      [class.border-lime]="players.hasActiveFilters()"
+      [class.text-lime]="players.hasActiveFilters()"
+      class="relative flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:border-foreground hover:text-foreground"
+    >
+      <ui-icon name="sliders-horizontal" className="size-5" />
+      @if (players.hasActiveFilters()) {
+        <span class="absolute top-1 right-1 size-2 rounded-full bg-lime"></span>
+      }
+    </button>
+    <button
+      type="button"
+      (click)="players.sortOpen.set(!players.sortOpen())"
+      [attr.aria-label]="'players.sort' | translate"
+      [attr.title]="'players.sort' | translate"
+      [class.border-lime]="players.sort() !== 'newest'"
+      [class.text-lime]="players.sort() !== 'newest'"
+      class="relative flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:border-foreground hover:text-foreground"
+    >
+      <ui-icon name="arrow-down-up" className="size-5" />
+      @if (players.sort() !== 'newest') {
+        <span class="absolute top-1 right-1 size-2 rounded-full bg-lime"></span>
+      }
+    </button>
   </div>
-  <div class="no-scrollbar mb-6 flex gap-2 overflow-x-auto">
-    <ui-chip [clickable]="true" [active]="players.nearOnly()" (toggled)="players.nearOnly.set(!players.nearOnly())">{{
-      'players.within300' | translate
-    }}</ui-chip>
-    @for (l of players.levels; track l) {
-      <ui-chip [clickable]="true" [active]="players.level() === l" (toggled)="players.toggleLevel(l)">{{
-        'enums.level.' + l | translate
-      }}</ui-chip>
-    }
-    @for (f of players.formats; track f) {
-      <ui-chip [clickable]="true" [active]="players.format() === f" (toggled)="players.toggleFormat(f)">{{
-        'enums.format.' + f | translate
-      }}</ui-chip>
-    }
-    @for (s of players.surfaces.slice(0, 3); track s) {
-      <ui-chip [clickable]="true" [active]="players.surface() === s" (toggled)="players.toggleSurface(s)">{{
-        s
-      }}</ui-chip>
-    }
-  </div>
+  @if (players.filtersOpen()) {
+    <div class="mb-6 border-y border-border py-5">
+      <div class="grid gap-5 lg:grid-cols-3">
+        <div>
+          <p class="mb-2 text-eyebrow text-muted-foreground">{{ 'players.filterLevel' | translate }}</p>
+          <div class="flex flex-wrap gap-2">
+            @for (l of players.levels; track l) {
+              <ui-chip
+                [clickable]="true"
+                [active]="players.levelsSelected().includes(l)"
+                (toggled)="players.toggleLevel(l)"
+                >{{ 'enums.level.' + l | translate }}</ui-chip
+              >
+            }
+          </div>
+        </div>
+        <div>
+          <p class="mb-2 text-eyebrow text-muted-foreground">{{ 'players.filterFormat' | translate }}</p>
+          <div class="flex flex-wrap gap-2">
+            @for (f of players.formats; track f) {
+              <ui-chip
+                [clickable]="true"
+                [active]="players.formatsSelected().includes(f)"
+                (toggled)="players.toggleFormat(f)"
+                >{{ 'enums.format.' + f | translate }}</ui-chip
+              >
+            }
+          </div>
+        </div>
+        <div>
+          <p class="mb-2 text-eyebrow text-muted-foreground">{{ 'players.filterSurface' | translate }}</p>
+          <div class="flex flex-wrap gap-2">
+            @for (s of players.surfaces; track s) {
+              <ui-chip
+                [clickable]="true"
+                [active]="players.surfacesSelected().includes(s)"
+                (toggled)="players.toggleSurface(s)"
+                >{{ s }}</ui-chip
+              >
+            }
+          </div>
+        </div>
+      </div>
+      @if (!auth.isObserver()) {
+        <div class="mt-5 border-t border-border pt-4">
+          <ui-chip [clickable]="true" [active]="players.sameCountryOnly()" (toggled)="players.toggleSameCountry()">{{
+            'players.sameCountry' | translate
+          }}</ui-chip>
+        </div>
+      }
+      @if (players.hasActiveFilters()) {
+        <button
+          type="button"
+          (click)="players.resetFilters()"
+          class="mt-5 cursor-pointer text-xs font-extrabold tracking-wide uppercase text-muted-foreground hover:text-foreground"
+        >
+          {{ 'players.resetFilters' | translate }}
+        </button>
+      }
+    </div>
+  }
+  @if (players.sortOpen()) {
+    <div class="mb-6 border-y border-border py-5">
+      <p class="mb-2 text-eyebrow text-muted-foreground">{{ 'players.sort' | translate }}</p>
+      <div class="flex flex-wrap gap-2">
+        <ui-chip [clickable]="true" [active]="players.sort() === 'newest'" (toggled)="players.setSort('newest')">{{
+          'players.sortNewest' | translate
+        }}</ui-chip>
+        <ui-chip [clickable]="true" [active]="players.sort() === 'name'" (toggled)="players.setSort('name')">{{
+          'players.sortName' | translate
+        }}</ui-chip>
+        <ui-chip [clickable]="true" [active]="players.sort() === 'city'" (toggled)="players.setSort('city')">{{
+          'players.sortCity' | translate
+        }}</ui-chip>
+      </div>
+    </div>
+  }
 
   <p class="text-eyebrow mb-4 text-muted-foreground">
     {{ players.results().length }} {{ 'players.resultsSuffix' | translate }}
@@ -98,20 +158,20 @@
   } @else {
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       @for (p of players.results(); track p.id) {
-        <rally-player-card [player]="p" />
+        <rally-player-card [player]="p" [showMatchScore]="!auth.isObserver()" />
       }
     </div>
   }
 </section>
 
-<section class="animate-rise overflow-hidden rounded-3xl border border-border bg-ink text-bone">
-  <div class="court-grid-ink p-6 sm:p-10 lg:p-12">
-    <p class="text-eyebrow text-lime">{{ 'world.tripEyebrow' | translate }}</p>
-    <h2 class="text-display mt-2 max-w-xl text-3xl sm:text-4xl">{{ 'world.tripTitle' | translate }}</h2>
+@if (!auth.isObserver()) {
+  <section class="animate-rise overflow-hidden rounded-3xl border border-border bg-ink text-bone">
+    <div class="court-grid-ink p-6 sm:p-10 lg:p-12">
+      <p class="text-eyebrow text-lime">{{ 'world.tripEyebrow' | translate }}</p>
+      <h2 class="text-display mt-2 max-w-xl text-3xl sm:text-4xl">{{ 'world.tripTitle' | translate }}</h2>
 
-    <div class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-12">
-      <div>
-        @if (!auth.isObserver()) {
+      <div class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-12">
+        <div>
           <div class="grid gap-3 sm:grid-cols-3">
             <select
               [ngModel]="world.tripDestinationId()"
@@ -150,49 +210,49 @@
             {{ 'world.tripPublish' | translate }}
           </button>
           <p class="text-eyebrow mt-3 text-bone/50">{{ 'world.tripHint' | translate }}</p>
-        }
-      </div>
+        </div>
 
-      <div class="border-t border-bone/15 pt-8 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-12">
-        <p class="text-eyebrow text-bone/60">{{ 'world.hostEyebrow' | translate }}</p>
-        <p class="text-display mt-1 text-xl">{{ 'world.hostTitle' | translate }}</p>
-        @if (world.openTripIntents().length) {
-          <div class="mt-5 space-y-3">
-            @for (row of world.openTripIntents(); track row.intent.id) {
-              <div class="rounded-2xl border border-dashed border-lime bg-bone/10 p-4">
-                <div class="flex items-center gap-3">
-                  <ui-avatar
-                    [initials]="row.player?.initials ?? ''"
-                    [accent]="row.player?.accent ?? 'ink'"
-                    [seed]="row.player?.avatarSeed"
-                    [avatarStyle]="row.player?.avatarStyle"
-                    size="sm"
-                  />
-                  <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-bold">{{ row.player?.name }}</p>
-                    <p class="truncate text-xs text-bone/60">
-                      {{ row.destination?.flag }} {{ row.destination?.city }} · {{ row.intent.fromDate }} –
-                      {{ row.intent.toDate }}
-                    </p>
+        <div class="border-t border-bone/15 pt-8 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-12">
+          <p class="text-eyebrow text-bone/60">{{ 'world.hostEyebrow' | translate }}</p>
+          <p class="text-display mt-1 text-xl">{{ 'world.hostTitle' | translate }}</p>
+          @if (world.openTripIntents().length) {
+            <div class="mt-5 space-y-3">
+              @for (row of world.openTripIntents(); track row.intent.id) {
+                <div class="rounded-2xl border border-dashed border-lime bg-bone/10 p-4">
+                  <div class="flex items-center gap-3">
+                    <ui-avatar
+                      [initials]="row.player?.initials ?? ''"
+                      [accent]="row.player?.accent ?? 'ink'"
+                      [seed]="row.player?.avatarSeed"
+                      [avatarStyle]="row.player?.avatarStyle"
+                      size="sm"
+                    />
+                    <div class="min-w-0 flex-1">
+                      <p class="truncate text-sm font-bold">{{ row.player?.name }}</p>
+                      <p class="truncate text-xs text-bone/60">
+                        {{ row.destination?.flag }} {{ row.destination?.city }} · {{ row.intent.fromDate }} –
+                        {{ row.intent.toDate }}
+                      </p>
+                    </div>
                   </div>
+                  <p class="mt-3 text-sm text-bone/80">{{ row.intent.note }}</p>
+                  @if ((!world.meId() || row.intent.playerId !== world.meId()) && !auth.isObserver()) {
+                    <button
+                      type="button"
+                      (click)="world.volunteerForTrip(row.intent.id)"
+                      class="mt-3 w-full cursor-pointer rounded-full border border-lime px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
+                    >
+                      {{ 'world.volunteer' | translate }}
+                    </button>
+                  }
                 </div>
-                <p class="mt-3 text-sm text-bone/80">{{ row.intent.note }}</p>
-                @if ((!world.meId() || row.intent.playerId !== world.meId()) && !auth.isObserver()) {
-                  <button
-                    type="button"
-                    (click)="world.volunteerForTrip(row.intent.id)"
-                    class="mt-3 w-full cursor-pointer rounded-full border border-lime px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
-                  >
-                    {{ 'world.volunteer' | translate }}
-                  </button>
-                }
-              </div>
-            }
-          </div>
-        } @else {
-          <p class="mt-5 text-sm text-bone/60">{{ 'world.hostEmpty' | translate }}</p>
-        }
+              }
+            </div>
+          } @else {
+            <p class="mt-5 text-sm text-bone/60">{{ 'world.hostEmpty' | translate }}</p>
+          }
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+}

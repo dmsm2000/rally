@@ -8,14 +8,23 @@
     <ui-avatar [initials]="player().initials" [accent]="player().accent" [seed]="player().avatarSeed" [avatarStyle]="player().avatarStyle" size="md" />
     <div class="min-w-0 flex-1">
       <p class="truncate font-display text-base font-extrabold tracking-tight">{{ player().name }}</p>
-      <p class="text-xs text-muted-foreground">{{ player().flag }} {{ player().city }} · {{ player().distanceKm | distanceKm }}</p>
+      <p class="text-xs text-muted-foreground">
+        {{ player().flag }} {{ player().city }}@if (player().distanceKm !== undefined) { · {{ player().distanceKm! | distanceKm }} }
+      </p>
+      @if (player().memberNumber; as memberNumber) {
+        <p class="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground">{{ memberNumber }}</p>
+      }
     </div>
-    <ui-match-score [value]="player().matchScore" [size]="46" />
+    @if (showMatchScore()) {
+      <ui-match-score [value]="player().matchScore" [size]="46" />
+    }
   </div>
   <div class="mt-3 flex flex-wrap gap-1.5">
-    <ui-chip tone="lime">{{ ('enums.level.' + player().level) | translate }}</ui-chip>
-    <ui-chip>{{ ('enums.format.' + player().format) | translate }}</ui-chip>
-    <ui-chip>{{ player().surface }}</ui-chip>
+    <ui-chip [subtle]="true">{{ ('enums.level.' + player().level) | translate }}</ui-chip>
+    <ui-chip [subtle]="true">{{ ('enums.format.' + player().format) | translate }}</ui-chip>
+    <ui-chip [subtle]="true">{{ player().surface }}</ui-chip>
   </div>
-  <p class="mt-3 text-sm text-muted-foreground" [class.line-clamp-2]="compact()" [class.text-xs]="compact()">{{ player().matchReason }}</p>
+  @if (showMatchScore() && player().matchReason) {
+    <p class="mt-3 text-sm text-muted-foreground" [class.line-clamp-2]="compact()" [class.text-xs]="compact()">{{ player().matchReason }}</p>
+  }
 </a>

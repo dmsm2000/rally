@@ -18,9 +18,15 @@ export class ChipComponent {
   readonly active = input(false);
   readonly tone = input<'default' | 'lime' | 'clay' | 'cobalt'>('default');
   readonly clickable = input(false);
+  /** Read-only metadata has no hover state or colour accent. */
+  readonly subtle = input(false);
   readonly toggled = output<void>();
 
   protected readonly classes = computed(() =>
-    this.active() ? 'border-foreground bg-foreground text-background' : (TONE_CLASSES[this.tone()] ?? TONE_CLASSES['default']),
+    this.active()
+      ? 'border-foreground bg-foreground text-background'
+      : this.subtle()
+        ? 'border-border bg-background text-muted-foreground'
+        : (TONE_CLASSES[this.tone()] ?? TONE_CLASSES['default']),
   );
 }

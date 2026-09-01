@@ -41,6 +41,36 @@ interface ProfileRow {
   avatar_style?: AvatarStyleId | null;
 }
 
+export interface DiscoverableProfile {
+  id: string;
+  memberNumber: string | null;
+  firstName: string;
+  lastName: string;
+  city: string | null;
+  country: string | null;
+  level: Level | null;
+  format: Format | null;
+  surface: Surface | null;
+  bio: string | null;
+  avatarSeed: string | null;
+  avatarStyle: AvatarStyleId | null;
+}
+
+interface DiscoverableProfileRow {
+  id: string;
+  member_number: number | null;
+  first_name: string;
+  last_name: string;
+  city: string | null;
+  country: string | null;
+  level: Level | null;
+  format: Format | null;
+  surface: Surface | null;
+  bio: string | null;
+  avatar_seed: string | null;
+  avatar_style: AvatarStyleId | null;
+}
+
 /** Data-access boundary for the real (non-mock) `profiles` Supabase table, written to at registration. */
 @Injectable({ providedIn: 'root' })
 export class ProfileRepositoryService {
@@ -107,6 +137,32 @@ export class ProfileRepositoryService {
       avatarSeed: row.avatar_seed ?? undefined,
       avatarStyle: row.avatar_style ?? undefined,
       memberNumber: String(row.member_number).padStart(6, '0')
+    };
+  }
+
+  /** Lists only the deliberately public fields returned by the discovery RPC. */
+  async listDiscoverable(): Promise<{ profiles: DiscoverableProfile[]; error?: string }> {
+    const { data, error } = await supabase.rpc('discover_profiles');
+    if (error) {
+      return { profiles: [], error: error.message };
+    }
+    return {
+      profiles: ((data ?? []) as DiscoverableProfileRow[]).map(profile => {
+        return {
+          id: profile.id,
+          memberNumber: profile.member_number == null ? null : String(profile.member_number).padStart(6, '0'),
+          firstName: profile.first_name,
+          lastName: profile.last_name,
+          city: profile.city,
+          country: profile.country,
+          level: profile.level,
+          format: profile.format,
+          surface: profile.surface,
+          bio: profile.bio,
+          avatarSeed: profile.avatar_seed,
+          avatarStyle: profile.avatar_style
+        };
+      })
     };
   }
 

@@ -1,90 +1,101 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { AuthService } from '../../core/auth/auth.service';
 import { PlayersRepository } from './data/players.repository';
-import { MapMarker } from '../../shared/components';
 
 export const PLAYER_FORMATS = ['Singles', 'Doubles', 'Both'] as const;
-
-const JITTER = [
-  { dx: 0, dy: 0 },
-  { dx: 1.6, dy: -1.1 },
-  { dx: -1.6, dy: 1.1 },
-  { dx: 1.1, dy: 1.6 },
-  { dx: -1.1, dy: -1.6 },
-];
+export type PlayerSort = 'newest' | 'name' | 'city';
 
 /** Owns the search/filter state for player discovery and derives the result list. */
 @Injectable({ providedIn: 'root' })
 export class PlayersService {
   private readonly repository = inject(PlayersRepository);
+  private readonly auth = inject(AuthService);
 
   readonly levels = this.repository.levels;
   readonly surfaces = this.repository.surfaces;
   readonly formats = PLAYER_FORMATS;
 
   readonly query = signal('');
-  readonly level = signal<string | null>(null);
-  readonly format = signal<string | null>(null);
-  readonly surface = signal<string | null>(null);
-  readonly nearOnly = signal(false);
-
-  readonly markers = computed<MapMarker[]>(() => {
-    const seenPerCountry = new Map<string, number>();
-    return this.repository
-      .getAll()
-      .map((p): MapMarker | null => {
-        const base = this.repository.countryCoords(p.country);
-        if (!base) {
-          return null;
-        }
-        const seen = seenPerCountry.get(p.country) ?? 0;
-        seenPerCountry.set(p.country, seen + 1);
-        const jitter = JITTER[seen % JITTER.length];
-        return { id: p.id, x: base.x + jitter.dx, y: base.y + jitter.dy, kind: 'player', label: p.name };
-      })
-      .filter((m): m is MapMarker => m !== null);
-  });
+  readonly levelsSelected = signal<string[]>([]);
+  readonly formatsSelected = signal<string[]>([]);
+  readonly surfacesSelected = signal<string[]>([]);
+  readonly sameCountryOnly = signal(false);
+  readonly filtersOpen = signal(false);
+  readonly sortOpen = signal(false);
+  readonly sort = signal<PlayerSort>('newest');
 
   readonly countriesRepresented = computed(() => new Set(this.repository.getAll().map((p) => p.country)).size);
-  readonly nearbyCount = computed(() => this.repository.getAll().filter((p) => p.distanceKm < 300).length);
+  /** Discovery excludes the signed-in player, but the community total includes them. */
+  readonly activeCount = computed(() => this.repository.getAll().length + (this.auth.currentUserId() ? 1 : 0));
+  readonly hasActiveFilters = computed(
+    () =>
+      this.levelsSelected().length > 0 ||
+      this.formatsSelected().length > 0 ||
+      this.surfacesSelected().length > 0 ||
+      this.sameCountryOnly()
+  );
 
   readonly results = computed(() => {
-    const query = this.query().toLowerCase();
-    const level = this.level();
-    const format = this.format();
-    const surface = this.surface();
-    const nearOnly = this.nearOnly();
+    const query = this.normalise(this.query());
+    const levels = this.levelsSelected();
+    const formats = this.formatsSelected();
+    const surfaces = this.surfacesSelected();
+    const sameCountryOnly = this.sameCountryOnly();
+    const ownCountry = this.auth.currentPlayer().country;
 
-    return this.repository
+    const results = this.repository
       .getAll()
-      .filter((p) => (query ? `${p.name} ${p.city} ${p.country}`.toLowerCase().includes(query) : true))
-      .filter((p) => (level ? p.level === level : true))
-      .filter((p) => (format ? p.format === format || p.format === 'Both' : true))
-      .filter((p) => (surface ? p.surface === surface : true))
-      .filter((p) => (nearOnly ? p.distanceKm < 300 : true))
-      .sort((a, b) => b.matchScore - a.matchScore);
+      .filter((p) => (query ? this.normalise(`${p.name} ${p.city} ${p.country}`).includes(query) : true))
+      .filter((p) => (levels.length ? levels.includes(p.level) : true))
+      .filter((p) => (formats.length ? formats.includes(p.format) : true))
+      .filter((p) => (surfaces.length ? surfaces.includes(p.surface) : true))
+      .filter((p) => (sameCountryOnly ? p.country === ownCountry : true));
+    if (this.sort() === 'name') {
+      return [...results].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    if (this.sort() === 'city') {
+      return [...results].sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
+    }
+    return results;
   });
 
   toggleLevel(level: string): void {
-    this.level.set(this.level() === level ? null : level);
+    this.levelsSelected.update(levels => this.toggleOption(levels, level));
   }
 
   toggleFormat(format: string): void {
-    this.format.set(this.format() === format ? null : format);
+    this.formatsSelected.update(formats => this.toggleOption(formats, format));
   }
 
   toggleSurface(surface: string): void {
-    this.surface.set(this.surface() === surface ? null : surface);
+    this.surfacesSelected.update(surfaces => this.toggleOption(surfaces, surface));
+  }
+
+  toggleSameCountry(): void {
+    this.sameCountryOnly.update(active => !active);
+  }
+
+  setSort(sort: PlayerSort): void {
+    this.sort.set(sort);
   }
 
   resetFilters(): void {
     this.query.set('');
-    this.level.set(null);
-    this.format.set(null);
-    this.surface.set(null);
-    this.nearOnly.set(false);
+    this.levelsSelected.set([]);
+    this.formatsSelected.set([]);
+    this.surfacesSelected.set([]);
+    this.sameCountryOnly.set(false);
   }
 
   getById(id: string) {
     return this.repository.getById(id);
+  }
+
+  private toggleOption(options: string[], option: string): string[] {
+    return options.includes(option) ? options.filter(value => value !== option) : [...options, option];
+  }
+
+  private normalise(value: string): string {
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
   }
 }

@@ -14,4 +14,5 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 export class PlayerCardComponent {
   readonly player = input.required<Player>();
   readonly compact = input(false);
+  readonly showMatchScore = input(true);
 }

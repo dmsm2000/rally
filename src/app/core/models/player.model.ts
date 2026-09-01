@@ -23,7 +23,7 @@ export interface Player {
   format: Format;
   surface: Surface;
   availability: string[];
-  distanceKm: number;
+  distanceKm?: number;
   matchScore: number;
   matchReason: string;
   bio: string;

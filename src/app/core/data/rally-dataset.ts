@@ -1,4 +1,18 @@
-import { Achievement, AppNotification, CommunityStats, Conversation, CountryEntry, Court, Destination, FeedItem, Match, Player, PlayerIntent, TripIntent, WorldActivityItem } from '../models';
+import {
+  Achievement,
+  AppNotification,
+  CommunityStats,
+  Conversation,
+  CountryEntry,
+  Court,
+  Destination,
+  FeedItem,
+  Match,
+  Player,
+  PlayerIntent,
+  TripIntent,
+  WorldActivityItem
+} from '../models';
 
 /**
  * Static dataset acting as a stand-in for the future Supabase-backed tables.
@@ -27,7 +41,7 @@ export const ME: Player = {
   accent: 'lime',
   memberNumber: '000482',
   avatarSeed: 'joao',
-  avatarStyle: 'lorelei',
+  avatarStyle: 'lorelei'
 };
 
 export const PLAYERS: Player[] = [
@@ -51,7 +65,7 @@ export const PLAYERS: Player[] = [
     stats: { wins: 41, matches: 78, courts: 12, countries: 3 },
     accent: 'lime',
     avatarSeed: 'maria',
-    avatarStyle: 'notionists',
+    avatarStyle: 'notionists'
   },
   {
     id: 'pedro',
@@ -73,7 +87,7 @@ export const PLAYERS: Player[] = [
     stats: { wins: 118, matches: 190, courts: 34, countries: 9 },
     accent: 'clay',
     avatarSeed: 'pedro',
-    avatarStyle: 'open-peeps',
+    avatarStyle: 'open-peeps'
   },
   {
     id: 'ana',
@@ -95,7 +109,7 @@ export const PLAYERS: Player[] = [
     stats: { wins: 12, matches: 30, courts: 6, countries: 2 },
     accent: 'cobalt',
     avatarSeed: 'ana',
-    avatarStyle: 'thumbs',
+    avatarStyle: 'thumbs'
   },
   {
     id: 'marc',
@@ -117,7 +131,7 @@ export const PLAYERS: Player[] = [
     stats: { wins: 63, matches: 121, courts: 27, countries: 6 },
     accent: 'clay',
     avatarSeed: 'marc',
-    avatarStyle: 'lorelei',
+    avatarStyle: 'lorelei'
   },
   {
     id: 'yuki',
@@ -139,7 +153,7 @@ export const PLAYERS: Player[] = [
     stats: { wins: 204, matches: 320, courts: 51, countries: 12 },
     accent: 'ink',
     avatarSeed: 'yuki',
-    avatarStyle: 'notionists',
+    avatarStyle: 'notionists'
   },
   {
     id: 'chloe',
@@ -161,7 +175,7 @@ export const PLAYERS: Player[] = [
     stats: { wins: 38, matches: 74, courts: 19, countries: 5 },
     accent: 'cobalt',
     avatarSeed: 'chloe',
-    avatarStyle: 'open-peeps',
+    avatarStyle: 'open-peeps'
   },
   {
     id: 'james',
@@ -183,7 +197,7 @@ export const PLAYERS: Player[] = [
     stats: { wins: 289, matches: 402, courts: 63, countries: 17 },
     accent: 'lime',
     avatarSeed: 'james',
-    avatarStyle: 'thumbs',
+    avatarStyle: 'thumbs'
   },
   {
     id: 'sofia',
@@ -205,8 +219,8 @@ export const PLAYERS: Player[] = [
     stats: { wins: 17, matches: 44, courts: 9, countries: 3 },
     accent: 'clay',
     avatarSeed: 'sofia',
-    avatarStyle: 'lorelei',
-  },
+    avatarStyle: 'lorelei'
+  }
 ];
 
 export const COURTS: Court[] = [
@@ -228,7 +242,7 @@ export const COURTS: Court[] = [
     facilities: ['Floodlights', 'Showers', 'Café', 'Racket hire', 'Coaching'],
     playAgain: 96,
     coords: { x: 44, y: 39 },
-    visited: true,
+    visited: true
   },
   {
     id: 'marina',
@@ -248,7 +262,7 @@ export const COURTS: Court[] = [
     facilities: ['Sea view', 'Floodlights', 'Bar', 'Lockers'],
     playAgain: 91,
     coords: { x: 52, y: 41 },
-    visited: true,
+    visited: true
   },
   {
     id: 'hangar',
@@ -268,7 +282,7 @@ export const COURTS: Court[] = [
     facilities: ['Indoor', 'Gym', 'Physio', 'Parking'],
     playAgain: 82,
     coords: { x: 50, y: 33 },
-    visited: true,
+    visited: true
   },
   {
     id: 'hedge',
@@ -288,7 +302,7 @@ export const COURTS: Court[] = [
     facilities: ['Grass', 'Clubhouse', 'Tea room'],
     playAgain: 99,
     coords: { x: 47, y: 28 },
-    visited: true,
+    visited: true
   },
   {
     id: 'shin',
@@ -307,7 +321,7 @@ export const COURTS: Court[] = [
     distanceKm: 11_112,
     facilities: ['Floodlights', 'Late hours', 'Vending', 'Racket hire'],
     playAgain: 94,
-    coords: { x: 84, y: 39 },
+    coords: { x: 84, y: 39 }
   },
   {
     id: 'foz',
@@ -327,13 +341,31 @@ export const COURTS: Court[] = [
     facilities: ['Sea view', 'Public', 'Free parking'],
     playAgain: 88,
     coords: { x: 43, y: 40 },
-    visited: true,
-  },
+    visited: true
+  }
 ];
 
 export const MATCHES: Match[] = [
-  { id: 'm1', status: 'upcoming', date: 'Tomorrow', time: '19:00', courtId: 'ctp', format: 'Singles', playerA: 'joao', playerB: 'maria' },
-  { id: 'm2', status: 'upcoming', date: 'Sat 5 Sep', time: '09:30', courtId: 'foz', format: 'Doubles', playerA: 'joao', playerB: 'pedro' },
+  {
+    id: 'm1',
+    status: 'upcoming',
+    date: 'Tomorrow',
+    time: '19:00',
+    courtId: 'ctp',
+    format: 'Singles',
+    playerA: 'joao',
+    playerB: 'maria'
+  },
+  {
+    id: 'm2',
+    status: 'upcoming',
+    date: 'Sat 5 Sep',
+    time: '09:30',
+    courtId: 'foz',
+    format: 'Doubles',
+    playerA: 'joao',
+    playerB: 'pedro'
+  },
   {
     id: 'm3',
     status: 'complete',
@@ -346,7 +378,7 @@ export const MATCHES: Match[] = [
     sets: [
       [6, 4],
       [3, 6],
-      [7, 5],
+      [7, 5]
     ],
     winner: 'joao',
     stats: [
@@ -354,8 +386,8 @@ export const MATCHES: Match[] = [
       { label: 'Double faults', a: '2', b: '5' },
       { label: 'First serve %', a: '64%', b: '58%' },
       { label: 'Winners', a: '24', b: '21' },
-      { label: 'Longest rally', a: '28 shots', b: '28 shots' },
-    ],
+      { label: 'Longest rally', a: '28 shots', b: '28 shots' }
+    ]
   },
   {
     id: 'm4',
@@ -368,19 +400,46 @@ export const MATCHES: Match[] = [
     playerB: 'chloe',
     sets: [
       [4, 6],
-      [6, 7],
+      [6, 7]
     ],
     winner: 'chloe',
     stats: [
       { label: 'Aces', a: '3', b: '4' },
       { label: 'Double faults', a: '6', b: '1' },
       { label: 'First serve %', a: '52%', b: '71%' },
-      { label: 'Winners', a: '18', b: '27' },
-    ],
+      { label: 'Winners', a: '18', b: '27' }
+    ]
   },
-  { id: 'om1', status: 'open', date: 'Hoje', time: '18:00', courtId: 'marina', format: 'Singles', playerA: 'marc', note: 'Looking for a hitting partner in Barcelona this week.' },
-  { id: 'om2', status: 'open', date: 'Amanhã', time: '20:00', courtId: 'shin', format: 'Singles', playerA: 'yuki', note: "I'd love to discover a new city to play in soon." },
-  { id: 'om3', status: 'open', date: 'Sábado', time: '10:00', courtId: 'ctp', format: 'Doubles', playerA: 'ana', note: 'Doubles this weekend? Need one more player.' },
+  {
+    id: 'om1',
+    status: 'open',
+    date: 'Hoje',
+    time: '18:00',
+    courtId: 'marina',
+    format: 'Singles',
+    playerA: 'marc',
+    note: 'Looking for a hitting partner in Barcelona this week.'
+  },
+  {
+    id: 'om2',
+    status: 'open',
+    date: 'Amanhã',
+    time: '20:00',
+    courtId: 'shin',
+    format: 'Singles',
+    playerA: 'yuki',
+    note: "I'd love to discover a new city to play in soon."
+  },
+  {
+    id: 'om3',
+    status: 'open',
+    date: 'Sábado',
+    time: '10:00',
+    courtId: 'ctp',
+    format: 'Doubles',
+    playerA: 'ana',
+    note: 'Doubles this weekend? Need one more player.'
+  }
 ];
 
 export const FEED: FeedItem[] = [
@@ -394,8 +453,8 @@ export const FEED: FeedItem[] = [
     stat: [
       { label: 'Countries', value: '7' },
       { label: 'Courts', value: '23' },
-      { label: 'Players met', value: '48' },
-    ],
+      { label: 'Players met', value: '48' }
+    ]
   },
   {
     id: 'f2',
@@ -404,7 +463,7 @@ export const FEED: FeedItem[] = [
     text: 'Marc Puig played João Silva at Marina Bay Courts.',
     detail: '6-4 · 3-6 · 7-5',
     time: '5h ago',
-    image: `${IMG}/court-hard.jpg`,
+    image: `${IMG}/court-hard.jpg`
   },
   {
     id: 'f3',
@@ -413,7 +472,7 @@ export const FEED: FeedItem[] = [
     text: 'Ana Ferreira played her first match in Barcelona.',
     detail: 'Court #7 discovered · Spain 🇪🇸',
     time: 'Yesterday',
-    image: `${IMG}/court-hard.jpg`,
+    image: `${IMG}/court-hard.jpg`
   },
   {
     id: 'f4',
@@ -422,7 +481,7 @@ export const FEED: FeedItem[] = [
     text: 'Pedro Almeida reviewed Hedgerow Lawn Club.',
     detail: '"Best three grass courts I\'ve played on outside a tournament." 4.9',
     time: 'Yesterday',
-    image: `${IMG}/court-grass.jpg`,
+    image: `${IMG}/court-grass.jpg`
   },
   {
     id: 'f5',
@@ -431,19 +490,81 @@ export const FEED: FeedItem[] = [
     text: 'Yuki Tanaka and Sofia Rossi played their first match.',
     detail: 'Shinjuku Night Courts · Tokyo 🇯🇵',
     time: '2 days ago',
-    image: `${IMG}/court-urban.jpg`,
-  },
+    image: `${IMG}/court-urban.jpg`
+  }
 ];
 
 export const ACHIEVEMENTS: Achievement[] = [
-  { id: 'a1', icon: '🏅', name: 'First International Match', description: 'Play a match outside your home country.', unlocked: true, tier: 'bronze' },
-  { id: 'a2', icon: '🌍', name: 'Five Countries', description: 'Play in five different countries.', unlocked: true, tier: 'silver' },
-  { id: 'a3', icon: '🎾', name: 'Twenty-Five Courts', description: 'Discover 25 courts.', unlocked: false, progress: 23, goal: 25, tier: 'silver' },
-  { id: 'a4', icon: '🤝', name: 'Fifty Players Met', description: 'Play against 50 different players.', unlocked: false, progress: 48, goal: 50, tier: 'gold' },
-  { id: 'a5', icon: '✈️', name: 'First Tennis Trip', description: 'Play three courts in one trip abroad.', unlocked: true, tier: 'bronze' },
-  { id: 'a6', icon: '🌎', name: 'Tennis Around The World', description: 'Play on four continents.', unlocked: false, progress: 2, goal: 4, tier: 'world' },
-  { id: 'a7', icon: '🔥', name: 'Ten Match Streak', description: 'Play ten matches in thirty days.', unlocked: true, tier: 'gold' },
-  { id: 'a8', icon: '🌙', name: 'Night Owl', description: 'Finish a match after midnight.', unlocked: false, tier: 'bronze' },
+  {
+    id: 'a1',
+    icon: '🏅',
+    name: 'First International Match',
+    description: 'Play a match outside your home country.',
+    unlocked: true,
+    tier: 'bronze'
+  },
+  {
+    id: 'a2',
+    icon: '🌍',
+    name: 'Five Countries',
+    description: 'Play in five different countries.',
+    unlocked: true,
+    tier: 'silver'
+  },
+  {
+    id: 'a3',
+    icon: '🎾',
+    name: 'Twenty-Five Courts',
+    description: 'Discover 25 courts.',
+    unlocked: false,
+    progress: 23,
+    goal: 25,
+    tier: 'silver'
+  },
+  {
+    id: 'a4',
+    icon: '🤝',
+    name: 'Fifty Players Met',
+    description: 'Play against 50 different players.',
+    unlocked: false,
+    progress: 48,
+    goal: 50,
+    tier: 'gold'
+  },
+  {
+    id: 'a5',
+    icon: '✈️',
+    name: 'First Tennis Trip',
+    description: 'Play three courts in one trip abroad.',
+    unlocked: true,
+    tier: 'bronze'
+  },
+  {
+    id: 'a6',
+    icon: '🌎',
+    name: 'Tennis Around The World',
+    description: 'Play on four continents.',
+    unlocked: false,
+    progress: 2,
+    goal: 4,
+    tier: 'world'
+  },
+  {
+    id: 'a7',
+    icon: '🔥',
+    name: 'Ten Match Streak',
+    description: 'Play ten matches in thirty days.',
+    unlocked: true,
+    tier: 'gold'
+  },
+  {
+    id: 'a8',
+    icon: '🌙',
+    name: 'Night Owl',
+    description: 'Finish a match after midnight.',
+    unlocked: false,
+    tier: 'bronze'
+  }
 ];
 
 export const COUNTRIES: CountryEntry[] = [
@@ -458,14 +579,54 @@ export const COUNTRIES: CountryEntry[] = [
   { name: 'USA', flag: '🇺🇸', courts: 0, visited: false, coords: { x: 22, y: 37 } },
   { name: 'Australia', flag: '🇦🇺', courts: 0, visited: false, coords: { x: 86, y: 72 } },
   { name: 'Brazil', flag: '🇧🇷', courts: 0, visited: false, coords: { x: 32, y: 63 } },
-  { name: 'Mexico', flag: '🇲🇽', courts: 0, visited: false, coords: { x: 18, y: 46 } },
+  { name: 'Mexico', flag: '🇲🇽', courts: 0, visited: false, coords: { x: 18, y: 46 } }
 ];
 
 export const DESTINATIONS: Destination[] = [
-  { id: 'barcelona', city: 'Barcelona', country: 'Spain', flag: '🇪🇸', players: 12, courts: 7, image: `${IMG}/court-hard.jpg`, coords: { x: 48, y: 41 }, note: 'Clay-loving crowd, plays late. Marina Bay Courts is the local favourite.' },
-  { id: 'paris', city: 'Paris', country: 'France', flag: '🇫🇷', players: 9, courts: 5, image: `${IMG}/court-indoor.jpg`, coords: { x: 50, y: 34 }, note: 'Indoor season all year at Hangar. Great for winter trips.' },
-  { id: 'london', city: 'London', country: 'UK', flag: '🇬🇧', players: 14, courts: 6, image: `${IMG}/court-grass.jpg`, coords: { x: 47, y: 28 }, note: 'Grass season in summer. Hedgerow is worth the trip alone.' },
-  { id: 'tokyo', city: 'Tokyo', country: 'Japan', flag: '🇯🇵', players: 6, courts: 3, image: `${IMG}/court-urban.jpg`, coords: { x: 84, y: 39 }, note: 'Night tennis culture. Shinjuku courts run past midnight.' },
+  {
+    id: 'barcelona',
+    city: 'Barcelona',
+    country: 'Spain',
+    flag: '🇪🇸',
+    players: 12,
+    courts: 7,
+    image: `${IMG}/court-hard.jpg`,
+    coords: { x: 48, y: 41 },
+    note: 'Clay-loving crowd, plays late. Marina Bay Courts is the local favourite.'
+  },
+  {
+    id: 'paris',
+    city: 'Paris',
+    country: 'France',
+    flag: '🇫🇷',
+    players: 9,
+    courts: 5,
+    image: `${IMG}/court-indoor.jpg`,
+    coords: { x: 50, y: 34 },
+    note: 'Indoor season all year at Hangar. Great for winter trips.'
+  },
+  {
+    id: 'london',
+    city: 'London',
+    country: 'UK',
+    flag: '🇬🇧',
+    players: 14,
+    courts: 6,
+    image: `${IMG}/court-grass.jpg`,
+    coords: { x: 47, y: 28 },
+    note: 'Grass season in summer. Hedgerow is worth the trip alone.'
+  },
+  {
+    id: 'tokyo',
+    city: 'Tokyo',
+    country: 'Japan',
+    flag: '🇯🇵',
+    players: 6,
+    courts: 3,
+    image: `${IMG}/court-urban.jpg`,
+    coords: { x: 84, y: 39 },
+    note: 'Night tennis culture. Shinjuku courts run past midnight.'
+  }
 ];
 
 export const LEVELS = ['Beginner', 'Improver', 'Intermediate', 'Advanced', 'Competitive'] as const;
@@ -473,31 +634,87 @@ export const SURFACES = ['Clay', 'Hard', 'Grass', 'Carpet'] as const;
 export const HERO_IMAGE = `${IMG}/hero-rally.jpg`;
 
 export const COMMUNITY_STATS: CommunityStats = {
-  courtsCaptured: 1842,
-  countriesUnlocked: 46,
-  activePlayers: 6300,
-  matchesThisWeek: 312,
+  courtsCaptured: 0,
+  countriesUnlocked: 0,
+  activePlayers: 0,
+  matchesThisWeek: 0
 };
 
 export const WORLD_ACTIVITY: WorldActivityItem[] = [
-  { id: 'wa1', city: 'Barcelona', flag: '🇪🇸', kind: 'capture', text: 'Marc captured a new court at Marina Bay Courts.', time: '12m ago', coords: { x: 48, y: 41 } },
-  { id: 'wa2', city: 'Tokyo', flag: '🇯🇵', kind: 'challenge', text: 'Yuki posted "Fancy hitting some balls tonight?" nearby.', time: '40m ago', coords: { x: 84, y: 39 } },
-  { id: 'wa3', city: 'London', flag: '🇬🇧', kind: 'match', text: 'Two players just finished a match at Hedgerow Lawn Club.', time: '1h ago', coords: { x: 47, y: 28 } },
-  { id: 'wa4', city: 'Casablanca', flag: '🇲🇦', kind: 'capture', text: 'A new court was captured in Morocco — first one this month.', time: '3h ago', coords: { x: 45, y: 47 } },
-  { id: 'wa5', city: 'Paris', flag: '🇫🇷', kind: 'challenge', text: 'Someone in Paris wants to discover a new city to play in.', time: '5h ago', coords: { x: 50, y: 34 } },
+  {
+    id: 'wa1',
+    city: 'Barcelona',
+    flag: '🇪🇸',
+    kind: 'capture',
+    text: 'Marc captured a new court at Marina Bay Courts.',
+    time: '12m ago',
+    coords: { x: 48, y: 41 }
+  },
+  {
+    id: 'wa2',
+    city: 'Tokyo',
+    flag: '🇯🇵',
+    kind: 'challenge',
+    text: 'Yuki posted "Fancy hitting some balls tonight?" nearby.',
+    time: '40m ago',
+    coords: { x: 84, y: 39 }
+  },
+  {
+    id: 'wa3',
+    city: 'London',
+    flag: '🇬🇧',
+    kind: 'match',
+    text: 'Two players just finished a match at Hedgerow Lawn Club.',
+    time: '1h ago',
+    coords: { x: 47, y: 28 }
+  },
+  {
+    id: 'wa4',
+    city: 'Casablanca',
+    flag: '🇲🇦',
+    kind: 'capture',
+    text: 'A new court was captured in Morocco — first one this month.',
+    time: '3h ago',
+    coords: { x: 45, y: 47 }
+  },
+  {
+    id: 'wa5',
+    city: 'Paris',
+    flag: '🇫🇷',
+    kind: 'challenge',
+    text: 'Someone in Paris wants to discover a new city to play in.',
+    time: '5h ago',
+    coords: { x: 50, y: 34 }
+  }
 ];
 
 export const PLAYER_INTENTS: PlayerIntent[] = [
   { id: 'pi1', playerId: 'maria', text: 'Fancy hitting some balls tonight?', time: '18m ago' },
-  { id: 'pi2', playerId: 'marc', text: "Looking for a hitting partner in Barcelona this week.", time: '35m ago' },
+  { id: 'pi2', playerId: 'marc', text: 'Looking for a hitting partner in Barcelona this week.', time: '35m ago' },
   { id: 'pi3', playerId: 'yuki', text: "I'd love to discover a new city to play in soon.", time: '1h ago' },
   { id: 'pi4', playerId: 'pedro', text: 'Free tomorrow morning for a set or two?', time: '2h ago' },
-  { id: 'pi5', playerId: 'ana', text: 'Doubles this weekend? Need one more player.', time: '4h ago' },
+  { id: 'pi5', playerId: 'ana', text: 'Doubles this weekend? Need one more player.', time: '4h ago' }
 ];
 
 export const TRIP_INTENTS: TripIntent[] = [
-  { id: 'ti1', playerId: 'yuki', destinationId: 'london', fromDate: '10 Out', toDate: '14 Out', note: 'Vou estar em Londres em outubro, alguém disponível para me mostrar os courts locais?', status: 'open' },
-  { id: 'ti2', playerId: 'marc', destinationId: 'tokyo', fromDate: '2 Nov', toDate: '6 Nov', note: 'Primeira vez em Tóquio — adorava jogar com alguém local!', status: 'open' },
+  {
+    id: 'ti1',
+    playerId: 'yuki',
+    destinationId: 'london',
+    fromDate: '10 Out',
+    toDate: '14 Out',
+    note: 'Vou estar em Londres em outubro, alguém disponível para me mostrar os courts locais?',
+    status: 'open'
+  },
+  {
+    id: 'ti2',
+    playerId: 'marc',
+    destinationId: 'tokyo',
+    fromDate: '2 Nov',
+    toDate: '6 Nov',
+    note: 'Primeira vez em Tóquio — adorava jogar com alguém local!',
+    status: 'open'
+  }
 ];
 
 export const CONVERSATIONS: Conversation[] = [
@@ -509,8 +726,8 @@ export const CONVERSATIONS: Conversation[] = [
       { id: 'msg1', senderId: 'maria', text: 'Hey! Up for a match this week?', sentAt: 'Yesterday · 18:20' },
       { id: 'msg2', senderId: 'joao', text: 'Definitely, Thursday evening works for me.', sentAt: 'Yesterday · 18:45' },
       { id: 'msg3', senderId: 'maria', text: "Perfect, I'll book the court at CTP.", sentAt: 'Yesterday · 18:47' },
-      { id: 'msg4', senderId: 'maria', text: 'Bring an extra can of balls just in case 🎾', sentAt: 'Today · 09:12' },
-    ],
+      { id: 'msg4', senderId: 'maria', text: 'Bring an extra can of balls just in case 🎾', sentAt: 'Today · 09:12' }
+    ]
   },
   {
     id: 'conv-pedro',
@@ -519,29 +736,65 @@ export const CONVERSATIONS: Conversation[] = [
     messages: [
       { id: 'msg5', senderId: 'pedro', text: 'Good game on Saturday!', sentAt: 'Sat · 12:10' },
       { id: 'msg6', senderId: 'joao', text: 'That third set was brutal 😅 rematch soon?', sentAt: 'Sat · 12:30' },
-      { id: 'msg7', senderId: 'pedro', text: "Always. I'll bring my A-game next time.", sentAt: 'Sat · 12:32' },
-    ],
+      { id: 'msg7', senderId: 'pedro', text: "Always. I'll bring my A-game next time.", sentAt: 'Sat · 12:32' }
+    ]
   },
   {
     id: 'conv-ana',
     playerId: 'ana',
     unread: 1,
-    messages: [{ id: 'msg8', senderId: 'ana', text: 'Thinking of a Barcelona trip next month, you in?', sentAt: '2 days ago' }],
-  },
+    messages: [
+      { id: 'msg8', senderId: 'ana', text: 'Thinking of a Barcelona trip next month, you in?', sentAt: '2 days ago' }
+    ]
+  }
 ];
 
 // Rotates a few friendly canned replies so a demo conversation always feels alive.
 export const CANNED_REPLIES = [
-  "Sounds good, what time works for you?",
+  'Sounds good, what time works for you?',
   "I'm in! Let's lock in a court.",
-  "Haha true. See you on the baseline 🎾",
-  "Can't wait for this one.",
+  'Haha true. See you on the baseline 🎾',
+  "Can't wait for this one."
 ];
 
 export const NOTIFICATIONS: AppNotification[] = [
-  { id: 'n1', kind: 'message', text: 'Maria Costa sent you a message', detail: 'Bring an extra can of balls just in case 🎾', time: 'Just now', read: false, link: '/messages/maria', playerId: 'maria' },
-  { id: 'n2', kind: 'trip', text: 'Ana Ferreira wants to play in Barcelona', detail: 'Thinking of a Barcelona trip next month, you in?', time: '2 days ago', read: false, link: '/messages/ana', playerId: 'ana' },
-  { id: 'n3', kind: 'match', text: 'Pedro Almeida accepted your open match', detail: 'Foz Seaside Courts · Sat 5 Sep 09:30', time: 'Yesterday', read: true, link: '/matches/m2', playerId: 'pedro' },
-  { id: 'n4', kind: 'achievement', text: 'Achievement unlocked: Five Countries', detail: "You've now played in five different countries.", time: '3 days ago', read: true, link: '/passport' },
+  {
+    id: 'n1',
+    kind: 'message',
+    text: 'Maria Costa sent you a message',
+    detail: 'Bring an extra can of balls just in case 🎾',
+    time: 'Just now',
+    read: false,
+    link: '/messages/maria',
+    playerId: 'maria'
+  },
+  {
+    id: 'n2',
+    kind: 'trip',
+    text: 'Ana Ferreira wants to play in Barcelona',
+    detail: 'Thinking of a Barcelona trip next month, you in?',
+    time: '2 days ago',
+    read: false,
+    link: '/messages/ana',
+    playerId: 'ana'
+  },
+  {
+    id: 'n3',
+    kind: 'match',
+    text: 'Pedro Almeida accepted your open match',
+    detail: 'Foz Seaside Courts · Sat 5 Sep 09:30',
+    time: 'Yesterday',
+    read: true,
+    link: '/matches/m2',
+    playerId: 'pedro'
+  },
+  {
+    id: 'n4',
+    kind: 'achievement',
+    text: 'Achievement unlocked: Five Countries',
+    detail: "You've now played in five different countries.",
+    time: '3 days ago',
+    read: true,
+    link: '/passport'
+  }
 ];
-

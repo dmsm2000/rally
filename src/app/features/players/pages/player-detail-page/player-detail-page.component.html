@@ -8,13 +8,15 @@
           <h1 class="text-display text-3xl sm:text-5xl">{{ p.name }}</h1>
           <p class="mt-1 text-sm text-muted-foreground">{{ p.flag }} {{ p.city }}, {{ p.country }} · {{ p.years }} years playing</p>
         </div>
-        <div class="flex items-center gap-3">
-          <ui-match-score [value]="p.matchScore" [size]="64" />
-          <div>
-            <p class="text-eyebrow">{{ 'players.matchScore' | translate }}</p>
-            <p class="max-w-40 text-xs text-muted-foreground">{{ p.matchReason }}</p>
+        @if (!auth.isObserver()) {
+          <div class="flex items-center gap-3">
+            <ui-match-score [value]="p.matchScore" [size]="64" />
+            <div>
+              <p class="text-eyebrow">{{ 'players.matchScore' | translate }}</p>
+              <p class="max-w-40 text-xs text-muted-foreground">{{ p.matchReason }}</p>
+            </div>
           </div>
-        </div>
+        }
       </div>
 
       <div class="mt-6 flex flex-wrap gap-2">
