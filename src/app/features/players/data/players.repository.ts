@@ -40,7 +40,7 @@ export class PlayersRepository {
   }
 
   countryCoords(country: string): { x: number; y: number } | undefined {
-    return this.data.countries().find((c) => c.name === country)?.coords;
+    return this.data.countries().find(c => c.name === country)?.coords;
   }
 
   private async loadDiscoverable(): Promise<void> {

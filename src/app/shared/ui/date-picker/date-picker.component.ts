@@ -75,9 +75,11 @@ export class DatePickerComponent {
     if (!this.value()) {
       return '';
     }
-    return new Intl.DateTimeFormat(this.translation.locale(), { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
-      new Date(`${this.value()}T00:00:00`)
-    );
+    return new Intl.DateTimeFormat(this.translation.locale(), {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(new Date(`${this.value()}T00:00:00`));
   });
 
   @HostListener('document:click', ['$event'])

@@ -141,6 +141,12 @@
         <ui-chip [clickable]="true" [active]="players.sort() === 'city'" (toggled)="players.setSort('city')">{{
           'players.sortCity' | translate
         }}</ui-chip>
+        <ui-chip
+          [clickable]="true"
+          [active]="players.sort() === 'memberNumber'"
+          (toggled)="players.setSort('memberNumber')"
+          >{{ 'players.sortMemberNumber' | translate }}</ui-chip
+        >
       </div>
     </div>
   }

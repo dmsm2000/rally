@@ -2,11 +2,18 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
-import { PlayersService } from '../../players.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { MessagesWidgetService } from '../../../../core/services/messages-widget.service';
-import { AvatarComponent, ChipComponent, EmptyStateComponent, MatchScoreComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import {
+  AvatarComponent,
+  ChipComponent,
+  EmptyStateComponent,
+  MatchScoreComponent,
+  SectionHeaderComponent,
+  StatComponent
+} from '../../../../shared/ui';
+import { PlayersService } from '../../players.service';
 
 type PlayerMatchTab = 'upcoming' | 'complete' | 'open';
 
@@ -43,9 +50,18 @@ const GENDER_CLASSES: Record<string, string> = {
 
 @Component({
   selector: 'rally-player-detail-page',
-  imports: [RouterLink, AvatarComponent, ChipComponent, EmptyStateComponent, MatchScoreComponent, StatComponent, SectionHeaderComponent, TranslatePipe],
+  imports: [
+    RouterLink,
+    AvatarComponent,
+    ChipComponent,
+    EmptyStateComponent,
+    MatchScoreComponent,
+    StatComponent,
+    SectionHeaderComponent,
+    TranslatePipe
+  ],
   templateUrl: './player-detail-page.component.html',
-  styleUrl: './player-detail-page.component.scss',
+  styleUrl: './player-detail-page.component.scss'
 })
 export class PlayerDetailPageComponent {
   private readonly route = inject(ActivatedRoute);
@@ -53,7 +69,9 @@ export class PlayerDetailPageComponent {
   protected readonly auth = inject(AuthService);
   private readonly messagesWidget = inject(MessagesWidgetService);
 
-  private readonly playerId = toSignal(this.route.paramMap.pipe(map((params) => params.get('playerId') ?? '')), { initialValue: '' });
+  private readonly playerId = toSignal(this.route.paramMap.pipe(map(params => params.get('playerId') ?? '')), {
+    initialValue: ''
+  });
 
   protected readonly player = computed(() => this.players.getById(this.playerId()));
   protected readonly matchTab = signal<PlayerMatchTab>('upcoming');

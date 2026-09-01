@@ -36,6 +36,7 @@ export const pt = {
     sortNewest: 'Mais recentes',
     sortName: 'Nome A–Z',
     sortCity: 'Cidade A–Z',
+    sortMemberNumber: 'Número de membro',
     filterLevel: 'Nível',
     filterFormat: 'Formato',
     filterSurface: 'Piso',

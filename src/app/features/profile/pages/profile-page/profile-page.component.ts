@@ -11,8 +11,8 @@ import {
   COURT_PREFS,
   CourtPref,
   FORMATS,
-  Frequency,
   FREQUENCIES,
+  Frequency,
   Gender,
   GENDERS,
   Hand,
@@ -26,12 +26,12 @@ import {
   TimeOfDay,
   TIMES_OF_DAY
 } from '../../../../core/data/player-profile-options';
+import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 import { TranslationService } from '../../../../core/i18n/translation.service';
 import { Format, Level, Player, Surface } from '../../../../core/models';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
 import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { ToastService } from '../../../../core/services/toast.service';
-import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 import { AvatarPickerComponent, MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import {
@@ -126,9 +126,7 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly countries = this.countryData.countries;
   protected readonly countryNames = computed(() => this.countries().map(c => c.name));
   protected readonly maxBirthDate = new Date().toISOString().slice(0, 10);
-  protected readonly countryFlags = computed(() =>
-    Object.fromEntries(this.countries().map(c => [c.name, c.flag]))
-  );
+  protected readonly countryFlags = computed(() => Object.fromEntries(this.countries().map(c => [c.name, c.flag])));
   protected readonly cityOptions = signal<string[]>([]);
   protected readonly hands = HANDS;
   protected readonly backhands = BACKHANDS;
@@ -152,9 +150,13 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly draftCourtPref = signal<CourtPref | null>((this.profile.me().courtPref as CourtPref) ?? null);
   protected readonly draftFrequency = signal<Frequency | null>(this.profile.me().frequency as Frequency);
   protected readonly draftCoached = signal<boolean | null>(this.profile.me().coached ?? null);
-  protected readonly draftCoachedFrequency = signal<Frequency | null>((this.profile.me().coachedFrequency as Frequency) ?? null);
+  protected readonly draftCoachedFrequency = signal<Frequency | null>(
+    (this.profile.me().coachedFrequency as Frequency) ?? null
+  );
   protected readonly draftTimesOfDay = signal<TimeOfDay[]>((this.profile.me().timesOfDay as TimeOfDay[]) ?? []);
-  protected readonly draftAvailability = signal<AvailabilityOption[]>(this.profile.me().availability as AvailabilityOption[]);
+  protected readonly draftAvailability = signal<AvailabilityOption[]>(
+    this.profile.me().availability as AvailabilityOption[]
+  );
   protected readonly draftBio = signal(this.profile.me().bio);
   protected readonly draftAvatarSeed = signal(this.profile.me().avatarSeed ?? this.profile.me().id);
   protected readonly draftAvatarStyle = signal<AvatarStyleId>(

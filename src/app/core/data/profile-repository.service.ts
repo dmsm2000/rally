@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { supabase } from '../auth/supabase.client';
+import { Format, Level, Player, Surface } from '../models';
+import { AvatarStyleId } from '../services/avatar.service';
 import {
   AvailabilityOption,
   Backhand,
@@ -10,8 +12,6 @@ import {
   PlayStyle,
   TimeOfDay
 } from './player-profile-options';
-import { AvatarStyleId } from '../services/avatar.service';
-import { Format, Level, Player, Surface } from '../models';
 
 /** Row shape of the real `profiles` Supabase table — see supabase/migrations/0001_profiles.sql. */
 interface ProfileRow {

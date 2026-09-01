@@ -6,7 +6,7 @@
     [attr.aria-label]="'nav.language' | translate"
     [attr.aria-expanded]="open()"
   >
-    <span class="text-base leading-none">{{ flags[i18n.locale()] }}</span>
+    <img [src]="twemoji.urlFor(flags[i18n.locale()])" alt="" class="size-4 shrink-0" />
     <span class="hidden sm:inline">{{ labels[i18n.locale()] }}</span>
     <ui-icon name="chevron-down" className="size-3" />
   </button>
@@ -23,7 +23,7 @@
           [class.text-foreground]="i18n.locale() === locale"
           [class.text-muted-foreground]="i18n.locale() !== locale"
         >
-          <span class="text-base leading-none">{{ flags[locale] }}</span>
+          <img [src]="twemoji.urlFor(flags[locale])" alt="" class="size-4 shrink-0" />
           <span>{{ labels[locale] }}</span>
         </button>
       }

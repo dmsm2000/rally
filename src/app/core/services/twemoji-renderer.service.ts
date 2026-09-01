@@ -25,6 +25,11 @@ export class TwemojiRendererService {
     this.observer.observe(document.body, { childList: true, subtree: true, characterData: true });
   }
 
+  /** Returns a stable Twemoji SVG URL for UI that must update its emoji reactively. */
+  urlFor(emoji: string): string {
+    return `${SVG_BASE}svg/${twemoji.convert.toCodePoint(emoji)}.svg`;
+  }
+
   private scheduleRender(): void {
     if (this.renderScheduled) {
       return;

@@ -11,9 +11,16 @@ import { PasswordToggleComponent } from '../../../../shared/ui';
 
 @Component({
   selector: 'rally-login-page',
-  imports: [FormsModule, RouterLink, LanguageSwitcherComponent, ThemeToggleComponent, TranslatePipe, PasswordToggleComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    LanguageSwitcherComponent,
+    ThemeToggleComponent,
+    TranslatePipe,
+    PasswordToggleComponent
+  ],
   templateUrl: './login-page.component.html',
-  styleUrl: './login-page.component.scss',
+  styleUrl: './login-page.component.scss'
 })
 export class LoginPageComponent {
   private readonly auth = inject(AuthService);

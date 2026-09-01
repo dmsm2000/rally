@@ -3,7 +3,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { PlayersRepository } from './data/players.repository';
 
 export const PLAYER_FORMATS = ['Singles', 'Doubles', 'Both'] as const;
-export type PlayerSort = 'newest' | 'name' | 'city';
+export type PlayerSort = 'newest' | 'name' | 'city' | 'memberNumber';
 
 /** Owns the search/filter state for player discovery and derives the result list. */
 @Injectable({ providedIn: 'root' })
@@ -24,7 +24,7 @@ export class PlayersService {
   readonly sortOpen = signal(false);
   readonly sort = signal<PlayerSort>('newest');
 
-  readonly countriesRepresented = computed(() => new Set(this.repository.getAll().map((p) => p.country)).size);
+  readonly countriesRepresented = computed(() => new Set(this.repository.getAll().map(p => p.country)).size);
   /** Discovery excludes the signed-in player, but the community total includes them. */
   readonly activeCount = computed(() => this.repository.getAll().length + (this.auth.currentUserId() ? 1 : 0));
   readonly hasActiveFilters = computed(
@@ -45,16 +45,22 @@ export class PlayersService {
 
     const results = this.repository
       .getAll()
-      .filter((p) => (query ? this.normalise(`${p.name} ${p.city} ${p.country}`).includes(query) : true))
-      .filter((p) => (levels.length ? levels.includes(p.level) : true))
-      .filter((p) => (formats.length ? formats.includes(p.format) : true))
-      .filter((p) => (surfaces.length ? surfaces.includes(p.surface) : true))
-      .filter((p) => (sameCountryOnly ? p.country === ownCountry : true));
+      .filter(p => (query ? this.normalise(`${p.name} ${p.city} ${p.country}`).includes(query) : true))
+      .filter(p => (levels.length ? levels.includes(p.level) : true))
+      .filter(p => (formats.length ? formats.includes(p.format) : true))
+      .filter(p => (surfaces.length ? surfaces.includes(p.surface) : true))
+      .filter(p => (sameCountryOnly ? p.country === ownCountry : true));
     if (this.sort() === 'name') {
       return [...results].sort((a, b) => a.name.localeCompare(b.name));
     }
     if (this.sort() === 'city') {
       return [...results].sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
+    }
+    if (this.sort() === 'memberNumber') {
+      return [...results].sort(
+        (a, b) =>
+          Number(a.memberNumber ?? Number.POSITIVE_INFINITY) - Number(b.memberNumber ?? Number.POSITIVE_INFINITY)
+      );
     }
     return results;
   });
@@ -96,6 +102,10 @@ export class PlayersService {
   }
 
   private normalise(value: string): string {
-    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
   }
 }

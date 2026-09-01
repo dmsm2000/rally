@@ -36,6 +36,7 @@ export const es = {
     sortNewest: 'Más recientes',
     sortName: 'Nombre A–Z',
     sortCity: 'Ciudad A–Z',
+    sortMemberNumber: 'Número de miembro',
     filterLevel: 'Nivel',
     filterFormat: 'Formato',
     filterSurface: 'Superficie',

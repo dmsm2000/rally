@@ -120,7 +120,9 @@
     </div>
     <div class="space-y-6">
       <label class="block max-w-[220px]">
-        <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.birthDate' | translate }}</span>
+        <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+          >* {{ 'auth.birthDate' | translate }}</span
+        >
         <ui-date-picker
           [value]="draftBirthDate()"
           (valueChange)="draftBirthDate.set($event)"
@@ -163,7 +165,9 @@
         </div>
       </div>
       <label class="block">
-        <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{ 'profile.bioLabel' | translate }}</span>
+        <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{
+          'profile.bioLabel' | translate
+        }}</span>
         <textarea
           [ngModel]="draftBio()"
           (ngModelChange)="draftBio.set($event)"
@@ -178,7 +182,9 @@
 
     <div class="mt-6 flex items-center justify-end gap-3">
       @if (isSaved('traits')) {
-        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground"
+          >🎾 {{ 'profile.saved' | translate }}</span
+        >
       }
       <button
         type="button"
@@ -233,10 +239,7 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.maxDistanceQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (d of maxDistanceOptions; track d) {
-            <ui-chip
-              [clickable]="true"
-              [active]="draftMaxDistanceKm() === d"
-              (toggled)="draftMaxDistanceKm.set(d)"
+            <ui-chip [clickable]="true" [active]="draftMaxDistanceKm() === d" (toggled)="draftMaxDistanceKm.set(d)"
               >{{ d }}{{ d === 100 ? '+' : '' }} km</ui-chip
             >
           }
@@ -246,7 +249,9 @@
 
     <div class="mt-6 flex items-center justify-end gap-3">
       @if (isSaved('location')) {
-        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground"
+          >🎾 {{ 'profile.saved' | translate }}</span
+        >
       }
       <button
         type="button"
@@ -356,7 +361,9 @@
 
     <div class="mt-6 flex items-center justify-end gap-3">
       @if (isSaved('game')) {
-        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground"
+          >🎾 {{ 'profile.saved' | translate }}</span
+        >
       }
       <button
         type="button"
@@ -452,7 +459,9 @@
 
     <div class="mt-6 flex items-center justify-end gap-3">
       @if (isSaved('schedule')) {
-        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground"
+          >🎾 {{ 'profile.saved' | translate }}</span
+        >
       }
       <button
         type="button"
@@ -508,7 +517,11 @@
 
 @if (changingAvatar()) {
   <div class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4" role="presentation">
-    <div class="animate-tennis-pop w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-xl sm:p-8" role="dialog" aria-modal="true">
+    <div
+      class="animate-tennis-pop w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-xl sm:p-8"
+      role="dialog"
+      aria-modal="true"
+    >
       <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'profile.changeAvatar' | translate }}</p>
       <rally-avatar-picker [(seed)]="draftAvatarSeed" [(avatarStyle)]="draftAvatarStyle" />
 
@@ -536,13 +549,19 @@
 
 @if (changingPassword()) {
   <div class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4" role="presentation">
-    <div class="animate-tennis-pop w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-xl sm:p-8" role="dialog" aria-modal="true">
+    <div
+      class="animate-tennis-pop w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-xl sm:p-8"
+      role="dialog"
+      aria-modal="true"
+    >
       <p class="text-eyebrow text-muted-foreground">{{ 'profile.changePassword' | translate }}</p>
       <p class="mt-1 text-sm text-muted-foreground">{{ 'profile.changePasswordLead' | translate }}</p>
 
       <form class="mt-5 space-y-4" (ngSubmit)="submitChangePassword()">
         <label class="block">
-          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.currentPassword' | translate }}</span>
+          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+            >* {{ 'auth.currentPassword' | translate }}</span
+          >
           <div class="relative">
             <input
               [ngModel]="currentPassword()"
@@ -556,11 +575,16 @@
                 (passwordFieldError() ? 'border-loss' : 'border-border')
               "
             />
-            <ui-password-toggle [visible]="showCurrentPassword()" (toggled)="showCurrentPassword.set(!showCurrentPassword())" />
+            <ui-password-toggle
+              [visible]="showCurrentPassword()"
+              (toggled)="showCurrentPassword.set(!showCurrentPassword())"
+            />
           </div>
         </label>
         <label class="block">
-          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.newPassword' | translate }}</span>
+          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+            >* {{ 'auth.newPassword' | translate }}</span
+          >
           <div class="relative">
             <input
               [ngModel]="newPassword()"
@@ -581,7 +605,9 @@
           }
         </label>
         <label class="block">
-          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.confirmPassword' | translate }}</span>
+          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+            >* {{ 'auth.confirmPassword' | translate }}</span
+          >
           <div class="relative">
             <input
               [ngModel]="confirmNewPassword()"
@@ -592,7 +618,10 @@
               [placeholder]="'auth.confirmPasswordPlaceholder' | translate"
               class="w-full rounded-xl border border-border bg-background px-4 py-3 pr-11 text-sm outline-none focus:border-foreground"
             />
-            <ui-password-toggle [visible]="showConfirmNewPassword()" (toggled)="showConfirmNewPassword.set(!showConfirmNewPassword())" />
+            <ui-password-toggle
+              [visible]="showConfirmNewPassword()"
+              (toggled)="showConfirmNewPassword.set(!showConfirmNewPassword())"
+            />
           </div>
           @if (newPasswordMismatch()) {
             <span class="mt-1.5 block text-xs font-semibold text-loss">{{ 'auth.passwordMismatch' | translate }}</span>
@@ -632,4 +661,3 @@
   >
   (ODbL-1.0).
 </p>
-

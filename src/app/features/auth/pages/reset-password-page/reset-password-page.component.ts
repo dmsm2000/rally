@@ -11,7 +11,14 @@ import { PasswordToggleComponent } from '../../../../shared/ui';
 
 @Component({
   selector: 'rally-reset-password-page',
-  imports: [FormsModule, RouterLink, LanguageSwitcherComponent, ThemeToggleComponent, TranslatePipe, PasswordToggleComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    LanguageSwitcherComponent,
+    ThemeToggleComponent,
+    TranslatePipe,
+    PasswordToggleComponent
+  ],
   templateUrl: './reset-password-page.component.html',
   styleUrl: './reset-password-page.component.scss'
 })

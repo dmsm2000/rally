@@ -57,7 +57,6 @@ export const AVAILABILITY_OPTIONS: TextOption<AvailabilityOption>[] = [
 export const MAX_DISTANCE_OPTIONS = [5, 10, 20, 50, 100];
 export const MAX_YEARS = 40;
 
-
 export const HANDS: ChipOption<Hand>[] = [
   { value: 'Right', emoji: '🫱', key: 'auth.handRight' },
   { value: 'Left', emoji: '🫲', key: 'auth.handLeft' },

@@ -11,8 +11,8 @@ import {
   COURT_PREFS,
   CourtPref,
   FORMATS,
-  Frequency,
   FREQUENCIES,
+  Frequency,
   Gender,
   GENDERS,
   Hand,
@@ -33,7 +33,12 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { AvatarPickerComponent, LanguageSwitcherComponent, ThemeToggleComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { AutocompleteComponent, ChipComponent, DatePickerComponent, PasswordToggleComponent } from '../../../../shared/ui';
+import {
+  AutocompleteComponent,
+  ChipComponent,
+  DatePickerComponent,
+  PasswordToggleComponent
+} from '../../../../shared/ui';
 
 interface RegisterStep {
   label: string;
@@ -73,9 +78,7 @@ export class RegisterPageComponent {
   protected readonly maxDistanceOptions = MAX_DISTANCE_OPTIONS;
   protected readonly countries = this.countryData.countries;
   protected readonly countryNames = computed(() => this.countries().map(c => c.name));
-  protected readonly countryFlags = computed(() =>
-    Object.fromEntries(this.countries().map(c => [c.name, c.flag]))
-  );
+  protected readonly countryFlags = computed(() => Object.fromEntries(this.countries().map(c => [c.name, c.flag])));
   protected readonly cityOptions = signal<string[]>([]);
   protected readonly hands = HANDS;
   protected readonly backhands = BACKHANDS;
@@ -172,11 +175,7 @@ export class RegisterPageComponent {
       case 3:
         return !!this.level() && this.years() !== null;
       case 4:
-        return (
-          !!this.frequency() &&
-          this.coached() !== null &&
-          (this.coached() === false || !!this.coachedFrequency())
-        );
+        return !!this.frequency() && this.coached() !== null && (this.coached() === false || !!this.coachedFrequency());
       default:
         return true;
     }

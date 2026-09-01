@@ -1,4 +1,6 @@
-<nav class="shrink-0 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
+<nav
+  class="shrink-0 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
+>
   <div
     class="relative mx-auto grid max-w-md"
     [style.grid-template-columns]="'repeat(' + items().length + ', minmax(0, 1fr))'"
@@ -20,7 +22,9 @@
         <span #iconWrap class="nav-icon relative z-10 flex size-9 items-center justify-center rounded-full">
           <ui-icon [name]="item.icon" className="size-5" />
         </span>
-        <span class="nav-label relative z-10 text-[10px] font-bold tracking-wide uppercase">{{ item.label | translate }}</span>
+        <span class="nav-label relative z-10 text-[10px] font-bold tracking-wide uppercase">{{
+          item.label | translate
+        }}</span>
       </a>
     }
   </div>

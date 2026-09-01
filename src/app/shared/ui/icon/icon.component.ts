@@ -2,7 +2,19 @@ import { Component, effect, inject, input, signal } from '@angular/core';
 import { SafeHtml } from '@angular/platform-browser';
 import { IconRegistryService } from './icon-registry.service';
 
-export type IconName = 'home' | 'world' | 'courts' | 'passport' | 'matches' | 'chevron-down' | 'error-circle' | 'eye' | 'calendar' | 'sliders-horizontal' | 'arrow-down-up' | 'search';
+export type IconName =
+  | 'home'
+  | 'world'
+  | 'courts'
+  | 'passport'
+  | 'matches'
+  | 'chevron-down'
+  | 'error-circle'
+  | 'eye'
+  | 'calendar'
+  | 'sliders-horizontal'
+  | 'arrow-down-up'
+  | 'search';
 
 // Maps each name to its dedicated file under public/assets/icons/.
 const ICON_URLS: Record<IconName, string> = {

@@ -5,7 +5,7 @@ const ACCENT_CLASSES: Record<string, string> = {
   lime: 'bg-lime text-ink',
   clay: 'bg-clay text-white',
   cobalt: 'bg-cobalt text-white',
-  ink: 'bg-ink text-bone',
+  ink: 'bg-ink text-bone'
 };
 
 const SIZE_CLASSES: Record<string, string> = {
@@ -13,7 +13,7 @@ const SIZE_CLASSES: Record<string, string> = {
   sm: 'size-9 text-xs',
   md: 'size-12 text-sm',
   lg: 'size-16 text-lg',
-  xl: 'size-24 text-2xl',
+  xl: 'size-24 text-2xl'
 };
 
 // Matches the px width of SIZE_CLASSES (Tailwind size-N = N * 4px), doubled for crisp rendering.
@@ -22,7 +22,7 @@ const SIZE_PX: Record<string, number> = {
   sm: 72,
   md: 96,
   lg: 128,
-  xl: 192,
+  xl: 192
 };
 
 // Tennis-ball badge size (px), roughly a third of the avatar's rendered size.
@@ -31,13 +31,13 @@ const BADGE_PX: Record<string, number> = {
   sm: 0,
   md: 18,
   lg: 24,
-  xl: 34,
+  xl: 34
 };
 
 @Component({
   selector: 'ui-avatar',
   templateUrl: './avatar.component.html',
-  styleUrl: './avatar.component.scss',
+  styleUrl: './avatar.component.scss'
 })
 export class AvatarComponent {
   private readonly avatarService = inject(AvatarService);
@@ -56,7 +56,11 @@ export class AvatarComponent {
   readonly badgeClass = input('bg-lime text-ink');
 
   protected readonly classes = computed(() =>
-    [ACCENT_CLASSES[this.accent()] ?? ACCENT_CLASSES['ink'], SIZE_CLASSES[this.size()], this.ring() ? 'ring-2 ring-background' : ''].join(' '),
+    [
+      ACCENT_CLASSES[this.accent()] ?? ACCENT_CLASSES['ink'],
+      SIZE_CLASSES[this.size()],
+      this.ring() ? 'ring-2 ring-background' : ''
+    ].join(' ')
   );
 
   protected readonly avatarUri = computed(() => {
@@ -73,4 +77,3 @@ export class AvatarComponent {
 
   protected readonly badgePx = computed(() => BADGE_PX[this.size()]);
 }
-
