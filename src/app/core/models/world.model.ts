@@ -17,14 +17,14 @@ export interface WorldActivityItem {
   coords: { x: number; y: number };
 }
 
-export type TripIntentStatus = 'open' | 'matched';
-
 export interface TripIntent {
   id: string;
   playerId: string;
-  destinationId: string;
+  destinationCountry: string;
+  destinationCity: string;
+  /** ISO date (YYYY-MM-DD). */
   fromDate: string;
   toDate: string;
   note: string;
-  status: TripIntentStatus;
+  createdAt: string;
 }

@@ -95,6 +95,36 @@
 </section>
 
 <section class="mb-10">
+  <ui-section-header [eyebrow]="'profile.tripsEyebrow' | translate" [title]="'profile.myTrips' | translate" />
+  @if (myTrips().length) {
+    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+      @for (trip of myTrips(); track trip.id) {
+        <div class="w-72 shrink-0 rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-eyebrow truncate text-muted-foreground">{{ formatTripDate(trip.fromDate) }} – {{ formatTripDate(trip.toDate) }}</span>
+            <button
+              type="button"
+              (click)="deleteTrip(trip)"
+              [disabled]="deletingTripId() === trip.id"
+              [attr.aria-label]="'profile.deleteTrip' | translate"
+              class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-loss disabled:pointer-events-none disabled:opacity-40"
+            >
+              <ui-icon name="trash" className="size-3.5" />
+            </button>
+          </div>
+          <p class="mt-3 truncate text-sm font-bold">
+            {{ countryFlags()[trip.destinationCountry] }} {{ trip.destinationCity }}, {{ trip.destinationCountry }}
+          </p>
+          <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">{{ trip.note }}</p>
+        </div>
+      }
+    </div>
+  } @else if (!myTripsLoading()) {
+    <p class="text-sm text-muted-foreground">{{ 'profile.myTripsEmpty' | translate }}</p>
+  }
+</section>
+
+<section class="mb-10">
   <ui-section-header
     [eyebrow]="'profile.historyEyebrow' | translate"
     [title]="'profile.yourMatches' | translate"

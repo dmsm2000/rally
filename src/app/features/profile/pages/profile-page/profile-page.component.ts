@@ -28,7 +28,7 @@ import {
 } from '../../../../core/data/player-profile-options';
 import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 import { TranslationService } from '../../../../core/i18n/translation.service';
-import { Format, Level, Player, Surface } from '../../../../core/models';
+import { Format, Level, Player, Surface, TripIntent } from '../../../../core/models';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
 import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -39,12 +39,14 @@ import {
   AvatarComponent,
   ChipComponent,
   DatePickerComponent,
+  IconComponent,
   PasswordToggleComponent,
   SectionHeaderComponent,
   StatComponent
 } from '../../../../shared/ui';
 import { MatchesService } from '../../../matches/matches.service';
 import { PassportService } from '../../../passport/passport.service';
+import { TripsRepository } from '../../../world/data/trips.repository';
 import { ProfileService } from '../../profile.service';
 
 type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule';
@@ -63,7 +65,8 @@ type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule';
     TranslatePipe,
     PasswordToggleComponent,
     AutocompleteComponent,
-    DatePickerComponent
+    DatePickerComponent,
+    IconComponent
   ],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.scss'
@@ -73,6 +76,7 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly auth = inject(AuthService);
   protected readonly matchesService = inject(MatchesService);
   protected readonly passportService = inject(PassportService);
+  private readonly trips = inject(TripsRepository);
   private readonly translation = inject(TranslationService);
   private readonly toast = inject(ToastService);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -178,6 +182,7 @@ export class ProfilePageComponent implements CanComponentDeactivate {
       }
       this.countryData.citiesFor(match.iso2).then(cities => this.cityOptions.set(cities));
     });
+    void this.loadMyTrips();
   }
 
   protected readonly canSaveTraits = computed(
@@ -396,6 +401,38 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected async logout(): Promise<void> {
     await this.auth.logout();
     this.router.navigateByUrl('/login');
+  }
+
+  protected readonly myTrips = signal<TripIntent[]>([]);
+  protected readonly myTripsLoading = signal(true);
+  protected readonly deletingTripId = signal<string | null>(null);
+
+  protected formatTripDate(iso: string): string {
+    return this.trips.formatDate(iso);
+  }
+
+  protected async deleteTrip(trip: TripIntent): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      message: this.translation.t('profile.deleteTripConfirmLead'),
+      confirmLabel: this.translation.t('profile.deleteTripConfirmButton'),
+      cancelLabel: this.translation.t('profile.cancel'),
+      tone: 'destructive'
+    });
+    if (!confirmed) {
+      return;
+    }
+    this.deletingTripId.set(trip.id);
+    const success = await this.trips.deleteTrip(trip.id);
+    this.deletingTripId.set(null);
+    if (success) {
+      this.myTrips.update(list => list.filter(t => t.id !== trip.id));
+    }
+  }
+
+  private async loadMyTrips(): Promise<void> {
+    this.myTripsLoading.set(true);
+    this.myTrips.set(await this.trips.myTrips());
+    this.myTripsLoading.set(false);
   }
 
   protected readonly deletingAccount = signal(false);

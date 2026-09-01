@@ -171,35 +171,48 @@
 </section>
 
 @if (!auth.isObserver()) {
-  <section class="animate-rise overflow-hidden rounded-3xl border border-border bg-ink text-bone">
-    <div class="court-grid-ink p-6 sm:p-10 lg:p-12">
+  <section class="animate-rise relative rounded-3xl border border-border bg-ink text-bone">
+    <div class="court-grid-ink pointer-events-none absolute inset-0 overflow-hidden rounded-3xl" aria-hidden="true"></div>
+    <div class="relative p-6 sm:p-10 lg:p-12">
       <p class="text-eyebrow text-lime">{{ 'world.tripEyebrow' | translate }}</p>
       <h2 class="text-display mt-2 max-w-xl text-3xl sm:text-4xl">{{ 'world.tripTitle' | translate }}</h2>
 
       <div class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-12">
         <div>
-          <div class="grid gap-3 sm:grid-cols-3">
-            <select
-              [ngModel]="world.tripDestinationId()"
-              (ngModelChange)="world.tripDestinationId.set($event)"
-              class="rounded-xl border border-bone/20 bg-bone/10 px-3 py-2.5 text-sm text-bone outline-none"
-            >
-              <option value="" disabled>{{ 'world.tripDestination' | translate }}</option>
-              @for (d of world.destinations(); track d.id) {
-                <option [value]="d.id">{{ d.flag }} {{ d.city }}</option>
-              }
-            </select>
-            <input
-              [ngModel]="world.tripFromDate()"
-              (ngModelChange)="world.tripFromDate.set($event)"
-              [placeholder]="'world.tripFrom' | translate"
-              class="rounded-xl border border-bone/20 bg-bone/10 px-3 py-2.5 text-sm text-bone outline-none placeholder:text-bone/50"
+          <div class="grid gap-3 sm:grid-cols-2">
+            <ui-autocomplete
+              [value]="world.tripCountry()"
+              (valueChange)="world.setTripCountry($event)"
+              name="tripCountry"
+              [options]="world.countryNames()"
+              [optionIcons]="world.countryFlags()"
+              [placeholder]="'world.tripSelectCountry' | translate"
             />
-            <input
-              [ngModel]="world.tripToDate()"
-              (ngModelChange)="world.tripToDate.set($event)"
+            <ui-autocomplete
+              [value]="world.tripCity()"
+              (valueChange)="world.tripCity.set($event)"
+              name="tripCity"
+              [options]="world.tripCityOptions()"
+              [disabled]="!world.tripCountry()"
+              [placeholder]="(world.tripCountry() ? 'world.tripSelectCity' : 'world.tripSelectCountryFirst') | translate"
+            />
+          </div>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            <ui-date-picker
+              [value]="world.tripFromDate()"
+              (valueChange)="world.tripFromDate.set($event)"
+              name="tripFromDate"
+              [min]="world.todayIso"
+              [max]="world.maxTripDateIso"
+              [placeholder]="'world.tripFrom' | translate"
+            />
+            <ui-date-picker
+              [value]="world.tripToDate()"
+              (valueChange)="world.tripToDate.set($event)"
+              name="tripToDate"
+              [min]="world.tripFromDate() || world.todayIso"
+              [max]="world.maxTripDateIso"
               [placeholder]="'world.tripTo' | translate"
-              class="rounded-xl border border-bone/20 bg-bone/10 px-3 py-2.5 text-sm text-bone outline-none placeholder:text-bone/50"
             />
           </div>
           <input
@@ -211,9 +224,10 @@
           <button
             type="button"
             (click)="world.publishTripIntent()"
-            class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 sm:w-auto"
+            [disabled]="!world.canPublishTrip() || world.tripPublishing()"
+            class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40 sm:w-auto"
           >
-            {{ 'world.tripPublish' | translate }}
+            {{ (world.tripPublishing() ? 'world.tripPublishing' : 'world.tripPublish') | translate }}
           </button>
           <p class="text-eyebrow mt-3 text-bone/50">{{ 'world.tripHint' | translate }}</p>
         </div>
@@ -221,39 +235,60 @@
         <div class="border-t border-bone/15 pt-8 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-12">
           <p class="text-eyebrow text-bone/60">{{ 'world.hostEyebrow' | translate }}</p>
           <p class="text-display mt-1 text-xl">{{ 'world.hostTitle' | translate }}</p>
-          @if (world.openTripIntents().length) {
-            <div class="mt-5 space-y-3">
-              @for (row of world.openTripIntents(); track row.intent.id) {
-                <div class="rounded-2xl border border-dashed border-lime bg-bone/10 p-4">
-                  <div class="flex items-center gap-3">
-                    <ui-avatar
-                      [initials]="row.player?.initials ?? ''"
-                      [accent]="row.player?.accent ?? 'ink'"
-                      [seed]="row.player?.avatarSeed"
-                      [avatarStyle]="row.player?.avatarStyle"
-                      size="sm"
-                    />
-                    <div class="min-w-0 flex-1">
-                      <p class="truncate text-sm font-bold">{{ row.player?.name }}</p>
-                      <p class="truncate text-xs text-bone/60">
-                        {{ row.destination?.flag }} {{ row.destination?.city }} · {{ row.intent.fromDate }} –
-                        {{ row.intent.toDate }}
-                      </p>
-                    </div>
-                  </div>
-                  <p class="mt-3 text-sm text-bone/80">{{ row.intent.note }}</p>
-                  @if ((!world.meId() || row.intent.playerId !== world.meId()) && !auth.isObserver()) {
-                    <button
-                      type="button"
-                      (click)="world.volunteerForTrip(row.intent.id)"
-                      class="mt-3 w-full cursor-pointer rounded-full border border-lime px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
-                    >
-                      {{ 'world.volunteer' | translate }}
-                    </button>
-                  }
+
+          <ng-template #hostRequestRow let-row>
+            <div class="rounded-2xl border border-dashed border-lime bg-bone/10 p-4">
+              <div class="flex items-center gap-3">
+                <ui-avatar
+                  [initials]="row.player.initials"
+                  [accent]="row.player.accent"
+                  [seed]="row.player.avatarSeed"
+                  [avatarStyle]="row.player.avatarStyle"
+                  size="sm"
+                />
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-bold">{{ row.player.name }}</p>
+                  <p class="truncate text-xs text-bone/60">
+                    {{ world.countryFlag(row.intent.destinationCountry) }} {{ row.intent.destinationCity }} · {{ world.formatDate(row.intent.fromDate) }} –
+                    {{ world.formatDate(row.intent.toDate) }}
+                  </p>
                 </div>
+              </div>
+              <p class="mt-3 text-sm text-bone/80">{{ row.intent.note }}</p>
+              @if ((!world.meId() || row.intent.playerId !== world.meId()) && !auth.isObserver()) {
+                @if (world.hasVolunteered(row.intent.id)) {
+                  <p class="mt-3 w-full rounded-full border border-bone/20 px-4 py-2 text-center text-xs font-extrabold tracking-wide text-bone/60 uppercase">
+                    {{ 'world.volunteered' | translate }}
+                  </p>
+                } @else {
+                  <button
+                    type="button"
+                    (click)="world.volunteerForTrip(row.intent)"
+                    [disabled]="world.isVolunteering(row.intent.id)"
+                    class="mt-3 w-full cursor-pointer rounded-full border border-lime px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    {{ 'world.volunteer' | translate }}
+                  </button>
+                }
               }
             </div>
+          </ng-template>
+
+          @if (world.hostRequestsForMyCountry().length) {
+            <div class="mt-5 space-y-3">
+              @for (row of world.visibleHostRequestsForMyCountry(); track row.intent.id) {
+                <ng-container [ngTemplateOutlet]="hostRequestRow" [ngTemplateOutletContext]="{ $implicit: row }" />
+              }
+            </div>
+            @if (world.hasMoreHostRequests()) {
+              <button
+                type="button"
+                (click)="world.openHostDialog()"
+                class="mt-3 w-full cursor-pointer rounded-full border border-bone/20 px-4 py-2 text-xs font-extrabold tracking-wide text-bone/70 uppercase transition-colors hover:border-bone/40 hover:text-bone"
+              >
+                {{ 'world.viewAll' | translate }}
+              </button>
+            }
           } @else {
             <p class="mt-5 text-sm text-bone/60">{{ 'world.hostEmpty' | translate }}</p>
           }
@@ -261,4 +296,31 @@
       </div>
     </div>
   </section>
+
+  @if (world.hostDialogOpen()) {
+    <div class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4" role="presentation">
+      <div
+        class="animate-tennis-pop max-h-[80vh] w-full max-w-md overflow-y-auto rounded-3xl border border-border bg-ink p-6 text-bone shadow-xl"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="mb-4 flex items-center justify-between">
+          <p class="text-display text-lg">{{ 'world.hostTitle' | translate }}</p>
+          <button
+            type="button"
+            (click)="world.closeHostDialog()"
+            aria-label="Close"
+            class="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="space-y-3">
+          @for (row of world.hostRequestsForMyCountry(); track row.intent.id) {
+            <ng-container [ngTemplateOutlet]="hostRequestRow" [ngTemplateOutletContext]="{ $implicit: row }" />
+          }
+        </div>
+      </div>
+    </div>
+  }
 }

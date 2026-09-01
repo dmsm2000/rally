@@ -1,10 +1,23 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { AuthService } from '../../core/auth/auth.service';
+import { CountryDataService } from '../../core/data/country-data.service';
 import { RallyDataService } from '../../core/data/rally-data.service';
+import { TranslationService } from '../../core/i18n/translation.service';
+import { Player, TripIntent } from '../../core/models';
+import { ToastService } from '../../core/services/toast.service';
 import { MapMarker } from '../../shared/components';
+import { PlayersService } from '../players/players.service';
+import { TripsRepository } from './data/trips.repository';
 
 @Injectable({ providedIn: 'root' })
 export class WorldService {
   private readonly data = inject(RallyDataService);
+  private readonly auth = inject(AuthService);
+  private readonly countryData = inject(CountryDataService);
+  private readonly players = inject(PlayersService);
+  private readonly trips = inject(TripsRepository);
+  private readonly toast = inject(ToastService);
+  private readonly translation = inject(TranslationService);
 
   readonly destinations = this.data.destinations;
   readonly countries = this.data.countries;
@@ -30,41 +43,155 @@ export class WorldService {
     }
   }
 
-  readonly tripDestinationId = signal('');
+  readonly meId = this.auth.currentUserId;
+
+  // Trip publish draft — country/city picked the same way as registration/profile.
+  readonly tripCountry = signal('');
+  readonly tripCity = signal('');
   readonly tripFromDate = signal('');
   readonly tripToDate = signal('');
   readonly tripNote = signal('');
+  readonly tripCityOptions = signal<string[]>([]);
+  readonly tripPublishing = signal(false);
 
-  readonly meId = computed(() => this.data.me().id);
+  // ui-date-picker defaults its `max` to today (right for a birth date) — trips need the opposite:
+  // any day from today up to a couple of years out.
+  readonly todayIso = new Date().toISOString().slice(0, 10);
+  readonly maxTripDateIso = (() => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + 2);
+    return date.toISOString().slice(0, 10);
+  })();
 
-  readonly openTripIntents = computed(() =>
-    this.data
-      .tripIntents()
-      .filter((t) => t.status === 'open')
-      .map((t) => ({
-        intent: t,
-        player: this.data.playerById(t.playerId),
-        destination: this.destinations().find((d) => d.id === t.destinationId),
-      })),
+  readonly countryNames = computed(() => this.countryData.countries().map((c) => c.name));
+  readonly countryFlags = computed(() => Object.fromEntries(this.countryData.countries().map((c) => [c.name, c.flag])));
+  readonly canPublishTrip = computed(
+    () =>
+      this.tripCountry().length > 0 &&
+      this.tripCity().length > 0 &&
+      this.tripFromDate().length > 0 &&
+      this.tripToDate().length > 0 &&
+      this.tripNote().trim().length > 0,
   );
 
-  publishTripIntent(): void {
-    if (!this.tripDestinationId() || !this.tripFromDate() || !this.tripToDate() || !this.tripNote()) {
+  private readonly hostRequestsRaw = signal<TripIntent[]>([]);
+  private readonly volunteeredTripIds = signal<Set<string>>(new Set());
+  private readonly volunteeringTripIds = signal<Set<string>>(new Set());
+
+  readonly hostRequestsForMyCountry = computed(() =>
+    this.hostRequestsRaw()
+      .map((intent) => ({ intent, player: this.players.getById(intent.playerId) }))
+      .filter((row): row is { intent: TripIntent; player: Player } => !!row.player),
+  );
+
+  private readonly hostRequestsPreviewLimit = 2;
+  readonly visibleHostRequestsForMyCountry = computed(() => this.hostRequestsForMyCountry().slice(0, this.hostRequestsPreviewLimit));
+  readonly hasMoreHostRequests = computed(() => this.hostRequestsForMyCountry().length > this.hostRequestsPreviewLimit);
+
+  readonly hostDialogOpen = signal(false);
+
+  openHostDialog(): void {
+    this.hostDialogOpen.set(true);
+  }
+
+  closeHostDialog(): void {
+    this.hostDialogOpen.set(false);
+  }
+
+  // Re-derives only when the resolved country actually changes value (not on every unrelated
+  // profile-signal update), and reloads the host list whenever it does.
+  private readonly myCountryKey = computed(() => this.auth.currentPlayer().country ?? '');
+
+  constructor() {
+    this.countryData.loadCountries();
+
+    effect(() => {
+      const match = this.countryData.countries().find((c) => c.name === this.tripCountry());
+      if (!match) {
+        this.tripCityOptions.set([]);
+        return;
+      }
+      this.countryData.citiesFor(match.iso2).then((cities) => this.tripCityOptions.set(cities));
+    });
+
+    effect(() => {
+      this.myCountryKey();
+      untracked(() => {
+        void this.loadHostRequests(this.auth.currentPlayer().country);
+      });
+    });
+  }
+
+  setTripCountry(name: string): void {
+    this.tripCountry.set(name);
+    this.tripCity.set('');
+  }
+
+  countryFlag(name: string | undefined): string {
+    return this.countryData.countries().find((c) => c.name === name)?.flag ?? '';
+  }
+
+  formatDate(iso: string): string {
+    return this.trips.formatDate(iso);
+  }
+
+  hasVolunteered(tripId: string): boolean {
+    return this.volunteeredTripIds().has(tripId);
+  }
+
+  isVolunteering(tripId: string): boolean {
+    return this.volunteeringTripIds().has(tripId);
+  }
+
+  async publishTripIntent(): Promise<void> {
+    if (!this.tripCountry() || !this.tripCity() || !this.tripFromDate() || !this.tripToDate() || !this.tripNote().trim()) {
       return;
     }
-    this.data.createTripIntent({
-      destinationId: this.tripDestinationId(),
+    this.tripPublishing.set(true);
+    const success = await this.trips.publish({
+      destinationCountry: this.tripCountry(),
+      destinationCity: this.tripCity(),
       fromDate: this.tripFromDate(),
       toDate: this.tripToDate(),
-      note: this.tripNote(),
+      note: this.tripNote().trim(),
     });
-    this.tripDestinationId.set('');
+    this.tripPublishing.set(false);
+    if (!success) {
+      return;
+    }
+    this.tripCountry.set('');
+    this.tripCity.set('');
     this.tripFromDate.set('');
     this.tripToDate.set('');
     this.tripNote.set('');
+    this.toast.success(this.translation.t('world.tripPublished'));
+    void this.loadHostRequests(this.auth.currentPlayer().country);
   }
 
-  volunteerForTrip(tripId: string): void {
-    this.data.volunteerForTrip(tripId);
+  async volunteerForTrip(intent: TripIntent): Promise<void> {
+    if (this.hasVolunteered(intent.id) || this.isVolunteering(intent.id)) {
+      return;
+    }
+    this.volunteeringTripIds.update((ids) => new Set(ids).add(intent.id));
+    const success = await this.trips.volunteer(intent);
+    this.volunteeringTripIds.update((ids) => {
+      const next = new Set(ids);
+      next.delete(intent.id);
+      return next;
+    });
+    if (success) {
+      this.volunteeredTripIds.update((ids) => new Set(ids).add(intent.id));
+    }
+  }
+
+  private async loadHostRequests(country: string | undefined): Promise<void> {
+    if (!country) {
+      this.hostRequestsRaw.set([]);
+      this.volunteeredTripIds.set(new Set());
+      return;
+    }
+    const intents = await this.trips.hostRequestsForCountry(country);
+    this.hostRequestsRaw.set(intents);
+    this.volunteeredTripIds.set(await this.trips.myVolunteeredTripIds(intents.map((i) => i.id)));
   }
 }

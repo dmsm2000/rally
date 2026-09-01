@@ -9,7 +9,6 @@ import {
   Match,
   Player,
   PlayerIntent,
-  TripIntent,
   WorldActivityItem
 } from '../models';
 
@@ -693,27 +692,6 @@ export const PLAYER_INTENTS: PlayerIntent[] = [
   { id: 'pi3', playerId: 'yuki', text: "I'd love to discover a new city to play in soon.", time: '1h ago' },
   { id: 'pi4', playerId: 'pedro', text: 'Free tomorrow morning for a set or two?', time: '2h ago' },
   { id: 'pi5', playerId: 'ana', text: 'Doubles this weekend? Need one more player.', time: '4h ago' }
-];
-
-export const TRIP_INTENTS: TripIntent[] = [
-  {
-    id: 'ti1',
-    playerId: 'yuki',
-    destinationId: 'london',
-    fromDate: '10 Out',
-    toDate: '14 Out',
-    note: 'Vou estar em Londres em outubro, alguém disponível para me mostrar os courts locais?',
-    status: 'open'
-  },
-  {
-    id: 'ti2',
-    playerId: 'marc',
-    destinationId: 'tokyo',
-    fromDate: '2 Nov',
-    toDate: '6 Nov',
-    note: 'Primeira vez em Tóquio — adorava jogar com alguém local!',
-    status: 'open'
-  }
 ];
 
 export const NOTIFICATIONS: AppNotification[] = [

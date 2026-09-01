@@ -1,11 +1,14 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { PlayerCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import {
+  AutocompleteComponent,
   AvatarComponent,
   ChipComponent,
+  DatePickerComponent,
   EmptyStateComponent,
   IconComponent,
   SectionHeaderComponent,
@@ -18,6 +21,7 @@ import { WorldService } from '../../world.service';
   selector: 'rally-world-page',
   imports: [
     FormsModule,
+    NgTemplateOutlet,
     ChipComponent,
     IconComponent,
     StatComponent,
@@ -25,6 +29,8 @@ import { WorldService } from '../../world.service';
     AvatarComponent,
     EmptyStateComponent,
     PlayerCardComponent,
+    AutocompleteComponent,
+    DatePickerComponent,
     TranslatePipe
   ],
   templateUrl: './world-page.component.html',

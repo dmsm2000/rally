@@ -123,6 +123,7 @@ The public detail page is deliberately honest about data that has not been built
 - Public player discovery and public player detail data.
 - Country/city options in profile forms.
 - Direct messaging between two registered players, delivered live (Supabase Realtime), with a real typing indicator and per-participant read state.
+- Trip intents ("show me around"): publishing a trip, browsing host requests for your own city, volunteering (which sends a real message to the traveller, without hiding the post), and managing your own trips from your profile. Not yet posted to the feed or community map — deliberately deferred until the feed itself is real.
 
 ### Still mock today
 
@@ -131,7 +132,7 @@ The public detail page is deliberately honest about data that has not been built
 - Match scheduling/results/history.
 - Notifications.
 - Passport countries, courts, achievements, and player connections.
-- World trip intents and all related activity.
+- World community map/activity feed and stats.
 - Match compatibility, score, and geographic distance.
 
 The visual product may contain mature-looking mock flows, but new work must not present mock activity as belonging to a real registered player.

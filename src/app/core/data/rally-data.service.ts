@@ -6,9 +6,7 @@ import {
   MatchFormat,
   Player,
   SessionType,
-  Surface,
-  TripIntent,
-  WorldActivityItem
+  Surface
 } from '../models';
 import {
   ACHIEVEMENTS,
@@ -24,7 +22,6 @@ import {
   NOTIFICATIONS,
   PLAYERS,
   SURFACES,
-  TRIP_INTENTS,
   WORLD_ACTIVITY
 } from './rally-dataset';
 
@@ -52,7 +49,6 @@ export class RallyDataService {
   private readonly _countries = signal(COUNTRIES);
   private readonly _destinations = signal(DESTINATIONS);
   private readonly _worldActivity = signal(WORLD_ACTIVITY);
-  private readonly _tripIntents = signal(TRIP_INTENTS);
   private readonly _notifications = signal(NOTIFICATIONS);
 
   readonly me = this._me.asReadonly();
@@ -64,7 +60,6 @@ export class RallyDataService {
   readonly countries = this._countries.asReadonly();
   readonly destinations = this._destinations.asReadonly();
   readonly worldActivity = this._worldActivity.asReadonly();
-  readonly tripIntents = this._tripIntents.asReadonly();
   readonly notifications = this._notifications.asReadonly();
 
   readonly levels = LEVELS;
@@ -232,67 +227,6 @@ export class RallyDataService {
     };
     this._feed.update(list => [feedItem, ...list]);
   }
-
-  // Posting a trip intent also drops a live pin on the community map, same as the open-match/feed pairing above.
-  createTripIntent(input: { destinationId: string; fromDate: string; toDate: string; note: string }): void {
-    const destination = this.destinations().find(d => d.id === input.destinationId);
-    if (!destination) {
-      return;
-    }
-
-    const tripIntent: TripIntent = {
-      id: `ti-${Date.now()}`,
-      playerId: this._me().id,
-      destinationId: input.destinationId,
-      fromDate: input.fromDate,
-      toDate: input.toDate,
-      note: input.note,
-      status: 'open'
-    };
-    this._tripIntents.update(list => [tripIntent, ...list]);
-
-    const activityItem: WorldActivityItem = {
-      id: `trip-${Date.now()}`,
-      city: destination.city,
-      flag: destination.flag,
-      kind: 'trip',
-      text: input.note,
-      time: 'Agora mesmo',
-      coords: destination.coords
-    };
-    this._worldActivity.update(list => [activityItem, ...list]);
-
-    const feedItem: FeedItem = {
-      id: `feed-${Date.now()}`,
-      playerId: this._me().id,
-      kind: 'trip',
-      text: input.note,
-      detail: `${destination.flag} ${destination.city} · ${input.fromDate} – ${input.toDate}`,
-      time: 'Agora mesmo'
-    };
-    this._feed.update(list => [feedItem, ...list]);
-  }
-
-  // Volunteering to host confirms the trip intent and announces the pairing in the feed.
-  volunteerForTrip(tripId: string): void {
-    const trip = this._tripIntents().find(t => t.id === tripId);
-    if (!trip || trip.status !== 'open') {
-      return;
-    }
-    this._tripIntents.update(list => list.map(t => (t.id === tripId ? { ...t, status: 'matched' } : t)));
-
-    const destination = this.destinations().find(d => d.id === trip.destinationId);
-    const feedItem: FeedItem = {
-      id: `feed-${Date.now()}`,
-      playerId: this._me().id,
-      kind: 'trip',
-      text: `${this._me().name} volunteered to show ${this.playerById(trip.playerId)?.name ?? ''} around ${destination?.city ?? ''}.`,
-      detail: `${destination?.flag ?? ''} ${destination?.city ?? ''} · ${trip.fromDate} – ${trip.toDate}`,
-      time: 'Agora mesmo'
-    };
-    this._feed.update(list => [feedItem, ...list]);
-  }
-
 
   markNotificationRead(id: string): void {
     this._notifications.update(list => list.map(n => (n.id === id ? { ...n, read: true } : n)));

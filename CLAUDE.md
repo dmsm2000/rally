@@ -110,7 +110,7 @@ Apply in order on a new project:
 6. `0006_discover_profile_member_numbers.sql` replaces the discovery RPC with member number.
 7. `0007_discover_profile_preferences.sql` replaces it again with public tennis preferences.
 8. `0008_discover_profile_gender.sql` is the current/latest discovery RPC; it adds gender while converting `PreferNotToSay` to `null`.
-9. `0009_messages.sql` adds real-time direct messaging: `conversations`, `messages`, `conversation_reads` tables with participant-scoped RLS, the `ensure_conversation()` RPC, and Realtime publication for both tables.
+9. `0009_messages_and_trips.sql` adds real-time direct messaging (`conversations`, `messages`, `conversation_reads`, the `ensure_conversation()` RPC, Realtime publication) and "show me around" trip intents (`trip_intents`, `trip_hosts`), all participant/owner-scoped RLS.
 
 `discover_profiles()` is intentionally `security definer`, granted to `anon` and `authenticated`, because observers may browse public profiles while unauthenticated. It must return only carefully selected public data: name, member number, city/country, gender opted into sharing, tennis preferences, bio, and avatar inputs. Never add email, birth date, or other private identity information.
 
@@ -124,10 +124,11 @@ Apply in order on a new project:
 - Public player detail at `/players/:playerId` uses the real discovery record.
 - Country and city dropdown data: `@countrystatecity/countries-browser`, via `CountryDataService` with lazy caching.
 - Direct messaging: the floating `rally-messages-widget` is backed by real `conversations`/`messages` tables, delivered live via Supabase Realtime (Postgres Changes for messages, Broadcast for the ephemeral typing indicator). See `MessagesRepository` (`features/messages/data/messages.repository.ts`).
+- Trip intents ("show me around") at `/world` and "My trips" on the profile page: real `trip_intents`/`trip_hosts` tables. Volunteering to host doesn't hide the trip (others may also host) — it just sends the traveller a real automatic message via `MessagesService`. See `TripsRepository` (`features/world/data/trips.repository.ts`).
 
 ### Mock today
 
-- Feed, courts, open matches, match history/results, notifications, passport countries/courts/achievements, world trip intents and community stats still originate in `RallyDataService` / `rally-dataset.ts`.
+- Feed, courts, open matches, match history/results, notifications, passport countries/courts/achievements and community stats still originate in `RallyDataService` / `rally-dataset.ts`.
 - Real discovery profiles map into the older rich `Player` UI contract with neutral placeholder activity values: no distance, zero stats/match score, no real courts or matches.
 - The player detail deliberately shows empty states for real player match tabs and discovered courts, and a zeroed passport block. Do not reintroduce unrelated mock courts/matches/achievements into a real player's profile.
 
