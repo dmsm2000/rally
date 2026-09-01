@@ -1,5 +1,8 @@
 <nav class="shrink-0 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
-  <div class="relative mx-auto grid max-w-md grid-cols-5">
+  <div
+    class="relative mx-auto grid max-w-md"
+    [style.grid-template-columns]="'repeat(' + items().length + ', minmax(0, 1fr))'"
+  >
     <span
       class="nav-indicator"
       [style.width.px]="indicatorWidth()"

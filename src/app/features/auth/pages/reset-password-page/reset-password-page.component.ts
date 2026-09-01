@@ -7,10 +7,11 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { LanguageSwitcherComponent, ThemeToggleComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { PasswordToggleComponent } from '../../../../shared/ui';
 
 @Component({
   selector: 'rally-reset-password-page',
-  imports: [FormsModule, RouterLink, LanguageSwitcherComponent, ThemeToggleComponent, TranslatePipe],
+  imports: [FormsModule, RouterLink, LanguageSwitcherComponent, ThemeToggleComponent, TranslatePipe, PasswordToggleComponent],
   templateUrl: './reset-password-page.component.html',
   styleUrl: './reset-password-page.component.scss'
 })
@@ -26,10 +27,14 @@ export class ResetPasswordPageComponent {
   protected readonly submitting = signal(false);
   protected readonly done = signal(false);
   protected readonly fieldError = signal(false);
+  protected readonly showPassword = signal(false);
+  protected readonly showConfirmPassword = signal(false);
 
   protected readonly passwordsMismatch = computed(
     () => this.confirmPassword().length > 0 && this.password() !== this.confirmPassword()
   );
+
+  protected readonly passwordTooShort = computed(() => this.password().length > 0 && this.password().length < 6);
 
   protected readonly canSubmit = computed(
     () => !this.submitting() && this.password().length >= 6 && this.password() === this.confirmPassword()

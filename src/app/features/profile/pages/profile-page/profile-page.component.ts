@@ -33,7 +33,7 @@ import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.s
 import { ToastService } from '../../../../core/services/toast.service';
 import { AvatarPickerComponent, MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { AvatarComponent, ChipComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
+import { AvatarComponent, ChipComponent, PasswordToggleComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
 import { MatchesService } from '../../../matches/matches.service';
 import { PassportService } from '../../../passport/passport.service';
 import { ProfileService } from '../../profile.service';
@@ -51,7 +51,8 @@ type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule' | '
     SectionHeaderComponent,
     AvatarPickerComponent,
     MatchCardComponent,
-    TranslatePipe
+    TranslatePipe,
+    PasswordToggleComponent
   ],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.scss'
@@ -311,9 +312,16 @@ export class ProfilePageComponent {
   protected readonly newPassword = signal('');
   protected readonly confirmNewPassword = signal('');
   protected readonly passwordFieldError = signal(false);
+  protected readonly showCurrentPassword = signal(false);
+  protected readonly showNewPassword = signal(false);
+  protected readonly showConfirmNewPassword = signal(false);
 
   protected readonly newPasswordMismatch = computed(
     () => this.confirmNewPassword().length > 0 && this.newPassword() !== this.confirmNewPassword()
+  );
+
+  protected readonly newPasswordTooShort = computed(
+    () => this.newPassword().length > 0 && this.newPassword().length < 6
   );
 
   protected readonly canSavePassword = computed(
@@ -334,6 +342,9 @@ export class ProfilePageComponent {
     this.newPassword.set('');
     this.confirmNewPassword.set('');
     this.passwordFieldError.set(false);
+    this.showCurrentPassword.set(false);
+    this.showNewPassword.set(false);
+    this.showConfirmNewPassword.set(false);
   }
 
   protected setCurrentPassword(value: string): void {

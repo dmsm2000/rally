@@ -33,7 +33,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { AvatarPickerComponent, LanguageSwitcherComponent, ThemeToggleComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { ChipComponent } from '../../../../shared/ui';
+import { ChipComponent, PasswordToggleComponent } from '../../../../shared/ui';
 
 interface RegisterStep {
   label: string;
@@ -49,7 +49,8 @@ interface RegisterStep {
     LanguageSwitcherComponent,
     ThemeToggleComponent,
     AvatarPickerComponent,
-    TranslatePipe
+    TranslatePipe,
+    PasswordToggleComponent
   ],
   templateUrl: './register-page.component.html',
   styleUrl: './register-page.component.scss'
@@ -88,12 +89,16 @@ export class RegisterPageComponent {
   protected readonly submitting = signal(false);
   protected readonly confirmationPending = signal(false);
   protected readonly emailFieldError = signal(false);
+  protected readonly checkingEmail = signal(false);
+  protected readonly emailTaken = signal(false);
 
   protected readonly firstName = signal('');
   protected readonly lastName = signal('');
   protected readonly email = signal('');
   protected readonly password = signal('');
   protected readonly confirmPassword = signal('');
+  protected readonly showPassword = signal(false);
+  protected readonly showConfirmPassword = signal(false);
   protected readonly age = signal<number | null>(null);
   protected readonly gender = signal<Gender | null>(null);
   protected readonly dominantHand = signal<Hand | null>(null);
@@ -122,6 +127,8 @@ export class RegisterPageComponent {
     () => this.confirmPassword().length > 0 && this.password() !== this.confirmPassword()
   );
 
+  protected readonly passwordTooShort = computed(() => this.password().length > 0 && this.password().length < 6);
+
   protected readonly fullName = computed(() => `${this.firstName().trim()} ${this.lastName().trim()}`.trim());
 
   protected readonly availableCities = computed(
@@ -135,6 +142,8 @@ export class RegisterPageComponent {
           this.firstName().trim().length > 1 &&
           this.lastName().trim().length > 1 &&
           this.emailPattern.test(this.email()) &&
+          !this.emailTaken() &&
+          !this.checkingEmail() &&
           this.password().length >= 6 &&
           this.password() === this.confirmPassword()
         );
@@ -158,6 +167,25 @@ export class RegisterPageComponent {
   protected setEmail(value: string): void {
     this.email.set(value);
     this.emailFieldError.set(false);
+    this.emailTaken.set(false);
+  }
+
+  protected async onEmailBlur(): Promise<void> {
+    const email = this.email().trim();
+    if (!this.emailPattern.test(email)) {
+      return;
+    }
+    this.checkingEmail.set(true);
+    const taken = await this.auth.emailExists(email);
+    this.checkingEmail.set(false);
+    if (email !== this.email().trim()) {
+      // Email changed again while the check was in flight — its result no longer applies.
+      return;
+    }
+    this.emailTaken.set(taken);
+    if (taken) {
+      this.toast.error(this.i18n.t('auth.emailAlreadyRegistered'));
+    }
   }
 
   protected setCountry(name: string): void {

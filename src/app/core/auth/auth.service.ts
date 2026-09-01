@@ -70,6 +70,16 @@ export class AuthService {
     return this.initialLoad;
   }
 
+  /** Checks (via a security-definer RPC) whether an email is already registered, without leaking a session or sending mail. */
+  async emailExists(email: string): Promise<boolean> {
+    const { data, error } = await supabase.rpc('email_exists', { email });
+    if (error) {
+      console.error('Failed to check email existence:', error);
+      return false;
+    }
+    return !!data;
+  }
+
   async register(email: string, password: string, profile?: RegisterProfile): Promise<AuthResult> {
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {

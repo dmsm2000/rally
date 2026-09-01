@@ -8,3 +8,4 @@ export * from './match-score/match-score.component';
 export * from './toast/toast-container.component';
 export * from './icon/icon.component';
 export * from './confirm-dialog/confirm-dialog.component';
+export * from './password-toggle/password-toggle.component';

@@ -7,10 +7,11 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { LanguageSwitcherComponent, ThemeToggleComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { PasswordToggleComponent } from '../../../../shared/ui';
 
 @Component({
   selector: 'rally-login-page',
-  imports: [FormsModule, RouterLink, LanguageSwitcherComponent, ThemeToggleComponent, TranslatePipe],
+  imports: [FormsModule, RouterLink, LanguageSwitcherComponent, ThemeToggleComponent, TranslatePipe, PasswordToggleComponent],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss',
 })
@@ -25,6 +26,7 @@ export class LoginPageComponent {
   protected readonly password = signal('');
   protected readonly submitting = signal(false);
   protected readonly fieldError = signal(false);
+  protected readonly showPassword = signal(false);
 
   private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

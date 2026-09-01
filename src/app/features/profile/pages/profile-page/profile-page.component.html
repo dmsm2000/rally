@@ -36,7 +36,7 @@
           }
         </div>
       </div>
-      <div class="flex flex-col items-end gap-2">
+      <div class="flex flex-col items-start gap-2 sm:items-end">
         <button
           type="button"
           (click)="logout()"
@@ -530,39 +530,57 @@
       <form class="mt-5 space-y-4" (ngSubmit)="submitChangePassword()">
         <label class="block">
           <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.currentPassword' | translate }}</span>
-          <input
-            [ngModel]="currentPassword()"
-            (ngModelChange)="setCurrentPassword($event)"
-            name="currentPassword"
-            type="password"
-            autocomplete="current-password"
-            [class]="
-              'w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none focus:border-foreground ' +
-              (passwordFieldError() ? 'border-loss' : 'border-border')
-            "
-          />
+          <div class="relative">
+            <input
+              [ngModel]="currentPassword()"
+              (ngModelChange)="setCurrentPassword($event)"
+              name="currentPassword"
+              [type]="showCurrentPassword() ? 'text' : 'password'"
+              autocomplete="current-password"
+              [placeholder]="'auth.currentPasswordPlaceholder' | translate"
+              [class]="
+                'w-full rounded-xl border bg-background px-4 py-3 pr-11 text-sm outline-none focus:border-foreground ' +
+                (passwordFieldError() ? 'border-loss' : 'border-border')
+              "
+            />
+            <ui-password-toggle [visible]="showCurrentPassword()" (toggled)="showCurrentPassword.set(!showCurrentPassword())" />
+          </div>
         </label>
         <label class="block">
           <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.newPassword' | translate }}</span>
-          <input
-            [ngModel]="newPassword()"
-            (ngModelChange)="newPassword.set($event)"
-            name="newPassword"
-            type="password"
-            autocomplete="new-password"
-            class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground"
-          />
+          <div class="relative">
+            <input
+              [ngModel]="newPassword()"
+              (ngModelChange)="newPassword.set($event)"
+              name="newPassword"
+              [type]="showNewPassword() ? 'text' : 'password'"
+              autocomplete="new-password"
+              [placeholder]="'auth.newPasswordPlaceholder' | translate"
+              [class]="
+                'w-full rounded-xl border bg-background px-4 py-3 pr-11 text-sm outline-none focus:border-foreground ' +
+                (newPasswordTooShort() ? 'border-loss' : 'border-border')
+              "
+            />
+            <ui-password-toggle [visible]="showNewPassword()" (toggled)="showNewPassword.set(!showNewPassword())" />
+          </div>
+          @if (newPasswordTooShort()) {
+            <span class="mt-1.5 block text-xs font-semibold text-loss">{{ 'auth.passwordTooShort' | translate }}</span>
+          }
         </label>
         <label class="block">
           <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.confirmPassword' | translate }}</span>
-          <input
-            [ngModel]="confirmNewPassword()"
-            (ngModelChange)="confirmNewPassword.set($event)"
-            name="confirmNewPassword"
-            type="password"
-            autocomplete="new-password"
-            class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground"
-          />
+          <div class="relative">
+            <input
+              [ngModel]="confirmNewPassword()"
+              (ngModelChange)="confirmNewPassword.set($event)"
+              name="confirmNewPassword"
+              [type]="showConfirmNewPassword() ? 'text' : 'password'"
+              autocomplete="new-password"
+              [placeholder]="'auth.confirmPasswordPlaceholder' | translate"
+              class="w-full rounded-xl border border-border bg-background px-4 py-3 pr-11 text-sm outline-none focus:border-foreground"
+            />
+            <ui-password-toggle [visible]="showConfirmNewPassword()" (toggled)="showConfirmNewPassword.set(!showConfirmNewPassword())" />
+          </div>
           @if (newPasswordMismatch()) {
             <span class="mt-1.5 block text-xs font-semibold text-loss">{{ 'auth.passwordMismatch' | translate }}</span>
           }
