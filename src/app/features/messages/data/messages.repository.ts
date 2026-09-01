@@ -241,13 +241,41 @@ export class MessagesRepository {
     this.subscribeInbox();
   }
 
+  /** Deletes for both participants (cascades to messages/conversation_reads — see migration 0010). */
+  async deleteConversation(conversationId: string): Promise<void> {
+    const snapshot = this._conversations();
+    this._conversations.update(list => list.filter(c => c.id !== conversationId));
+    const { error } = await supabase.from('conversations').delete().eq('id', conversationId);
+    if (error) {
+      console.error('Failed to delete conversation:', error.message);
+      this._conversations.set(snapshot);
+      this.toast.error(this.translation.t('messages.deleteFailed'));
+    }
+  }
+
   private subscribeInbox(): void {
     this.inboxChannel = supabase
       .channel('messages-inbox')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload =>
         this.handleIncomingMessage(payload.new as MessageRow)
       )
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'conversations' }, payload =>
+        this.handleConversationDeleted((payload.old as { id: string }).id)
+      )
       .subscribe();
+  }
+
+  // Reflects the other participant deleting a shared conversation (or reconciles our own optimistic
+  // removal's echo) — also kicks the widget back to the list if that thread happened to be open.
+  private handleConversationDeleted(conversationId: string): void {
+    const conversation = this._conversations().find(c => c.id === conversationId);
+    if (!conversation) {
+      return;
+    }
+    this._conversations.update(list => list.filter(c => c.id !== conversationId));
+    if (this.widget.activePlayerId() === conversation.playerId) {
+      this.widget.backToList();
+    }
   }
 
   private handleIncomingMessage(row: MessageRow): void {

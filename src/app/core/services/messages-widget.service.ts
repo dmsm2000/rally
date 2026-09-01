@@ -15,12 +15,21 @@ export class MessagesWidgetService {
   private suppressNextOutsideClose = false;
 
   toggle(): void {
-    this._isOpen.update((value) => !value);
-    this.suppressNextOutsideClose = true;
+    const nowOpen = !this._isOpen();
+    this._isOpen.set(nowOpen);
+    if (nowOpen) {
+      this.suppressNextOutsideClose = true;
+    } else {
+      // Closing always drops back to the list next time — also fixes the repository's "is this
+      // thread currently open" check (used to decide whether an incoming message counts as unread),
+      // which otherwise kept seeing the last-open thread as still active after close.
+      this._activePlayerId.set(null);
+    }
   }
 
   close(): void {
     this._isOpen.set(false);
+    this._activePlayerId.set(null);
   }
 
   // Opens the widget on the conversation list.

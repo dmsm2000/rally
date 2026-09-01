@@ -169,7 +169,12 @@ export const en = {
     noMessagesYet: 'No messages yet — say hi!',
     placeholder: 'Write a message…',
     send: 'Send',
-    sendFailed: "Couldn't send your message. Please try again."
+    sendFailed: "Couldn't send your message. Please try again.",
+    deleteConversation: 'Delete conversation',
+    deleteConfirmLead: "Are you sure? This deletes the conversation for both of you and can't be undone.",
+    deleteConfirmButton: 'Yes, delete conversation',
+    deleteFailed: "Couldn't delete the conversation. Please try again.",
+    cancel: 'Cancel'
   },
   notifications: {
     title: 'Notifications',

@@ -1,5 +1,9 @@
 @if (dialog.active(); as request) {
-  <div class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4" role="presentation">
+  <div
+    class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4"
+    role="presentation"
+    (click)="$event.stopPropagation()"
+  >
     <div
       class="animate-tennis-pop w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-xl"
       role="alertdialog"

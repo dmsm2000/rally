@@ -171,7 +171,12 @@ export const es = {
     noMessagesYet: 'Sin mensajes todavía — ¡saluda!',
     placeholder: 'Escribe un mensaje…',
     send: 'Enviar',
-    sendFailed: 'No se pudo enviar el mensaje. Inténtalo de nuevo.'
+    sendFailed: 'No se pudo enviar el mensaje. Inténtalo de nuevo.',
+    deleteConversation: 'Eliminar conversación',
+    deleteConfirmLead: '¿Seguro? Esto elimina la conversación para los dos y no se puede deshacer.',
+    deleteConfirmButton: 'Sí, eliminar conversación',
+    deleteFailed: 'No se pudo eliminar la conversación. Inténtalo de nuevo.',
+    cancel: 'Cancelar'
   },
   notifications: {
     title: 'Notificaciones',

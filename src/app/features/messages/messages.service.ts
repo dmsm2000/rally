@@ -34,6 +34,10 @@ export class MessagesService {
     this.repository.markRead(conversationId);
   }
 
+  deleteConversation(conversationId: string): Promise<void> {
+    return this.repository.deleteConversation(conversationId);
+  }
+
   send(conversationId: string, text: string): void {
     const trimmed = text.trim();
     if (!trimmed) {

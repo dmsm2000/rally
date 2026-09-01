@@ -171,7 +171,12 @@ export const pt = {
     noMessagesYet: 'Ainda sem mensagens — diz olá!',
     placeholder: 'Escreve uma mensagem…',
     send: 'Enviar',
-    sendFailed: 'Não foi possível enviar a mensagem. Tenta novamente.'
+    sendFailed: 'Não foi possível enviar a mensagem. Tenta novamente.',
+    deleteConversation: 'Apagar conversa',
+    deleteConfirmLead: 'Tens a certeza? Isto apaga a conversa para os dois e não pode ser desfeito.',
+    deleteConfirmButton: 'Sim, apagar conversa',
+    deleteFailed: 'Não foi possível apagar a conversa. Tenta novamente.',
+    cancel: 'Cancelar'
   },
   notifications: {
     title: 'Notificações',

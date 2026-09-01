@@ -54,16 +54,26 @@
         </div>
         <div class="flex-1 overflow-y-auto">
           @for (row of rows(); track row.conversation.id) {
-            <button type="button" (click)="widget.openThread(row.player.id)" class="flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-muted">
-              <ui-avatar [initials]="row.player.initials" [accent]="row.player.accent" [seed]="row.player.avatarSeed" [avatarStyle]="row.player.avatarStyle" size="sm" />
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-bold">{{ row.player.name }}</p>
-                <p class="truncate text-xs text-muted-foreground">{{ row.lastMessage?.text ?? ('messages.noMessagesYet' | translate) }}</p>
-              </div>
-              @if (row.conversation.unread > 0) {
-                <span class="animate-tennis-pop flex size-5 shrink-0 items-center justify-center rounded-full bg-lime text-[10px] font-extrabold text-ink">{{ row.conversation.unread }}</span>
-              }
-            </button>
+            <div class="flex items-center gap-1 border-b border-border pr-2 transition-colors hover:bg-muted">
+              <button type="button" (click)="widget.openThread(row.player.id)" class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-4 py-3 text-left">
+                <ui-avatar [initials]="row.player.initials" [accent]="row.player.accent" [seed]="row.player.avatarSeed" [avatarStyle]="row.player.avatarStyle" size="sm" />
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-bold">{{ row.player.name }}</p>
+                  <p class="truncate text-xs text-muted-foreground">{{ row.lastMessage?.text ?? ('messages.noMessagesYet' | translate) }}</p>
+                </div>
+                @if (row.conversation.unread > 0) {
+                  <span class="animate-tennis-pop flex size-5 shrink-0 items-center justify-center rounded-full bg-lime text-[10px] font-extrabold text-ink">{{ row.conversation.unread }}</span>
+                }
+              </button>
+              <button
+                type="button"
+                (click)="deleteConversation(row.conversation.id)"
+                [attr.aria-label]="'messages.deleteConversation' | translate"
+                class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-2 text-muted-foreground hover:bg-background hover:text-loss"
+              >
+                <ui-icon name="trash" className="size-4" />
+              </button>
+            </div>
           } @empty {
             <p class="px-4 py-8 text-center text-sm text-muted-foreground">{{ 'messages.emptyBody' | translate }}</p>
           }
