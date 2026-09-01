@@ -14,7 +14,10 @@ export type IconName =
   | 'calendar'
   | 'sliders-horizontal'
   | 'arrow-down-up'
-  | 'search';
+  | 'search'
+  | 'gender-male'
+  | 'gender-female'
+  | 'gender-nonbinary';
 
 // Maps each name to its dedicated file under public/assets/icons/.
 const ICON_URLS: Record<IconName, string> = {
@@ -29,7 +32,10 @@ const ICON_URLS: Record<IconName, string> = {
   calendar: 'assets/icons/calendar.svg',
   'sliders-horizontal': 'assets/icons/sliders-horizontal.svg',
   'arrow-down-up': 'assets/icons/arrow-down-up.svg',
-  search: 'assets/icons/search.svg'
+  search: 'assets/icons/search.svg',
+  'gender-male': 'assets/icons/gender-male.svg',
+  'gender-female': 'assets/icons/gender-female.svg',
+  'gender-nonbinary': 'assets/icons/gender-nonbinary.svg'
 };
 
 /** Public icon API — loads the real .svg file for `name()` and inlines it so `stroke="currentColor"` still themes correctly. */

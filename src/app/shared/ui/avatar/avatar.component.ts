@@ -1,5 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { AvatarService } from '../../../core/services/avatar.service';
+import { IconComponent, IconName } from '../icon/icon.component';
 
 const ACCENT_CLASSES: Record<string, string> = {
   lime: 'bg-lime text-ink',
@@ -36,6 +37,7 @@ const BADGE_PX: Record<string, number> = {
 
 @Component({
   selector: 'ui-avatar',
+  imports: [IconComponent],
   templateUrl: './avatar.component.html',
   styleUrl: './avatar.component.scss'
 })
@@ -54,6 +56,8 @@ export class AvatarComponent {
   readonly showBadge = input(true);
   /** Optional colour override for a badge with semantic meaning, such as gender. */
   readonly badgeClass = input('bg-lime text-ink');
+  /** Fixed-viewBox icon for badges that need consistent geometric centering. */
+  readonly badgeIcon = input<IconName | undefined>(undefined);
 
   protected readonly classes = computed(() =>
     [

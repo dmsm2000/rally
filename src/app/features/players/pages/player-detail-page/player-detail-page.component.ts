@@ -48,6 +48,12 @@ const GENDER_CLASSES: Record<string, string> = {
   NonBinary: 'bg-lime text-ink'
 };
 
+const GENDER_ICONS: Record<string, 'gender-male' | 'gender-female' | 'gender-nonbinary'> = {
+  Male: 'gender-male',
+  Female: 'gender-female',
+  NonBinary: 'gender-nonbinary'
+};
+
 @Component({
   selector: 'rally-player-detail-page',
   imports: [
@@ -90,6 +96,10 @@ export class PlayerDetailPageComponent {
 
   protected genderClass(gender: string | undefined): string {
     return gender ? (GENDER_CLASSES[gender] ?? 'bg-lime text-ink') : 'bg-lime text-ink';
+  }
+
+  protected genderIcon(gender: string | undefined): 'gender-male' | 'gender-female' | 'gender-nonbinary' | undefined {
+    return gender ? GENDER_ICONS[gender] : undefined;
   }
 
   protected message(playerId: string): void {
