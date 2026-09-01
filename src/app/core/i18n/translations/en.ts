@@ -264,7 +264,12 @@ export const en = {
     deleteAccountConfirmLead: 'Are you sure? This will permanently delete your account and profile.',
     deleteAccountConfirmButton: 'Yes, delete my account',
     deletingAccount: 'Deleting…',
-    cancel: 'Cancel'
+    cancel: 'Cancel',
+    unsavedChangesLead: 'You have unsaved changes. If you leave now, they will be lost.',
+    discardChanges: 'Discard changes',
+    keepEditing: 'Keep editing',
+    dataAttributionLead: 'Country and city data provided by',
+    dataAttributionLink: 'Countries States Cities Database'
   },
   avatar: {
     generateAnother: 'Generate another'
@@ -337,8 +342,8 @@ export const en = {
     avatarQuestion: 'Pick your avatar',
     bioPlaceholder: "Play style, favourite shot, what you're looking for on Rally…",
     bioHint: 'Optional — shown on your profile to help other players match with you.',
-    age: 'Age',
-    agePlaceholder: 'e.g. 27',
+    birthDate: 'Date of birth',
+    birthDatePlaceholder: 'dd/mm/yyyy',
     genderQuestion: 'How do you identify?',
     genderMale: 'Male',
     genderFemale: 'Female',

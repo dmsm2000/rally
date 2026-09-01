@@ -1,13 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { CountryDataService } from '../../../../core/data/country-data.service';
 import {
   AVAILABILITY_OPTIONS,
   AvailabilityOption,
   Backhand,
   BACKHANDS,
-  COUNTRIES,
   COURT_PREFS,
   CourtPref,
   FORMATS,
@@ -33,7 +33,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { AvatarPickerComponent, LanguageSwitcherComponent, ThemeToggleComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { ChipComponent, PasswordToggleComponent } from '../../../../shared/ui';
+import { AutocompleteComponent, ChipComponent, DatePickerComponent, PasswordToggleComponent } from '../../../../shared/ui';
 
 interface RegisterStep {
   label: string;
@@ -50,7 +50,9 @@ interface RegisterStep {
     ThemeToggleComponent,
     AvatarPickerComponent,
     TranslatePipe,
-    PasswordToggleComponent
+    PasswordToggleComponent,
+    AutocompleteComponent,
+    DatePickerComponent
   ],
   templateUrl: './register-page.component.html',
   styleUrl: './register-page.component.scss'
@@ -61,6 +63,7 @@ export class RegisterPageComponent {
   private readonly toast = inject(ToastService);
   private readonly i18n = inject(TranslationService);
   protected readonly theme = inject(ThemeService);
+  private readonly countryData = inject(CountryDataService);
 
   protected readonly levels = LEVELS;
   protected readonly formats = FORMATS;
@@ -68,7 +71,12 @@ export class RegisterPageComponent {
   protected readonly frequencies = FREQUENCIES;
   protected readonly availabilityOptions = AVAILABILITY_OPTIONS;
   protected readonly maxDistanceOptions = MAX_DISTANCE_OPTIONS;
-  protected readonly countries = COUNTRIES;
+  protected readonly countries = this.countryData.countries;
+  protected readonly countryNames = computed(() => this.countries().map(c => c.name));
+  protected readonly countryFlags = computed(() =>
+    Object.fromEntries(this.countries().map(c => [c.name, c.flag]))
+  );
+  protected readonly cityOptions = signal<string[]>([]);
   protected readonly hands = HANDS;
   protected readonly backhands = BACKHANDS;
   protected readonly genders = GENDERS;
@@ -99,7 +107,7 @@ export class RegisterPageComponent {
   protected readonly confirmPassword = signal('');
   protected readonly showPassword = signal(false);
   protected readonly showConfirmPassword = signal(false);
-  protected readonly age = signal<number | null>(null);
+  protected readonly birthDate = signal('');
   protected readonly gender = signal<Gender | null>(null);
   protected readonly dominantHand = signal<Hand | null>(null);
   protected readonly backhand = signal<Backhand | null>(null);
@@ -122,6 +130,7 @@ export class RegisterPageComponent {
   protected readonly avatarStyle = signal<AvatarStyleId>(AVATAR_STYLES[0]);
 
   private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  protected readonly maxBirthDate = new Date().toISOString().slice(0, 10);
 
   protected readonly passwordsMismatch = computed(
     () => this.confirmPassword().length > 0 && this.password() !== this.confirmPassword()
@@ -131,9 +140,18 @@ export class RegisterPageComponent {
 
   protected readonly fullName = computed(() => `${this.firstName().trim()} ${this.lastName().trim()}`.trim());
 
-  protected readonly availableCities = computed(
-    () => this.countries.find(c => c.name === this.country())?.cities ?? []
-  );
+  constructor() {
+    this.countryData.loadCountries();
+    // Re-fetches this country's city list (cached per country in the service) whenever it changes.
+    effect(() => {
+      const match = this.countryData.countries().find(c => c.name === this.country());
+      if (!match) {
+        this.cityOptions.set([]);
+        return;
+      }
+      this.countryData.citiesFor(match.iso2).then(cities => this.cityOptions.set(cities));
+    });
+  }
 
   protected readonly canContinue = computed(() => {
     switch (this.step()) {
@@ -148,7 +166,7 @@ export class RegisterPageComponent {
           this.password() === this.confirmPassword()
         );
       case 1:
-        return this.age() !== null && !!this.gender() && !!this.dominantHand();
+        return this.birthDate().length > 0 && !!this.gender() && !!this.dominantHand();
       case 2:
         return this.country().length > 0 && this.city().length > 0 && this.maxDistanceKm() !== null;
       case 3:
@@ -241,7 +259,7 @@ export class RegisterPageComponent {
       name: this.fullName(),
       firstName: this.firstName().trim(),
       lastName: this.lastName().trim(),
-      age: this.age() ?? undefined,
+      birthDate: this.birthDate() || undefined,
       gender: this.gender() ?? undefined,
       dominantHand: this.dominantHand() ?? undefined,
       backhand: this.backhand() ?? undefined,

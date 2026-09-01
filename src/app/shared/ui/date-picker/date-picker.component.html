@@ -1,0 +1,80 @@
+<div class="relative">
+  <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted-foreground">
+    <ui-icon name="calendar" className="size-4" />
+  </span>
+  <input
+    [value]="displayValue()"
+    (click)="toggleOpen()"
+    type="text"
+    readonly
+    [name]="name()"
+    [placeholder]="placeholder()"
+    class="w-full cursor-pointer rounded-xl border border-border bg-background py-3 pr-4 pl-11 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+  />
+  @if (open()) {
+    <div class="absolute z-20 mt-1.5 w-72 rounded-xl border border-border bg-card p-3 shadow-lg">
+      <div class="mb-3 flex items-center gap-2">
+        <button
+          type="button"
+          (click)="prevMonth()"
+          class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground hover:bg-background hover:text-foreground"
+        >
+          ‹
+        </button>
+        <select
+          [ngModel]="viewMonth()"
+          (ngModelChange)="setViewMonth($event)"
+          [ngModelOptions]="{ standalone: true }"
+          class="min-w-0 flex-1 cursor-pointer rounded-lg border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-foreground"
+        >
+          @for (m of months(); track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+        <select
+          [ngModel]="viewYear()"
+          (ngModelChange)="setViewYear($event)"
+          [ngModelOptions]="{ standalone: true }"
+          class="w-[5.5rem] shrink-0 cursor-pointer rounded-lg border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-foreground"
+        >
+          @for (y of years(); track y) {
+            <option [value]="y">{{ y }}</option>
+          }
+        </select>
+        <button
+          type="button"
+          (click)="nextMonth()"
+          class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground hover:bg-background hover:text-foreground"
+        >
+          ›
+        </button>
+      </div>
+      <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-muted-foreground">
+        @for (w of weekdayLabels(); track $index) {
+          <span class="py-1 uppercase">{{ w }}</span>
+        }
+      </div>
+      <div class="grid grid-cols-7 gap-1">
+        @for (week of weeks(); track $index) {
+          @for (day of week; track day.iso) {
+            <button
+              type="button"
+              (click)="selectDay(day)"
+              [disabled]="isDisabled(day.iso)"
+              [class]="
+                'flex size-8 cursor-pointer items-center justify-center rounded-full text-xs disabled:cursor-not-allowed disabled:opacity-30 ' +
+                (isSelected(day.iso)
+                  ? 'bg-lime font-bold text-ink'
+                  : day.inMonth
+                    ? 'text-foreground hover:bg-background'
+                    : 'text-muted-foreground/40 hover:bg-background')
+              "
+            >
+              {{ day.label }}
+            </button>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

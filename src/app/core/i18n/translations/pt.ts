@@ -267,7 +267,12 @@ export const pt = {
     deleteAccountConfirmLead: 'Tens a certeza? Isto vai apagar a tua conta e perfil permanentemente.',
     deleteAccountConfirmButton: 'Sim, apagar a minha conta',
     deletingAccount: 'A apagar…',
-    cancel: 'Cancelar'
+    cancel: 'Cancelar',
+    unsavedChangesLead: 'Tens alterações por guardar. Se saíres agora, vão perder-se.',
+    discardChanges: 'Descartar alterações',
+    keepEditing: 'Continuar a editar',
+    dataAttributionLead: 'Dados de países e cidades fornecidos por',
+    dataAttributionLink: 'Countries States Cities Database'
   },
   avatar: {
     generateAnother: 'Gerar outro'
@@ -340,8 +345,8 @@ export const pt = {
     avatarQuestion: 'Escolhe o teu avatar',
     bioPlaceholder: 'Estilo de jogo, golpe preferido, o que procuras na Rally…',
     bioHint: 'Opcional — aparece no teu perfil para ajudar outros jogadores a encontrar-te.',
-    age: 'Idade',
-    agePlaceholder: 'ex. 27',
+    birthDate: 'Data de nascimento',
+    birthDatePlaceholder: 'dd/mm/aaaa',
     genderQuestion: 'Como te identificas?',
     genderMale: 'Masculino',
     genderFemale: 'Feminino',

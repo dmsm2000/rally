@@ -267,7 +267,12 @@ export const es = {
     deleteAccountConfirmLead: '¿Seguro? Esto eliminará tu cuenta y perfil de forma permanente.',
     deleteAccountConfirmButton: 'Sí, eliminar mi cuenta',
     deletingAccount: 'Eliminando…',
-    cancel: 'Cancelar'
+    cancel: 'Cancelar',
+    unsavedChangesLead: 'Tienes cambios sin guardar. Si sales ahora, se perderán.',
+    discardChanges: 'Descartar cambios',
+    keepEditing: 'Seguir editando',
+    dataAttributionLead: 'Datos de países y ciudades proporcionados por',
+    dataAttributionLink: 'Countries States Cities Database'
   },
   avatar: {
     generateAnother: 'Generar otro'
@@ -340,8 +345,8 @@ export const es = {
     avatarQuestion: 'Elige tu avatar',
     bioPlaceholder: 'Estilo de juego, golpe favorito, qué buscas en Rally…',
     bioHint: 'Opcional — se muestra en tu perfil para ayudar a otros jugadores a encontrarte.',
-    age: 'Edad',
-    agePlaceholder: 'ej. 27',
+    birthDate: 'Fecha de nacimiento',
+    birthDatePlaceholder: 'dd/mm/aaaa',
     genderQuestion: '¿Cómo te identificas?',
     genderMale: 'Hombre',
     genderFemale: 'Mujer',

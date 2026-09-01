@@ -1,13 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { CountryDataService } from '../../../../core/data/country-data.service';
 import {
   AVAILABILITY_OPTIONS,
   AvailabilityOption,
   Backhand,
   BACKHANDS,
-  COUNTRIES,
   COURT_PREFS,
   CourtPref,
   FORMATS,
@@ -31,14 +31,23 @@ import { Format, Level, Player, Surface } from '../../../../core/models';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
 import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 import { AvatarPickerComponent, MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { AvatarComponent, ChipComponent, PasswordToggleComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
+import {
+  AutocompleteComponent,
+  AvatarComponent,
+  ChipComponent,
+  DatePickerComponent,
+  PasswordToggleComponent,
+  SectionHeaderComponent,
+  StatComponent
+} from '../../../../shared/ui';
 import { MatchesService } from '../../../matches/matches.service';
 import { PassportService } from '../../../passport/passport.service';
 import { ProfileService } from '../../profile.service';
 
-type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule' | 'bio';
+type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule';
 
 @Component({
   selector: 'rally-profile-page',
@@ -52,12 +61,14 @@ type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule' | '
     AvatarPickerComponent,
     MatchCardComponent,
     TranslatePipe,
-    PasswordToggleComponent
+    PasswordToggleComponent,
+    AutocompleteComponent,
+    DatePickerComponent
   ],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.scss'
 })
-export class ProfilePageComponent {
+export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly profile = inject(ProfileService);
   protected readonly auth = inject(AuthService);
   protected readonly matchesService = inject(MatchesService);
@@ -66,6 +77,7 @@ export class ProfilePageComponent {
   private readonly toast = inject(ToastService);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly router = inject(Router);
+  private readonly countryData = inject(CountryDataService);
 
   private readonly myMatches = computed(() => {
     const meId = this.profile.me().id;
@@ -111,7 +123,13 @@ export class ProfilePageComponent {
   protected readonly frequencies = FREQUENCIES;
   protected readonly availabilityOptions = AVAILABILITY_OPTIONS;
   protected readonly maxDistanceOptions = MAX_DISTANCE_OPTIONS;
-  protected readonly countries = COUNTRIES;
+  protected readonly countries = this.countryData.countries;
+  protected readonly countryNames = computed(() => this.countries().map(c => c.name));
+  protected readonly maxBirthDate = new Date().toISOString().slice(0, 10);
+  protected readonly countryFlags = computed(() =>
+    Object.fromEntries(this.countries().map(c => [c.name, c.flag]))
+  );
+  protected readonly cityOptions = signal<string[]>([]);
   protected readonly hands = HANDS;
   protected readonly backhands = BACKHANDS;
   protected readonly genders = GENDERS;
@@ -119,7 +137,7 @@ export class ProfilePageComponent {
   protected readonly courtPrefs = COURT_PREFS;
   protected readonly timesOfDayOptions = TIMES_OF_DAY;
 
-  protected readonly draftAge = signal<number | null>(this.profile.me().age ?? null);
+  protected readonly draftBirthDate = signal(this.profile.me().birthDate ?? '');
   protected readonly draftGender = signal<Gender | null>((this.profile.me().gender as Gender) ?? null);
   protected readonly draftDominantHand = signal<Hand | null>((this.profile.me().dominantHand as Hand) ?? null);
   protected readonly draftBackhand = signal<Backhand | null>((this.profile.me().backhand as Backhand) ?? null);
@@ -143,14 +161,67 @@ export class ProfilePageComponent {
     (this.profile.me().avatarStyle as AvatarStyleId) ?? AVATAR_STYLES[0]
   );
 
-  protected readonly availableDraftCities = computed(
-    () => this.countries.find(c => c.name === this.draftCountry())?.cities ?? []
-  );
   protected readonly draftFlag = computed(
-    () => this.countries.find(c => c.name === this.draftCountry())?.flag ?? this.profile.me().flag
+    () => this.countries().find(c => c.name === this.draftCountry())?.flag ?? this.profile.me().flag
   );
 
-  protected readonly canSaveTraits = computed(() => this.draftAge() !== null);
+  constructor() {
+    this.countryData.loadCountries();
+    // Re-fetches this country's city list (cached per country in the service) whenever it changes.
+    effect(() => {
+      const match = this.countries().find(c => c.name === this.draftCountry());
+      if (!match) {
+        this.cityOptions.set([]);
+        return;
+      }
+      this.countryData.citiesFor(match.iso2).then(cities => this.cityOptions.set(cities));
+    });
+  }
+
+  protected readonly canSaveTraits = computed(
+    () => this.draftBirthDate().length > 0 && !!this.draftGender() && !!this.draftDominantHand()
+  );
+
+  protected readonly canSaveLocation = computed(
+    () => this.draftCountry().length > 0 && this.draftCity().length > 0 && this.draftMaxDistanceKm() !== null
+  );
+
+  protected readonly canSaveGame = computed(() => !!this.draftLevel() && this.draftYears() !== null);
+
+  protected readonly canSaveSchedule = computed(
+    () =>
+      !!this.draftFrequency() &&
+      this.draftCoached() !== null &&
+      (this.draftCoached() === false || !!this.draftCoachedFrequency())
+  );
+
+  // Feeds the unsaved-changes route guard — compares every draft signal against the persisted profile.
+  protected readonly hasUnsavedChanges = computed(() => {
+    const me = this.profile.me();
+    const sameArray = (a: readonly string[], b: readonly string[] | undefined) =>
+      [...a].sort().join('|') === [...(b ?? [])].sort().join('|');
+    return (
+      this.draftBirthDate() !== (me.birthDate ?? '') ||
+      this.draftGender() !== ((me.gender as Gender | undefined) ?? null) ||
+      this.draftDominantHand() !== ((me.dominantHand as Hand | undefined) ?? null) ||
+      this.draftBackhand() !== ((me.backhand as Backhand | undefined) ?? null) ||
+      this.draftCity() !== me.city ||
+      this.draftCountry() !== me.country ||
+      this.draftMaxDistanceKm() !== (me.maxDistanceKm ?? null) ||
+      this.draftLevel() !== me.level ||
+      this.draftYears() !== me.years ||
+      this.draftPlayStyle() !== ((me.playStyle as PlayStyle | undefined) ?? null) ||
+      this.draftFormat() !== me.format ||
+      this.draftSurface() !== me.surface ||
+      this.draftCourtPref() !== ((me.courtPref as CourtPref | undefined) ?? null) ||
+      this.draftFrequency() !== ((me.frequency as Frequency | undefined) ?? null) ||
+      this.draftCoached() !== (me.coached ?? null) ||
+      this.draftCoachedFrequency() !== ((me.coachedFrequency as Frequency | undefined) ?? null) ||
+      !sameArray(this.draftTimesOfDay(), me.timesOfDay) ||
+      !sameArray(this.draftAvailability(), me.availability) ||
+      this.draftBio() !== me.bio
+    );
+  });
 
   protected setDraftCountry(name: string): void {
     this.draftCountry.set(name);
@@ -222,14 +293,18 @@ export class ProfilePageComponent {
       return;
     }
     void this.saveSection('traits', {
-      age: this.draftAge() ?? undefined,
+      birthDate: this.draftBirthDate() || undefined,
       gender: this.draftGender() ?? undefined,
       dominantHand: this.draftDominantHand() ?? undefined,
-      backhand: this.draftBackhand() ?? undefined
+      backhand: this.draftBackhand() ?? undefined,
+      bio: this.draftBio()
     });
   }
 
   protected saveLocation(): void {
+    if (!this.canSaveLocation()) {
+      return;
+    }
     void this.saveSection('location', {
       city: this.draftCity(),
       country: this.draftCountry(),
@@ -238,6 +313,9 @@ export class ProfilePageComponent {
   }
 
   protected saveGame(): void {
+    if (!this.canSaveGame()) {
+      return;
+    }
     void this.saveSection('game', {
       level: this.draftLevel() ?? undefined,
       years: this.draftYears() ?? undefined,
@@ -249,6 +327,9 @@ export class ProfilePageComponent {
   }
 
   protected saveSchedule(): void {
+    if (!this.canSaveSchedule()) {
+      return;
+    }
     void this.saveSection('schedule', {
       frequency: this.draftFrequency() ?? undefined,
       coached: this.draftCoached() ?? undefined,
@@ -258,8 +339,39 @@ export class ProfilePageComponent {
     });
   }
 
-  protected saveBio(): void {
-    void this.saveSection('bio', { bio: this.draftBio() });
+  protected resetTraits(): void {
+    const me = this.profile.me();
+    this.draftBirthDate.set(me.birthDate ?? '');
+    this.draftGender.set((me.gender as Gender) ?? null);
+    this.draftDominantHand.set((me.dominantHand as Hand) ?? null);
+    this.draftBackhand.set((me.backhand as Backhand) ?? null);
+    this.draftBio.set(me.bio);
+  }
+
+  protected resetLocation(): void {
+    const me = this.profile.me();
+    this.draftCity.set(me.city);
+    this.draftCountry.set(me.country);
+    this.draftMaxDistanceKm.set(me.maxDistanceKm ?? null);
+  }
+
+  protected resetGame(): void {
+    const me = this.profile.me();
+    this.draftLevel.set(me.level);
+    this.draftYears.set(me.years);
+    this.draftPlayStyle.set((me.playStyle as PlayStyle) ?? null);
+    this.draftFormat.set(me.format);
+    this.draftSurface.set(me.surface);
+    this.draftCourtPref.set((me.courtPref as CourtPref) ?? null);
+  }
+
+  protected resetSchedule(): void {
+    const me = this.profile.me();
+    this.draftFrequency.set((me.frequency as Frequency) ?? null);
+    this.draftCoached.set(me.coached ?? null);
+    this.draftCoachedFrequency.set((me.coachedFrequency as Frequency) ?? null);
+    this.draftTimesOfDay.set((me.timesOfDay as TimeOfDay[]) ?? []);
+    this.draftAvailability.set(me.availability as AvailabilityOption[]);
   }
 
   private async saveSection(section: ProfileSection, partial: Partial<Player>): Promise<boolean> {
@@ -366,5 +478,18 @@ export class ProfilePageComponent {
     }
     this.toast.success(this.translation.t('profile.passwordUpdated'));
     this.closeChangePassword();
+  }
+
+  /** Route guard hook — asks before leaving with unsaved edits in any of the editable sections. */
+  async canDeactivate(): Promise<boolean> {
+    if (!this.hasUnsavedChanges()) {
+      return true;
+    }
+    return this.confirmDialog.confirm({
+      message: this.translation.t('profile.unsavedChangesLead'),
+      confirmLabel: this.translation.t('profile.discardChanges'),
+      cancelLabel: this.translation.t('profile.keepEditing'),
+      tone: 'destructive'
+    });
   }
 }

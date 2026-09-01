@@ -35,7 +35,8 @@ export interface Player {
   avatarSeed?: string;
   avatarStyle?: string;
   /** Extra questions collected at registration, editable later from the profile. */
-  age?: number;
+  /** ISO date string ('YYYY-MM-DD'). */
+  birthDate?: string;
   gender?: string;
   dominantHand?: string;
   backhand?: string;

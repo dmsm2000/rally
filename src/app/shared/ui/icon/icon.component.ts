@@ -2,7 +2,7 @@ import { Component, effect, inject, input, signal } from '@angular/core';
 import { SafeHtml } from '@angular/platform-browser';
 import { IconRegistryService } from './icon-registry.service';
 
-export type IconName = 'home' | 'world' | 'courts' | 'passport' | 'matches' | 'chevron-down' | 'error-circle' | 'eye';
+export type IconName = 'home' | 'world' | 'courts' | 'passport' | 'matches' | 'chevron-down' | 'error-circle' | 'eye' | 'calendar';
 
 // Maps each name to its dedicated file under public/assets/icons/.
 const ICON_URLS: Record<IconName, string> = {
@@ -13,7 +13,8 @@ const ICON_URLS: Record<IconName, string> = {
   matches: 'assets/icons/matches.svg',
   'chevron-down': 'assets/icons/chevron-down.svg',
   'error-circle': 'assets/icons/error-circle.svg',
-  eye: 'assets/icons/eye.svg'
+  eye: 'assets/icons/eye.svg',
+  calendar: 'assets/icons/calendar.svg'
 };
 
 /** Public icon API — loads the real .svg file for `name()` and inlines it so `stroke="currentColor"` still themes correctly. */

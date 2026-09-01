@@ -18,7 +18,7 @@ interface ProfileRow {
   id: string;
   first_name: string;
   last_name: string;
-  age?: number | null;
+  birth_date?: string | null;
   gender?: Gender | null;
   dominant_hand?: Hand | null;
   backhand?: Backhand | null;
@@ -85,7 +85,7 @@ export class ProfileRepositoryService {
     const row = data as ProfileRow & { member_number: number };
     return {
       name: `${row.first_name} ${row.last_name}`.trim(),
-      age: row.age ?? undefined,
+      birthDate: row.birth_date ?? undefined,
       gender: row.gender ?? undefined,
       dominantHand: row.dominant_hand ?? undefined,
       backhand: row.backhand ?? undefined,
@@ -121,8 +121,8 @@ export class ProfileRepositoryService {
   // Only includes keys actually present on `profile`, so partial updates don't clobber other columns.
   private toRowFields(profile: Partial<Player>): Partial<Omit<ProfileRow, 'id' | 'first_name' | 'last_name'>> {
     const row: Partial<Omit<ProfileRow, 'id' | 'first_name' | 'last_name'>> = {};
-    if (profile.age !== undefined) {
-      row.age = profile.age;
+    if (profile.birthDate !== undefined) {
+      row.birth_date = profile.birthDate;
     }
     if (profile.gender !== undefined) {
       row.gender = profile.gender as Gender;

@@ -9,3 +9,5 @@ export * from './toast/toast-container.component';
 export * from './icon/icon.component';
 export * from './confirm-dialog/confirm-dialog.component';
 export * from './password-toggle/password-toggle.component';
+export * from './autocomplete/autocomplete.component';
+export * from './date-picker/date-picker.component';

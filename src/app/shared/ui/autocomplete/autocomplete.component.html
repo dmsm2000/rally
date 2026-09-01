@@ -1,0 +1,38 @@
+<div class="relative">
+  @if (selectedIcon()) {
+    <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm">{{ selectedIcon() }}</span>
+  }
+  <input
+    [value]="value()"
+    (input)="onInput($event)"
+    (focus)="open.set(true)"
+    (blur)="onBlur()"
+    type="text"
+    [name]="name()"
+    [placeholder]="placeholder()"
+    [disabled]="disabled()"
+    autocomplete="off"
+    [class]="
+      'w-full rounded-xl border border-border bg-background py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground disabled:cursor-not-allowed disabled:opacity-50 ' +
+      (selectedIcon() ? 'pl-11 pr-4' : 'px-4')
+    "
+  />
+  @if (open() && filteredOptions().length) {
+    <ul class="absolute z-20 mt-1.5 max-h-56 w-full overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-lg">
+      @for (o of filteredOptions(); track o) {
+        <li>
+          <button
+            type="button"
+            (mousedown)="$event.preventDefault(); select(o)"
+            class="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm hover:bg-background"
+          >
+            @if (optionIcons()[o]) {
+              <span>{{ optionIcons()[o] }}</span>
+            }
+            <span>{{ o }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>

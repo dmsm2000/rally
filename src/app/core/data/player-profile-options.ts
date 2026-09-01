@@ -32,12 +32,6 @@ export interface TextOption<T extends string = string> {
   key: string;
 }
 
-export interface CountryOption {
-  name: string;
-  flag: string;
-  cities: string[];
-}
-
 export const LEVELS: Level[] = ['Beginner', 'Improver', 'Intermediate', 'Advanced', 'Competitive'];
 export const FORMATS: Format[] = ['Singles', 'Doubles', 'Both'];
 export const SURFACES: Surface[] = ['Clay', 'Hard', 'Grass', 'Carpet'];
@@ -63,21 +57,6 @@ export const AVAILABILITY_OPTIONS: TextOption<AvailabilityOption>[] = [
 export const MAX_DISTANCE_OPTIONS = [5, 10, 20, 50, 100];
 export const MAX_YEARS = 40;
 
-// Mirrors the countries/cities that already exist across the app's dataset.
-export const COUNTRIES: CountryOption[] = [
-  { name: 'Portugal', flag: '🇵🇹', cities: ['Porto', 'Lisbon', 'Matosinhos'] },
-  { name: 'Spain', flag: '🇪🇸', cities: ['Barcelona', 'Madrid'] },
-  { name: 'France', flag: '🇫🇷', cities: ['Paris'] },
-  { name: 'Italy', flag: '🇮🇹', cities: ['Milan'] },
-  { name: 'UK', flag: '🇬🇧', cities: ['London', 'Surrey'] },
-  { name: 'Netherlands', flag: '🇳🇱', cities: ['Amsterdam'] },
-  { name: 'Morocco', flag: '🇲🇦', cities: ['Casablanca'] },
-  { name: 'Japan', flag: '🇯🇵', cities: ['Tokyo'] },
-  { name: 'USA', flag: '🇺🇸', cities: ['New York'] },
-  { name: 'Australia', flag: '🇦🇺', cities: ['Sydney'] },
-  { name: 'Brazil', flag: '🇧🇷', cities: ['São Paulo'] },
-  { name: 'Mexico', flag: '🇲🇽', cities: ['Mexico City'] }
-];
 
 export const HANDS: ChipOption<Hand>[] = [
   { value: 'Right', emoji: '🫱', key: 'auth.handRight' },
