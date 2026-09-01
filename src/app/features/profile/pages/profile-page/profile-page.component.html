@@ -2,13 +2,25 @@
   <div class="court-grid-ink p-6 sm:p-10">
     <div class="flex flex-wrap items-start justify-between gap-5">
       <div class="flex flex-wrap items-center gap-5">
-        <ui-avatar
-          [initials]="profile.me().initials"
-          [seed]="draftAvatarSeed()"
-          [avatarStyle]="draftAvatarStyle()"
-          accent="lime"
-          size="xl"
-        />
+        <span class="relative inline-flex shrink-0">
+          <ui-avatar
+            [initials]="profile.me().initials"
+            [seed]="draftAvatarSeed()"
+            [avatarStyle]="draftAvatarStyle()"
+            accent="lime"
+            size="xl"
+          />
+          @if (!auth.isObserver()) {
+            <button
+              type="button"
+              (click)="openAvatarDialog()"
+              [attr.aria-label]="'profile.changeAvatar' | translate"
+              class="absolute right-0 bottom-0 flex size-8 cursor-pointer items-center justify-center rounded-full bg-lime text-sm ring-2 ring-ink hover:brightness-95"
+            >
+              ✏️
+            </button>
+          }
+        </span>
         <div class="flex-1">
           <p class="text-eyebrow text-bone/60">{{ 'profile.yourProfile' | translate }}</p>
           <h1 class="text-display mt-1 text-4xl sm:text-6xl">{{ profile.me().name }}</h1>
@@ -24,13 +36,24 @@
           }
         </div>
       </div>
-      <button
-        type="button"
-        (click)="logout()"
-        class="cursor-pointer rounded-full border border-bone/30 px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-bone"
-      >
-        {{ 'profile.logout' | translate }}
-      </button>
+      <div class="flex flex-col items-end gap-2">
+        <button
+          type="button"
+          (click)="logout()"
+          class="cursor-pointer rounded-full border border-bone/30 px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-bone"
+        >
+          {{ 'profile.logout' | translate }}
+        </button>
+        @if (!auth.isObserver()) {
+          <button
+            type="button"
+            (click)="openChangePassword()"
+            class="cursor-pointer rounded-full border border-amber-400 px-4 py-2 text-xs font-extrabold tracking-wide text-amber-400 uppercase hover:bg-amber-400 hover:text-ink"
+          >
+            {{ 'profile.changePassword' | translate }}
+          </button>
+        }
+      </div>
     </div>
 
     <div class="mt-8 grid grid-cols-2 gap-6 border-t border-bone/15 pt-6 sm:grid-cols-4">
@@ -90,11 +113,6 @@
 
 @if (!auth.isObserver()) {
   <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
-    <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'profile.changeAvatar' | translate }}</p>
-    <rally-avatar-picker [(seed)]="draftAvatarSeed" [(avatarStyle)]="draftAvatarStyle" />
-  </section>
-
-  <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
     <div class="mb-6">
       <p class="text-eyebrow text-muted-foreground">{{ 'auth.steps.traits' | translate }}</p>
       <p class="mt-1 text-sm text-muted-foreground">{{ 'auth.taglines.traits' | translate }}</p>
@@ -146,6 +164,20 @@
         </div>
       </div>
     </div>
+
+    <div class="mt-6 flex items-center justify-end gap-3">
+      @if (isSaved('traits')) {
+        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+      }
+      <button
+        type="button"
+        (click)="saveTraits()"
+        [disabled]="isSaving('traits') || !canSaveTraits()"
+        class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
+      >
+        {{ (isSaving('traits') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+      </button>
+    </div>
   </section>
 
   <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
@@ -188,13 +220,26 @@
             <ui-chip
               [clickable]="true"
               [active]="draftMaxDistanceKm() === d"
-              tone="cobalt"
               (toggled)="draftMaxDistanceKm.set(d)"
               >{{ d }}{{ d === 100 ? '+' : '' }} km</ui-chip
             >
           }
         </div>
       </div>
+    </div>
+
+    <div class="mt-6 flex items-center justify-end gap-3">
+      @if (isSaved('location')) {
+        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+      }
+      <button
+        type="button"
+        (click)="saveLocation()"
+        [disabled]="isSaving('location')"
+        class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
+      >
+        {{ (isSaving('location') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+      </button>
     </div>
   </section>
 
@@ -208,7 +253,7 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.level' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (l of levels; track l) {
-            <ui-chip [clickable]="true" [active]="draftLevel() === l" tone="lime" (toggled)="draftLevel.set(l)">{{
+            <ui-chip [clickable]="true" [active]="draftLevel() === l" (toggled)="draftLevel.set(l)">{{
               'enums.level.' + l | translate
             }}</ui-chip>
           }
@@ -267,7 +312,7 @@
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.surface' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (s of surfaces; track s) {
-            <ui-chip [clickable]="true" [active]="draftSurface() === s" tone="clay" (toggled)="draftSurface.set(s)">{{
+            <ui-chip [clickable]="true" [active]="draftSurface() === s" (toggled)="draftSurface.set(s)">{{
               s
             }}</ui-chip>
           }
@@ -283,6 +328,20 @@
           }
         </div>
       </div>
+    </div>
+
+    <div class="mt-6 flex items-center justify-end gap-3">
+      @if (isSaved('game')) {
+        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+      }
+      <button
+        type="button"
+        (click)="saveGame()"
+        [disabled]="isSaving('game')"
+        class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
+      >
+        {{ (isSaving('game') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+      </button>
     </div>
   </section>
 
@@ -308,7 +367,7 @@
       <div>
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.coachedQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
-          <ui-chip [clickable]="true" [active]="draftCoached() === true" tone="lime" (toggled)="setDraftCoached(true)"
+          <ui-chip [clickable]="true" [active]="draftCoached() === true" (toggled)="setDraftCoached(true)"
             >🎾 {{ 'auth.coachedYes' | translate }}</ui-chip
           >
           <ui-chip [clickable]="true" [active]="draftCoached() === false" (toggled)="setDraftCoached(false)"
@@ -338,7 +397,6 @@
             <ui-chip
               [clickable]="true"
               [active]="draftTimesOfDay().includes(t.value)"
-              tone="cobalt"
               (toggled)="toggleDraftTimeOfDay(t.value)"
               >{{ t.emoji }} {{ t.key | translate }}</ui-chip
             >
@@ -352,7 +410,6 @@
             <ui-chip
               [clickable]="true"
               [active]="draftAvailability().includes(a.value)"
-              tone="cobalt"
               (toggled)="toggleDraftAvailability(a.value)"
               >{{ a.key | translate }}</ui-chip
             >
@@ -360,9 +417,23 @@
         </div>
       </div>
     </div>
+
+    <div class="mt-6 flex items-center justify-end gap-3">
+      @if (isSaved('schedule')) {
+        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+      }
+      <button
+        type="button"
+        (click)="saveSchedule()"
+        [disabled]="isSaving('schedule')"
+        class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
+      >
+        {{ (isSaving('schedule') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+      </button>
+    </div>
   </section>
 
-  <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+  <section class="mb-10 rounded-2xl border border-border bg-card p-6 sm:p-8">
     <label class="block">
       <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{ 'profile.bioLabel' | translate }}</span>
       <textarea
@@ -373,23 +444,21 @@
         class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground"
       ></textarea>
     </label>
-  </section>
 
-  <div class="mb-10 flex flex-wrap items-center justify-end gap-3 rounded-2xl border border-border bg-card p-5">
-    @if (saved()) {
-      <span class="animate-tennis-pop self-center text-xs font-semibold text-muted-foreground"
-        >🎾 {{ 'profile.saved' | translate }}</span
+    <div class="mt-6 flex items-center justify-end gap-3">
+      @if (isSaved('bio')) {
+        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground">🎾 {{ 'profile.saved' | translate }}</span>
+      }
+      <button
+        type="button"
+        (click)="saveBio()"
+        [disabled]="isSaving('bio')"
+        class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
       >
-    }
-    <button
-      type="button"
-      (click)="save()"
-      [disabled]="!canSave()"
-      class="cursor-pointer rounded-full bg-lime px-6 py-3 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
-    >
-      {{ 'profile.saveChanges' | translate }}
-    </button>
-  </div>
+        {{ (isSaving('bio') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+      </button>
+    </div>
+  </section>
 }
 
 @if (auth.isObserver()) {
@@ -399,12 +468,12 @@
       [title]="'profile.howYouPlay' | translate"
     />
     <div class="flex flex-wrap gap-2">
-      <ui-chip tone="lime">{{ 'enums.level.' + draftLevel() | translate }}</ui-chip>
+      <ui-chip>{{ 'enums.level.' + draftLevel() | translate }}</ui-chip>
       <ui-chip>{{ 'enums.format.' + draftFormat() | translate }}</ui-chip>
       <ui-chip>{{ draftSurface() }} {{ 'stats.courts' | translate }}</ui-chip>
       <ui-chip>{{ draftFrequency() }}</ui-chip>
       @for (a of draftAvailability(); track a) {
-        <ui-chip tone="cobalt">{{ a }}</ui-chip>
+        <ui-chip>{{ a }}</ui-chip>
       }
     </div>
   </section>
@@ -422,5 +491,102 @@
       {{ (deletingAccount() ? 'profile.deletingAccount' : 'profile.deleteAccount') | translate }}
     </button>
   </section>
+}
+
+@if (changingAvatar()) {
+  <div class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4" role="presentation">
+    <div class="animate-tennis-pop w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-xl sm:p-8" role="dialog" aria-modal="true">
+      <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'profile.changeAvatar' | translate }}</p>
+      <rally-avatar-picker [(seed)]="draftAvatarSeed" [(avatarStyle)]="draftAvatarStyle" />
+
+      <div class="mt-6 flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          (click)="cancelAvatarDialog()"
+          [disabled]="isSaving('avatar')"
+          class="cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
+        >
+          {{ 'profile.cancel' | translate }}
+        </button>
+        <button
+          type="button"
+          (click)="confirmAvatarDialog()"
+          [disabled]="isSaving('avatar')"
+          class="cursor-pointer rounded-full bg-lime px-4 py-2 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
+        >
+          {{ (isSaving('avatar') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (changingPassword()) {
+  <div class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4" role="presentation">
+    <div class="animate-tennis-pop w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-xl sm:p-8" role="dialog" aria-modal="true">
+      <p class="text-eyebrow text-muted-foreground">{{ 'profile.changePassword' | translate }}</p>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'profile.changePasswordLead' | translate }}</p>
+
+      <form class="mt-5 space-y-4" (ngSubmit)="submitChangePassword()">
+        <label class="block">
+          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.currentPassword' | translate }}</span>
+          <input
+            [ngModel]="currentPassword()"
+            (ngModelChange)="setCurrentPassword($event)"
+            name="currentPassword"
+            type="password"
+            autocomplete="current-password"
+            [class]="
+              'w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none focus:border-foreground ' +
+              (passwordFieldError() ? 'border-loss' : 'border-border')
+            "
+          />
+        </label>
+        <label class="block">
+          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.newPassword' | translate }}</span>
+          <input
+            [ngModel]="newPassword()"
+            (ngModelChange)="newPassword.set($event)"
+            name="newPassword"
+            type="password"
+            autocomplete="new-password"
+            class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground"
+          />
+        </label>
+        <label class="block">
+          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">* {{ 'auth.confirmPassword' | translate }}</span>
+          <input
+            [ngModel]="confirmNewPassword()"
+            (ngModelChange)="confirmNewPassword.set($event)"
+            name="confirmNewPassword"
+            type="password"
+            autocomplete="new-password"
+            class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground"
+          />
+          @if (newPasswordMismatch()) {
+            <span class="mt-1.5 block text-xs font-semibold text-loss">{{ 'auth.passwordMismatch' | translate }}</span>
+          }
+        </label>
+
+        <div class="mt-6 flex flex-wrap justify-end gap-2">
+          <button
+            type="button"
+            (click)="closeChangePassword()"
+            [disabled]="savingPassword()"
+            class="cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
+          >
+            {{ 'profile.cancel' | translate }}
+          </button>
+          <button
+            type="submit"
+            [disabled]="!canSavePassword()"
+            class="cursor-pointer rounded-full bg-lime px-4 py-2 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
+          >
+            {{ (savingPassword() ? 'auth.savingPassword' : 'auth.savePassword') | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 }
 

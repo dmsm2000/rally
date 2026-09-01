@@ -27,7 +27,7 @@ import {
   TIMES_OF_DAY
 } from '../../../../core/data/player-profile-options';
 import { TranslationService } from '../../../../core/i18n/translation.service';
-import { Format, Level, Surface } from '../../../../core/models';
+import { Format, Level, Player, Surface } from '../../../../core/models';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
 import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -37,6 +37,8 @@ import { AvatarComponent, ChipComponent, SectionHeaderComponent, StatComponent }
 import { MatchesService } from '../../../matches/matches.service';
 import { PassportService } from '../../../passport/passport.service';
 import { ProfileService } from '../../profile.service';
+
+type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule' | 'bio';
 
 @Component({
   selector: 'rally-profile-page',
@@ -147,7 +149,7 @@ export class ProfilePageComponent {
     () => this.countries.find(c => c.name === this.draftCountry())?.flag ?? this.profile.me().flag
   );
 
-  protected readonly canSave = computed(() => this.draftAge() !== null);
+  protected readonly canSaveTraits = computed(() => this.draftAge() !== null);
 
   protected setDraftCountry(name: string): void {
     this.draftCountry.set(name);
@@ -179,34 +181,101 @@ export class ProfilePageComponent {
     }
   }
 
-  protected readonly saved = signal(false);
+  // Each profile-page section saves independently, so editing one doesn't require scrolling to a
+  // single button at the bottom — savingSection/savedSection track which one is currently in flight.
+  protected readonly savingSection = signal<ProfileSection | null>(null);
+  protected readonly savedSection = signal<ProfileSection | null>(null);
 
-  protected save(): void {
-    this.profile.updateMe({
+  protected isSaving(section: ProfileSection): boolean {
+    return this.savingSection() === section;
+  }
+
+  protected isSaved(section: ProfileSection): boolean {
+    return this.savedSection() === section;
+  }
+
+  protected readonly changingAvatar = signal(false);
+
+  protected openAvatarDialog(): void {
+    this.changingAvatar.set(true);
+  }
+
+  protected cancelAvatarDialog(): void {
+    this.draftAvatarSeed.set(this.profile.me().avatarSeed ?? this.profile.me().id);
+    this.draftAvatarStyle.set((this.profile.me().avatarStyle as AvatarStyleId) ?? AVATAR_STYLES[0]);
+    this.changingAvatar.set(false);
+  }
+
+  protected async confirmAvatarDialog(): Promise<void> {
+    const success = await this.saveSection('avatar', {
+      avatarSeed: this.draftAvatarSeed(),
+      avatarStyle: this.draftAvatarStyle()
+    });
+    if (success) {
+      this.changingAvatar.set(false);
+    }
+  }
+
+  protected saveTraits(): void {
+    if (!this.canSaveTraits()) {
+      return;
+    }
+    void this.saveSection('traits', {
       age: this.draftAge() ?? undefined,
       gender: this.draftGender() ?? undefined,
       dominantHand: this.draftDominantHand() ?? undefined,
-      backhand: this.draftBackhand() ?? undefined,
+      backhand: this.draftBackhand() ?? undefined
+    });
+  }
+
+  protected saveLocation(): void {
+    void this.saveSection('location', {
       city: this.draftCity(),
       country: this.draftCountry(),
-      maxDistanceKm: this.draftMaxDistanceKm() ?? undefined,
+      maxDistanceKm: this.draftMaxDistanceKm() ?? undefined
+    });
+  }
+
+  protected saveGame(): void {
+    void this.saveSection('game', {
       level: this.draftLevel() ?? undefined,
       years: this.draftYears() ?? undefined,
       playStyle: this.draftPlayStyle() ?? undefined,
       format: this.draftFormat() ?? undefined,
       surface: this.draftSurface() ?? undefined,
-      courtPref: this.draftCourtPref() ?? undefined,
+      courtPref: this.draftCourtPref() ?? undefined
+    });
+  }
+
+  protected saveSchedule(): void {
+    void this.saveSection('schedule', {
       frequency: this.draftFrequency() ?? undefined,
       coached: this.draftCoached() ?? undefined,
       coachedFrequency: this.draftCoachedFrequency() ?? undefined,
       timesOfDay: this.draftTimesOfDay(),
-      availability: this.draftAvailability(),
-      bio: this.draftBio(),
-      avatarSeed: this.draftAvatarSeed(),
-      avatarStyle: this.draftAvatarStyle()
+      availability: this.draftAvailability()
     });
-    this.saved.set(true);
-    setTimeout(() => this.saved.set(false), 2000);
+  }
+
+  protected saveBio(): void {
+    void this.saveSection('bio', { bio: this.draftBio() });
+  }
+
+  private async saveSection(section: ProfileSection, partial: Partial<Player>): Promise<boolean> {
+    this.savingSection.set(section);
+    const result = await this.profile.updateMe(partial);
+    this.savingSection.set(null);
+    if (!result.success) {
+      this.toast.error(this.translation.t(result.error ?? 'auth.errorGeneric'));
+      return false;
+    }
+    this.savedSection.set(section);
+    setTimeout(() => {
+      if (this.savedSection() === section) {
+        this.savedSection.set(null);
+      }
+    }, 2000);
+    return true;
   }
 
   protected async logout(): Promise<void> {
@@ -234,5 +303,57 @@ export class ProfilePageComponent {
       return;
     }
     this.router.navigateByUrl('/login');
+  }
+
+  protected readonly changingPassword = signal(false);
+  protected readonly savingPassword = signal(false);
+  protected readonly currentPassword = signal('');
+  protected readonly newPassword = signal('');
+  protected readonly confirmNewPassword = signal('');
+  protected readonly passwordFieldError = signal(false);
+
+  protected readonly newPasswordMismatch = computed(
+    () => this.confirmNewPassword().length > 0 && this.newPassword() !== this.confirmNewPassword()
+  );
+
+  protected readonly canSavePassword = computed(
+    () =>
+      !this.savingPassword() &&
+      this.currentPassword().length > 0 &&
+      this.newPassword().length >= 6 &&
+      this.newPassword() === this.confirmNewPassword()
+  );
+
+  protected openChangePassword(): void {
+    this.changingPassword.set(true);
+  }
+
+  protected closeChangePassword(): void {
+    this.changingPassword.set(false);
+    this.currentPassword.set('');
+    this.newPassword.set('');
+    this.confirmNewPassword.set('');
+    this.passwordFieldError.set(false);
+  }
+
+  protected setCurrentPassword(value: string): void {
+    this.currentPassword.set(value);
+    this.passwordFieldError.set(false);
+  }
+
+  protected async submitChangePassword(): Promise<void> {
+    if (!this.canSavePassword()) {
+      return;
+    }
+    this.savingPassword.set(true);
+    const result = await this.auth.changePassword(this.currentPassword(), this.newPassword());
+    this.savingPassword.set(false);
+    if (!result.success) {
+      this.passwordFieldError.set(true);
+      this.toast.error(this.translation.t(result.error ?? 'auth.errorGeneric'));
+      return;
+    }
+    this.toast.success(this.translation.t('profile.passwordUpdated'));
+    this.closeChangePassword();
   }
 }

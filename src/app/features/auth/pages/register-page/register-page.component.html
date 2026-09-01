@@ -228,7 +228,6 @@
                   <ui-chip
                     [clickable]="true"
                     [active]="maxDistanceKm() === d"
-                    tone="cobalt"
                     (toggled)="maxDistanceKm.set(d)"
                     >{{ d }}{{ d === 100 ? '+' : '' }} km</ui-chip
                   >
@@ -244,7 +243,7 @@
               <p class="mb-2 text-xs text-muted-foreground">{{ 'auth.levelHint' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (l of levels; track l) {
-                  <ui-chip [clickable]="true" [active]="level() === l" tone="lime" (toggled)="level.set(l)">{{
+                  <ui-chip [clickable]="true" [active]="level() === l" (toggled)="level.set(l)">{{
                     'enums.level.' + l | translate
                   }}</ui-chip>
                 }
@@ -303,7 +302,7 @@
               <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.surface' | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (s of surfaces; track s) {
-                  <ui-chip [clickable]="true" [active]="surface() === s" tone="clay" (toggled)="surface.set(s)">{{
+                  <ui-chip [clickable]="true" [active]="surface() === s" (toggled)="surface.set(s)">{{
                     s
                   }}</ui-chip>
                 }
@@ -336,7 +335,7 @@
             <div>
               <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.coachedQuestion' | translate }}</p>
               <div class="flex flex-wrap gap-2">
-                <ui-chip [clickable]="true" [active]="coached() === true" tone="lime" (toggled)="setCoached(true)"
+                <ui-chip [clickable]="true" [active]="coached() === true" (toggled)="setCoached(true)"
                   >🎾 {{ 'auth.coachedYes' | translate }}</ui-chip
                 >
                 <ui-chip [clickable]="true" [active]="coached() === false" (toggled)="setCoached(false)"
@@ -366,7 +365,6 @@
                   <ui-chip
                     [clickable]="true"
                     [active]="timesOfDay().includes(t.value)"
-                    tone="cobalt"
                     (toggled)="toggleTimeOfDay(t.value)"
                     >{{ t.emoji }} {{ t.key | translate }}</ui-chip
                   >
@@ -380,7 +378,6 @@
                   <ui-chip
                     [clickable]="true"
                     [active]="availability().includes(a.value)"
-                    tone="cobalt"
                     (toggled)="toggleAvailability(a.value)"
                     >{{ a.key | translate }}</ui-chip
                   >

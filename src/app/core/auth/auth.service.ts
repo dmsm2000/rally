@@ -34,15 +34,20 @@ export class AuthService {
   private readonly _ready = signal(false);
 
   /** Resolves once the persisted session (if any) has been restored — guards must await this. */
-  private readonly initialLoad: Promise<void> = supabase.auth.getSession().then(({ data }) => {
+  private readonly initialLoad: Promise<void> = supabase.auth.getSession().then(async ({ data }) => {
     this._session.set(data.session);
-    this._ready.set(true);
+    // Await this (unlike the onAuthStateChange handler below) — guards await whenReady() before
+    // letting a page component construct, so the real profile must already be loaded by then, or a
+    // hard refresh on a guarded page (e.g. /profile) briefly shows stale/mock data.
     if (data.session) {
-      this.refreshProfile(data.session.user.id);
+      await this.refreshProfile(data.session.user.id);
     }
+    this._ready.set(true);
   });
 
   readonly isAuthenticated = computed(() => this._isObserver() || this._session() !== null);
+  /** The signed-in Supabase user's id, or undefined for an observer / logged-out session. */
+  readonly currentUserId = computed(() => this._session()?.user.id);
   /** Observers ("olheiros") can browse the app but can't perform any write action. */
   readonly isObserver = this._isObserver.asReadonly();
   readonly ready = this._ready.asReadonly();
@@ -158,6 +163,19 @@ export class AuthService {
       return { success: false, error: error.message };
     }
     return { success: true };
+  }
+
+  /** Profile-page "change password": re-verifies the current password before setting the new one. */
+  async changePassword(currentPassword: string, newPassword: string): Promise<AuthResult> {
+    const email = this._session()?.user.email;
+    if (!email) {
+      return { success: false, error: 'auth.errorGeneric' };
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return this.updatePassword(newPassword);
   }
 
   /** Read-only guest session — no sign-up required, no write actions allowed. */
