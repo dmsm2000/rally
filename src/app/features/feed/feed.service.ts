@@ -221,6 +221,9 @@ export class FeedService {
   private async reload(): Promise<void> {
     this.page = 0;
     this.loading.set(true);
+    // Clear the previous scope's posts up front so the empty-state skeleton actually shows
+    // during the fetch, instead of leaving stale posts on screen until the new ones arrive.
+    this._posts.set([]);
     const { posts, hasMore } = await this.repository.list(this.scope(), 0);
     this._posts.set(posts);
     this.hasMore.set(hasMore);

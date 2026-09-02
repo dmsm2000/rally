@@ -42,6 +42,8 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
   // have no own city/country to filter by, so they only ever get the world tab.
   protected readonly scopes = computed<readonly FeedScope[]>(() => (this.auth.isObserver() ? ['world'] : ['city', 'world', 'country']));
   protected readonly postTypes: readonly PostType[] = POST_TYPES;
+  // Placeholder rows shown in place of the empty state while the first page of a scope is loading.
+  protected readonly skeletonRows = [0, 1, 2];
 
   // Dismissal only needs to last for this browser tab session, not forever — reappears next visit.
   protected readonly welcomeDismissed = signal(sessionStorage.getItem(WELCOME_DISMISSED_KEY) === '1');
