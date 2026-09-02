@@ -4,7 +4,6 @@ import {
   CountryEntry,
   Court,
   Destination,
-  Match,
   Player,
   PlayerIntent,
   WorldActivityItem
@@ -341,101 +340,14 @@ export const COURTS: Court[] = [
   }
 ];
 
-export const MATCHES: Match[] = [
-  {
-    id: 'm1',
-    status: 'upcoming',
-    date: 'Tomorrow',
-    time: '19:00',
-    courtId: 'ctp',
-    format: 'Singles',
-    playerA: 'joao',
-    playerB: 'maria'
-  },
-  {
-    id: 'm2',
-    status: 'upcoming',
-    date: 'Sat 5 Sep',
-    time: '09:30',
-    courtId: 'foz',
-    format: 'Doubles',
-    playerA: 'joao',
-    playerB: 'pedro'
-  },
-  {
-    id: 'm3',
-    status: 'complete',
-    date: 'Sun 23 Aug',
-    time: '10:00',
-    courtId: 'marina',
-    format: 'Singles',
-    playerA: 'joao',
-    playerB: 'marc',
-    sets: [
-      [6, 4],
-      [3, 6],
-      [7, 5]
-    ],
-    winner: 'joao',
-    stats: [
-      { label: 'Aces', a: '6', b: '3' },
-      { label: 'Double faults', a: '2', b: '5' },
-      { label: 'First serve %', a: '64%', b: '58%' },
-      { label: 'Winners', a: '24', b: '21' },
-      { label: 'Longest rally', a: '28 shots', b: '28 shots' }
-    ]
-  },
-  {
-    id: 'm4',
-    status: 'complete',
-    date: 'Wed 12 Aug',
-    time: '18:30',
-    courtId: 'hangar',
-    format: 'Singles',
-    playerA: 'joao',
-    playerB: 'chloe',
-    sets: [
-      [4, 6],
-      [6, 7]
-    ],
-    winner: 'chloe',
-    stats: [
-      { label: 'Aces', a: '3', b: '4' },
-      { label: 'Double faults', a: '6', b: '1' },
-      { label: 'First serve %', a: '52%', b: '71%' },
-      { label: 'Winners', a: '18', b: '27' }
-    ]
-  },
-  {
-    id: 'om1',
-    status: 'open',
-    date: 'Hoje',
-    time: '18:00',
-    courtId: 'marina',
-    format: 'Singles',
-    playerA: 'marc',
-    note: 'Looking for a hitting partner in Barcelona this week.'
-  },
-  {
-    id: 'om2',
-    status: 'open',
-    date: 'Amanhã',
-    time: '20:00',
-    courtId: 'shin',
-    format: 'Singles',
-    playerA: 'yuki',
-    note: "I'd love to discover a new city to play in soon."
-  },
-  {
-    id: 'om3',
-    status: 'open',
-    date: 'Sábado',
-    time: '10:00',
-    courtId: 'ctp',
-    format: 'Doubles',
-    playerA: 'ana',
-    note: 'Doubles this weekend? Need one more player.'
-  }
+// Mock "who has João shared a court with" pairing data — matches themselves are real now (see
+// MatchesRepository), but Passport's connections graph is still mock, and only ever needs pairs of
+// player ids, not the full Match shape. See RallyDataService.playersMetBy().
+export const MOCK_MATCH_PAIRINGS: readonly [string, string][] = [
+  ['joao', 'maria'],
+  ['joao', 'pedro'],
+  ['joao', 'marc'],
+  ['joao', 'chloe']
 ];
 
 export const ACHIEVEMENTS: Achievement[] = [

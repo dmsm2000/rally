@@ -1,19 +1,36 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { ChipComponent, EmptyStateComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
+import {
+  AutocompleteComponent,
+  AvatarComponent,
+  ChipComponent,
+  DatePickerComponent,
+  EmptyStateComponent,
+  IconComponent,
+  SectionHeaderComponent,
+  StatComponent,
+  TimePickerComponent
+} from '../../../../shared/ui';
 import { MatchesService } from '../../matches.service';
 
 @Component({
   selector: 'rally-matches-list-page',
   imports: [
     FormsModule,
+    NgTemplateOutlet,
     StatComponent,
     SectionHeaderComponent,
     EmptyStateComponent,
     ChipComponent,
+    DatePickerComponent,
+    TimePickerComponent,
+    AutocompleteComponent,
+    AvatarComponent,
+    IconComponent,
     MatchCardComponent,
     TranslatePipe
   ],
@@ -23,4 +40,6 @@ import { MatchesService } from '../../matches.service';
 export class MatchesListPageComponent {
   protected readonly matches = inject(MatchesService);
   protected readonly auth = inject(AuthService);
+  // Placeholder rows shown in place of each list while the first load is in flight.
+  protected readonly skeletonRows = [0, 1, 2];
 }

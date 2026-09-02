@@ -1,12 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import {
-  Court,
-  Match,
-  MatchFormat,
-  Player,
-  SessionType,
-  Surface
-} from '../models';
+import { Court, Player, Surface } from '../models';
 import {
   ACHIEVEMENTS,
   COMMUNITY_STATS,
@@ -15,8 +8,8 @@ import {
   DESTINATIONS,
   HERO_IMAGE,
   LEVELS,
-  MATCHES,
   ME,
+  MOCK_MATCH_PAIRINGS,
   PLAYERS,
   SURFACES,
   WORLD_ACTIVITY
@@ -40,7 +33,6 @@ export class RallyDataService {
   private readonly _me = signal(ME);
   private readonly _players = signal(PLAYERS);
   private readonly _courts = signal(COURTS);
-  private readonly _matches = signal(MATCHES);
   private readonly _achievements = signal(ACHIEVEMENTS);
   private readonly _countries = signal(COUNTRIES);
   private readonly _destinations = signal(DESTINATIONS);
@@ -49,7 +41,6 @@ export class RallyDataService {
   readonly me = this._me.asReadonly();
   readonly players = this._players.asReadonly();
   readonly courts = this._courts.asReadonly();
-  readonly matches = this._matches.asReadonly();
   readonly achievements = this._achievements.asReadonly();
   readonly countries = this._countries.asReadonly();
   readonly destinations = this._destinations.asReadonly();
@@ -76,51 +67,17 @@ export class RallyDataService {
     return this._courts().find(c => c.id === id);
   }
 
-  matchById(id: string) {
-    return this._matches().find(m => m.id === id);
-  }
-
   // There's no manual "follow" — you're connected to (and "follow") anyone you've shared a court with.
   playersMetBy(playerId: string): string[] {
     const ids = new Set<string>();
-    for (const m of this._matches()) {
-      if (m.playerA === playerId && m.playerB) {
-        ids.add(m.playerB);
-      } else if (m.playerB === playerId) {
-        ids.add(m.playerA);
+    for (const [a, b] of MOCK_MATCH_PAIRINGS) {
+      if (a === playerId) {
+        ids.add(b);
+      } else if (b === playerId) {
+        ids.add(a);
       }
     }
     return [...ids];
-  }
-
-  createOpenMatch(input: {
-    courtId: string;
-    city?: string;
-    radiusKm?: number;
-    date: string;
-    time: string;
-    format: MatchFormat;
-    sessionType: SessionType;
-    durationMinutes?: number;
-    note: string;
-  }): Match {
-    const match: Match = {
-      id: `open-${Date.now()}`,
-      status: 'open',
-      date: input.date,
-      time: input.time,
-      courtId: input.courtId,
-      city: input.courtId ? undefined : input.city,
-      radiusKm: input.courtId ? undefined : input.radiusKm,
-      format: input.format,
-      playerA: this._me().id,
-      note: input.note,
-      sessionType: input.sessionType,
-      durationMinutes: input.durationMinutes
-    };
-    this._matches.update(list => [match, ...list]);
-
-    return match;
   }
 
   createCourt(input: {
@@ -157,16 +114,5 @@ export class RallyDataService {
     this._courts.update(list => [court, ...list]);
 
     return court;
-  }
-
-  // Accepting an open match books it for both players.
-  acceptOpenMatch(matchId: string): void {
-    const match = this.matchById(matchId);
-    if (!match || match.status !== 'open') {
-      return;
-    }
-    this._matches.update(list =>
-      list.map(m => (m.id === matchId ? { ...m, status: 'upcoming', playerB: this._me().id } : m))
-    );
   }
 }

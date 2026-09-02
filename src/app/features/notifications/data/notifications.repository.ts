@@ -55,6 +55,25 @@ export class NotificationsRepository {
     }
   }
 
+  /** Fans a notification out to many recipients at once (e.g. "an open match appeared in my
+   * city") as a single batched insert, instead of one `notify()` call per recipient. */
+  async notifyMany(recipientIds: string[], kind: NotificationKind, data: Record<string, string> = {}): Promise<void> {
+    const uid = this.auth.currentUserId();
+    if (!uid) {
+      return;
+    }
+    const others = recipientIds.filter(id => id !== uid);
+    if (others.length === 0) {
+      return;
+    }
+    const { error } = await supabase
+      .from('notifications')
+      .insert(others.map(recipientId => ({ recipient_id: recipientId, actor_id: uid, kind, data })));
+    if (error) {
+      console.error('Failed to create notifications:', error.message);
+    }
+  }
+
   markRead(id: string): void {
     const notification = this._notifications().find(n => n.id === id);
     if (!notification || notification.read) {
@@ -68,25 +87,6 @@ export class NotificationsRepository {
       .then(({ error }) => {
         if (error) {
           console.error('Failed to mark notification read:', error.message);
-        }
-      });
-  }
-
-  markAllRead(): void {
-    const uid = this.auth.currentUserId();
-    const hasUnread = this._notifications().some(n => !n.read);
-    if (!uid || !hasUnread) {
-      return;
-    }
-    this._notifications.update(list => list.map(n => ({ ...n, read: true })));
-    void supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('recipient_id', uid)
-      .eq('read', false)
-      .then(({ error }) => {
-        if (error) {
-          console.error('Failed to mark all notifications read:', error.message);
         }
       });
   }

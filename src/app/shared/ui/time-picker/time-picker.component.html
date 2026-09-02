@@ -1,0 +1,31 @@
+<div class="relative">
+  <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted-foreground">
+    <ui-icon name="clock" className="size-4" />
+  </span>
+  <input
+    [value]="value()"
+    (click)="toggleOpen()"
+    type="text"
+    readonly
+    [name]="name()"
+    [placeholder]="placeholder()"
+    class="w-full cursor-pointer rounded-xl border border-border bg-background py-3 pr-4 pl-11 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+  />
+  @if (open()) {
+    <div class="no-scrollbar absolute z-20 mt-1.5 max-h-56 w-full overflow-y-auto rounded-xl border border-border bg-card p-1.5 shadow-lg">
+      @for (slot of slots(); track slot) {
+        <button
+          type="button"
+          (click)="select(slot)"
+          [disabled]="isDisabled(slot)"
+          [class]="
+            'block w-full rounded-lg px-3 py-1.5 text-left text-sm disabled:cursor-not-allowed disabled:opacity-30 ' +
+            (slot === value() ? 'bg-lime font-bold text-ink' : 'cursor-pointer text-foreground hover:bg-background')
+          "
+        >
+          {{ slot }}
+        </button>
+      }
+    </div>
+  }
+</div>

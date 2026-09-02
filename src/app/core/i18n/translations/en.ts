@@ -138,30 +138,57 @@ export const en = {
     vs: 'VS',
     winsSuffix: 'wins',
     matchStatistics: 'Match statistics',
-    beforeYouPlay: 'Before you play',
-    bringBalls: 'Bring 3 balls',
-    courtBooked: 'Court booked for 90 min',
-    floodlights: 'Floodlights on until 23:00',
     headToHead: '{name} has played {count} matches and prefers {surface} courts.',
-    addScore: 'Add score after the match',
     viewAll: 'All matches',
     openEyebrow: 'Community',
     openTitle: 'Open matches',
+    openScopeCountry: 'In my country',
+    openScopeWorld: 'In the world',
     composerSessionType: 'What kind of session?',
     composerFormat: 'Format',
     composerLocation: 'Where?',
     composerLocationCourt: 'Pick a court',
-    composerLocationArea: 'Just an area',
+    composerLocationArea: 'City',
+    composerSelectCountry: 'Country',
+    composerSelectCountryFirst: 'Pick a country first',
     composerCityPlaceholder: 'City (e.g. Porto)',
     composerDuration: 'Expected duration',
+    durationUncertain: 'Not sure',
     composerCourt: 'Pick a court',
     composerDate: 'Date (e.g. Today)',
-    composerTime: 'Time (e.g. 19:00)',
+    composerTime: 'From',
+    composerTimeRange: 'Availability window',
+    composerTimeEndPlaceholder: 'Until (optional)',
     composerNotePlaceholder: 'Fancy hitting some balls...',
     composerPublish: 'Publish open match',
+    composerPublishing: 'Publishing…',
     composerHint: 'This is automatically posted to the feed for the community to see.',
     yourPost: 'Your post',
-    joinMatch: 'I want to play'
+    joinMatch: 'I want to play',
+    loading: 'Loading match…',
+    invitesEyebrow: 'Invites',
+    invitesTitle: 'Match invites',
+    invitedYou: 'Invited you to play',
+    awaitingResponse: 'Awaiting response',
+    accept: 'Accept',
+    decline: 'Decline',
+    cancelInvite: 'Cancel invite',
+    cancelMatch: 'Cancel match',
+    withdraw: 'Withdraw',
+    openSlot: 'Open slot',
+    inviteTitle: 'Invite to a match',
+    sendInvite: 'Send invite',
+    sendingInvite: 'Sending…',
+    inviteSent: 'Invite sent!',
+    inviteFailed: "Couldn't send the invite. Please try again.",
+    publishSuccess: 'Your open match is live!',
+    publishFailed: "Couldn't publish your match. Please try again.",
+    joinSuccess: "You're in! Check your matches.",
+    joinFailed: "Couldn't join — someone else may already have taken this match.",
+    respondFailed: "Couldn't respond to the invite. Please try again.",
+    cancelFailed: "Couldn't cancel the match. Please try again.",
+    completeFailed: "Couldn't save the result. Please try again.",
+    deleteFailed: "Couldn't delete the match. Please try again."
   },
   messages: {
     title: 'Messages',
@@ -179,7 +206,6 @@ export const en = {
   notifications: {
     title: 'Notifications',
     empty: 'No notifications yet',
-    markAllRead: 'Mark all as read',
     clearAll: 'Clear all',
     clearAllConfirmLead: "Are you sure? This permanently deletes all your notifications and can't be undone.",
     clearAllConfirmButton: 'Yes, clear all',
@@ -189,6 +215,29 @@ export const en = {
       tripHostVolunteered: {
         text: '{name} offered to host you in {city}',
         detail: '{fromDate} – {toDate}'
+      },
+      matchInviteReceived: {
+        text: '{name} invited you to a match in {city}',
+        detail: '{matchDate} · {matchTime}'
+      },
+      matchInviteAccepted: {
+        text: '{name} accepted your match invite',
+        detail: '{city} · {matchDate} · {matchTime}'
+      },
+      matchInviteDeclined: {
+        text: '{name} declined your match invite'
+      },
+      matchJoined: {
+        text: '{name} joined your open match',
+        detail: '{city} · {matchDate} · {matchTime}'
+      },
+      matchCancelled: {
+        text: '{name} cancelled your match',
+        detail: '{city} · {matchDate} · {matchTime}'
+      },
+      matchOpenNearby: {
+        text: '{name} published an open match in {city}',
+        detail: '{matchDate} · {matchTime}'
       }
     }
   },
@@ -282,6 +331,14 @@ export const en = {
     trip: {
       ownHeadline: 'I’m visiting {city}!',
       otherHeadline: 'Is visiting {city}!'
+    },
+    match: {
+      ownHeadline: 'Open match in {city}',
+      otherHeadline: 'Open match in {city}',
+      join: 'I want to play',
+      matched: 'Already matched',
+      youJoined: 'You joined this match',
+      cancelled: 'Cancelled'
     },
     emptyTitle: 'Nothing here yet',
     emptyBody: 'Be the first person to play here!'
@@ -534,14 +591,16 @@ export const en = {
     matchStatus: {
       win: 'Win',
       loss: 'Loss',
-      live: 'Live',
+      pending: 'Awaiting response',
+      open: 'Open',
+      cancelled: 'Cancelled',
       upcoming: 'Upcoming'
     },
     sessionType: {
       Training: 'Training',
       HittingSession: 'Hitting session',
       PracticeMatch: 'Practice match',
-      FullMatch: 'Full match'
+      FullMatch: 'Match'
     }
   }
 };

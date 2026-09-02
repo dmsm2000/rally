@@ -2,16 +2,22 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { MessagesWidgetService } from '../../../../core/services/messages-widget.service';
+import { MatchesService } from '../../../matches/matches.service';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import {
+  AutocompleteComponent,
   AvatarComponent,
   ChipComponent,
+  DatePickerComponent,
   EmptyStateComponent,
+  IconComponent,
   MatchScoreComponent,
   SectionHeaderComponent,
-  StatComponent
+  StatComponent,
+  TimePickerComponent
 } from '../../../../shared/ui';
 import { PlayersService } from '../../players.service';
 
@@ -58,8 +64,13 @@ const GENDER_ICONS: Record<string, 'gender-male' | 'gender-female' | 'gender-non
   selector: 'rally-player-detail-page',
   imports: [
     RouterLink,
+    FormsModule,
     AvatarComponent,
     ChipComponent,
+    DatePickerComponent,
+    TimePickerComponent,
+    AutocompleteComponent,
+    IconComponent,
     EmptyStateComponent,
     MatchScoreComponent,
     StatComponent,
@@ -74,6 +85,7 @@ export class PlayerDetailPageComponent {
   private readonly players = inject(PlayersService);
   protected readonly auth = inject(AuthService);
   private readonly messagesWidget = inject(MessagesWidgetService);
+  protected readonly matches = inject(MatchesService);
 
   private readonly playerId = toSignal(this.route.paramMap.pipe(map(params => params.get('playerId') ?? '')), {
     initialValue: ''
@@ -104,5 +116,9 @@ export class PlayerDetailPageComponent {
 
   protected message(playerId: string): void {
     this.messagesWidget.openThread(playerId);
+  }
+
+  protected invite(playerId: string): void {
+    this.matches.openInviteDialog(playerId);
   }
 }

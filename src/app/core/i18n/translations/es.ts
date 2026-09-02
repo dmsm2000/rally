@@ -140,30 +140,57 @@ export const es = {
     vs: 'VS',
     winsSuffix: 'gana',
     matchStatistics: 'Estadísticas del partido',
-    beforeYouPlay: 'Antes de jugar',
-    bringBalls: 'Trae 3 pelotas',
-    courtBooked: 'Pista reservada por 90 min',
-    floodlights: 'Iluminación encendida hasta las 23:00',
     headToHead: '{name} ha jugado {count} partidos y prefiere pistas de {surface}.',
-    addScore: 'Añadir resultado después del partido',
     viewAll: 'Todos los partidos',
     openEyebrow: 'Comunidad',
     openTitle: 'Partidos abiertos',
+    openScopeCountry: 'En mi país',
+    openScopeWorld: 'En el mundo',
     composerSessionType: '¿Qué tipo de sesión?',
     composerFormat: 'Formato',
     composerLocation: '¿Dónde?',
     composerLocationCourt: 'Elige una pista',
-    composerLocationArea: 'Solo una zona',
+    composerLocationArea: 'Ciudad',
+    composerSelectCountry: 'País',
+    composerSelectCountryFirst: 'Elige primero un país',
     composerCityPlaceholder: 'Ciudad (ej. Oporto)',
     composerDuration: 'Duración prevista',
+    durationUncertain: 'No estoy seguro',
     composerCourt: 'Elige una pista',
     composerDate: 'Fecha (ej. Hoy)',
-    composerTime: 'Hora (ej. 19:00)',
+    composerTime: 'Desde las',
+    composerTimeRange: 'Ventana de disponibilidad',
+    composerTimeEndPlaceholder: 'Hasta (opcional)',
     composerNotePlaceholder: 'Me apetece pelotear un rato...',
     composerPublish: 'Publicar partido abierto',
+    composerPublishing: 'Publicando…',
     composerHint: 'Esto se publica automáticamente en el feed para que la comunidad lo vea.',
     yourPost: 'Tu publicación',
-    joinMatch: 'Quiero jugar'
+    joinMatch: 'Quiero jugar',
+    loading: 'Cargando partido…',
+    invitesEyebrow: 'Invitaciones',
+    invitesTitle: 'Invitaciones a partidos',
+    invitedYou: 'Te invitó a jugar',
+    awaitingResponse: 'Esperando respuesta',
+    accept: 'Aceptar',
+    decline: 'Rechazar',
+    cancelInvite: 'Cancelar invitación',
+    cancelMatch: 'Cancelar partido',
+    withdraw: 'Retirar publicación',
+    openSlot: 'Plaza abierta',
+    inviteTitle: 'Invitar a un partido',
+    sendInvite: 'Enviar invitación',
+    sendingInvite: 'Enviando…',
+    inviteSent: '¡Invitación enviada!',
+    inviteFailed: 'No se pudo enviar la invitación. Inténtalo de nuevo.',
+    publishSuccess: '¡Tu partido abierto ya está visible!',
+    publishFailed: 'No se pudo publicar el partido. Inténtalo de nuevo.',
+    joinSuccess: '¡Estás dentro! Consulta tus partidos.',
+    joinFailed: 'No se pudo unir — puede que alguien ya haya ocupado este partido.',
+    respondFailed: 'No se pudo responder a la invitación. Inténtalo de nuevo.',
+    cancelFailed: 'No se pudo cancelar el partido. Inténtalo de nuevo.',
+    completeFailed: 'No se pudo guardar el resultado. Inténtalo de nuevo.',
+    deleteFailed: 'No se pudo eliminar el partido. Inténtalo de nuevo.'
   },
   messages: {
     title: 'Mensajes',
@@ -181,7 +208,6 @@ export const es = {
   notifications: {
     title: 'Notificaciones',
     empty: 'Todavía no hay notificaciones',
-    markAllRead: 'Marcar todo como leído',
     clearAll: 'Borrar todo',
     clearAllConfirmLead: '¿Estás seguro? Esto elimina permanentemente todas tus notificaciones y no se puede deshacer.',
     clearAllConfirmButton: 'Sí, borrar todo',
@@ -191,6 +217,29 @@ export const es = {
       tripHostVolunteered: {
         text: '{name} se ofreció a enseñarte {city}',
         detail: '{fromDate} – {toDate}'
+      },
+      matchInviteReceived: {
+        text: '{name} te invitó a un partido en {city}',
+        detail: '{matchDate} · {matchTime}'
+      },
+      matchInviteAccepted: {
+        text: '{name} aceptó tu invitación',
+        detail: '{city} · {matchDate} · {matchTime}'
+      },
+      matchInviteDeclined: {
+        text: '{name} rechazó tu invitación'
+      },
+      matchJoined: {
+        text: '{name} se unió a tu partido abierto',
+        detail: '{city} · {matchDate} · {matchTime}'
+      },
+      matchCancelled: {
+        text: '{name} canceló tu partido',
+        detail: '{city} · {matchDate} · {matchTime}'
+      },
+      matchOpenNearby: {
+        text: '{name} publicó un partido abierto en {city}',
+        detail: '{matchDate} · {matchTime}'
       }
     }
   },
@@ -283,6 +332,14 @@ export const es = {
     trip: {
       ownHeadline: '¡Voy a visitar {city}!',
       otherHeadline: '¡Va a visitar {city}!'
+    },
+    match: {
+      ownHeadline: 'Partido abierto en {city}',
+      otherHeadline: 'Partido abierto en {city}',
+      join: 'Quiero jugar',
+      matched: 'Ya tiene rival',
+      youJoined: 'Te uniste a este partido',
+      cancelled: 'Cancelado'
     },
     emptyTitle: 'Todavía no hay nada aquí',
     emptyBody: '¡Sé la primera persona en jugar aquí!'
@@ -535,14 +592,16 @@ export const es = {
     matchStatus: {
       win: 'Victoria',
       loss: 'Derrota',
-      live: 'En directo',
+      pending: 'Esperando respuesta',
+      open: 'Abierto',
+      cancelled: 'Cancelado',
       upcoming: 'Próximo'
     },
     sessionType: {
       Training: 'Entrenamiento',
       HittingSession: 'Peloteo',
       PracticeMatch: 'Partido de entrenamiento',
-      FullMatch: 'Partido completo'
+      FullMatch: 'Partido'
     }
   }
 } satisfies Translations;

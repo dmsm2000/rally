@@ -14,6 +14,26 @@ export interface TripPost {
   volunteeredByMe: boolean;
 }
 
+/** Present only on the automatic post an open match gets — see MatchesRepository.createOpenMatch(). */
+export interface MatchPost {
+  matchId: string;
+  status: 'open' | 'upcoming' | 'cancelled' | 'complete';
+  format: string;
+  sessionType?: string;
+  city: string;
+  country: string;
+  radiusKm?: number;
+  courtId?: string;
+  /** ISO date (YYYY-MM-DD). */
+  matchDate: string;
+  matchTime: string;
+  matchTimeEnd?: string;
+  durationMinutes?: number;
+  note?: string;
+  playerB?: string;
+  joinedByMe: boolean;
+}
+
 export interface Post {
   id: string;
   authorId: string;
@@ -22,6 +42,7 @@ export interface Post {
   mediaType: 'image' | 'video' | null;
   type: PostType | null;
   trip: TripPost | null;
+  match: MatchPost | null;
   /** ISO timestamp. */
   createdAt: string;
   likeCount: number;

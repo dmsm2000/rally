@@ -5,6 +5,7 @@ import { TranslationService } from '../../core/i18n/translation.service';
 import { Post, PostType } from '../../core/models';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { ToastService } from '../../core/services/toast.service';
+import { MatchesRepository } from '../matches/data/matches.repository';
 import { PlayersService } from '../players/players.service';
 import { TripsRepository } from '../world/data/trips.repository';
 import { FeedScope, PostsRepository } from './data/posts.repository';
@@ -18,6 +19,7 @@ export class FeedService {
   private readonly repository = inject(PostsRepository);
   private readonly players = inject(PlayersService);
   private readonly trips = inject(TripsRepository);
+  private readonly matches = inject(MatchesRepository);
   private readonly toast = inject(ToastService);
   private readonly translation = inject(TranslationService);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -51,6 +53,7 @@ export class FeedService {
 
   private readonly deletingPostIds = signal<Set<string>>(new Set());
   private readonly volunteeringPostIds = signal<Set<string>>(new Set());
+  private readonly joiningPostIds = signal<Set<string>>(new Set());
 
   // Re-derives only when city/country actually change value — reloads once real profile data
   // (rather than the mock bridge's defaults) is available, same pattern as WorldService.
@@ -107,6 +110,10 @@ export class FeedService {
 
   isVolunteering(postId: string): boolean {
     return this.volunteeringPostIds().has(postId);
+  }
+
+  isJoining(postId: string): boolean {
+    return this.joiningPostIds().has(postId);
   }
 
   async loadMore(): Promise<void> {
@@ -237,6 +244,30 @@ export class FeedService {
       this._posts.update(list => list.map(p => (p.id === post.id && p.trip ? { ...p, trip: { ...p.trip, volunteeredByMe: true } } : p)));
       const name = this.playerById(post.authorId)?.name ?? trip.destinationCity;
       this.toast.success(this.translation.t('world.volunteerSuccess', { name }));
+    }
+  }
+
+  /** Joins an open match straight from the feed card — reuses MatchesRepository.acceptOpenMatch(),
+   * which also notifies the poster in real time (see NotificationsService). */
+  async joinMatch(post: Post): Promise<void> {
+    const match = post.match;
+    if (!match || match.status !== 'open' || this.isJoining(post.id)) {
+      return;
+    }
+    this.joiningPostIds.update(ids => new Set(ids).add(post.id));
+    const result = await this.matches.acceptOpenMatch(match.matchId);
+    this.joiningPostIds.update(ids => {
+      const next = new Set(ids);
+      next.delete(post.id);
+      return next;
+    });
+    if (result) {
+      this._posts.update(list =>
+        list.map(p => (p.id === post.id && p.match ? { ...p, match: { ...p.match, status: 'upcoming', joinedByMe: true } } : p))
+      );
+      this.toast.success(this.translation.t('matches.joinSuccess'));
+    } else {
+      this.toast.error(this.translation.t('matches.joinFailed'));
     }
   }
 

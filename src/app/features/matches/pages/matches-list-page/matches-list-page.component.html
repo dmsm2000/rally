@@ -17,11 +17,175 @@
   </div>
 </section>
 
+<ng-template #matchSkeletonCard>
+  <div class="w-72 shrink-0 animate-pulse rounded-2xl border border-border bg-card p-4">
+    <div class="flex items-center justify-between">
+      <div class="h-4 w-20 rounded-full bg-muted"></div>
+      <div class="h-4 w-16 rounded-full bg-muted"></div>
+    </div>
+    <div class="mt-3 h-3.5 w-2/3 rounded-full bg-muted"></div>
+    <div class="mt-2 h-3.5 w-1/2 rounded-full bg-muted"></div>
+    <div class="mt-4 flex items-center gap-3">
+      <div class="size-9 shrink-0 rounded-full bg-muted"></div>
+      <div class="h-3.5 w-1/3 flex-1 rounded-full bg-muted"></div>
+      <div class="size-9 shrink-0 rounded-full bg-muted"></div>
+    </div>
+  </div>
+</ng-template>
+
+@if (!auth.isObserver() && (matches.pendingReceived().length || matches.pendingSent().length)) {
+  <section class="mb-14">
+    <ui-section-header [eyebrow]="'matches.invitesEyebrow' | translate" [title]="'matches.invitesTitle' | translate" />
+    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+      @for (m of matches.pendingReceived(); track m.id) {
+        <div class="w-72 shrink-0 rounded-2xl border border-border bg-card p-4">
+          <div class="flex items-center gap-3">
+            <ui-avatar
+              [initials]="matches.playerById(m.playerA)?.initials ?? ''"
+              [accent]="matches.playerById(m.playerA)?.accent ?? 'ink'"
+              [seed]="matches.playerById(m.playerA)?.avatarSeed"
+              [avatarStyle]="matches.playerById(m.playerA)?.avatarStyle"
+              size="sm"
+            />
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-bold">{{ matches.playerById(m.playerA)?.name }}</p>
+              <p class="truncate text-xs text-muted-foreground">{{ 'matches.invitedYou' | translate }}</p>
+            </div>
+          </div>
+          <p class="mt-3 flex items-center gap-1.5 text-sm font-bold text-foreground">
+            <span aria-hidden="true">📍</span> {{ matches.openMatchLocation(m) }}
+          </p>
+          <p class="mt-1 flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            <span aria-hidden="true">🗓️</span> {{ matches.formatMatchDateTime(m) }}
+          </p>
+          <div class="mt-3 flex gap-2">
+            <button
+              type="button"
+              (click)="matches.respondToInvite(m.id, true)"
+              class="flex-1 cursor-pointer rounded-full bg-lime px-4 py-2 text-xs font-extrabold tracking-wide text-ink uppercase"
+            >
+              {{ 'matches.accept' | translate }}
+            </button>
+            <button
+              type="button"
+              (click)="matches.respondToInvite(m.id, false)"
+              class="flex-1 cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
+            >
+              {{ 'matches.decline' | translate }}
+            </button>
+          </div>
+        </div>
+      }
+      @for (m of matches.pendingSent(); track m.id) {
+        <div class="w-72 shrink-0 rounded-2xl border border-dashed border-border bg-card p-4">
+          <div class="flex items-center gap-3">
+            <ui-avatar
+              [initials]="matches.playerById(m.playerB)?.initials ?? ''"
+              [accent]="matches.playerById(m.playerB)?.accent ?? 'ink'"
+              [seed]="matches.playerById(m.playerB)?.avatarSeed"
+              [avatarStyle]="matches.playerById(m.playerB)?.avatarStyle"
+              size="sm"
+            />
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-bold">{{ matches.playerById(m.playerB)?.name }}</p>
+              <p class="truncate text-xs text-muted-foreground">{{ 'matches.awaitingResponse' | translate }}</p>
+            </div>
+          </div>
+          <p class="mt-3 flex items-center gap-1.5 text-sm font-bold text-foreground">
+            <span aria-hidden="true">📍</span> {{ matches.openMatchLocation(m) }}
+          </p>
+          <p class="mt-1 flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            <span aria-hidden="true">🗓️</span> {{ matches.formatMatchDateTime(m) }}
+          </p>
+          <button
+            type="button"
+            (click)="matches.cancelMatch(m.id)"
+            class="mt-3 w-full cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
+          >
+            {{ 'matches.cancelInvite' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+}
+
+<ng-template #openMatchCard let-m>
+  <div class="rounded-2xl border border-dashed border-lime-deep bg-card p-4">
+    <div class="flex items-center justify-between gap-2">
+      <span class="text-eyebrow rounded-full bg-lime px-2 py-0.5 text-ink">{{
+        'enums.sessionType.' + (m.sessionType ?? 'FullMatch') | translate
+      }}</span>
+      @if (matches.isMine(m.playerA)) {
+        <span class="text-eyebrow text-muted-foreground">{{ 'matches.yourPost' | translate }}</span>
+      }
+    </div>
+    <p class="mt-3 text-sm font-bold">{{ matches.playerById(m.playerA)?.name }}</p>
+    <p class="mt-2 flex items-center gap-1.5 text-sm font-bold text-foreground">
+      <span aria-hidden="true">📍</span> {{ matches.openMatchLocation(m) }}
+    </p>
+    <p class="mt-1 flex items-center gap-1.5 text-sm font-semibold text-foreground">
+      <span aria-hidden="true">🗓️</span> {{ matches.formatMatchDateTime(m) }}
+      @if (m.durationMinutes) {
+        · {{ m.durationMinutes }} min
+      }
+    </p>
+    @if (m.note) {
+      <p class="mt-1 text-sm text-muted-foreground">{{ m.note }}</p>
+    }
+    @if (matches.isMine(m.playerA)) {
+      <button
+        type="button"
+        (click)="matches.cancelMatch(m.id)"
+        class="mt-3 w-full cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
+      >
+        {{ 'matches.withdraw' | translate }}
+      </button>
+    } @else if (!auth.isObserver()) {
+      <button
+        type="button"
+        (click)="matches.acceptOpenMatch(m.id)"
+        class="mt-3 w-full cursor-pointer rounded-full border border-lime-deep px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
+      >
+        {{ 'matches.joinMatch' | translate }}
+      </button>
+    }
+  </div>
+</ng-template>
+
 <section class="mb-14">
-  <ui-section-header [eyebrow]="'matches.openEyebrow' | translate" [title]="'matches.openTitle' | translate" />
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <ui-section-header [eyebrow]="'matches.openEyebrow' | translate" [title]="'matches.openTitle' | translate" />
+    <div class="mb-6 flex gap-2">
+      @if (!auth.isObserver()) {
+        <ui-chip [clickable]="true" [active]="matches.openScope() === 'country'" (toggled)="matches.setOpenScope('country')">
+          {{ 'matches.openScopeCountry' | translate }}
+        </ui-chip>
+      }
+      <ui-chip [clickable]="true" [active]="matches.openScope() === 'world'" (toggled)="matches.setOpenScope('world')">
+        {{ 'matches.openScopeWorld' | translate }}
+      </ui-chip>
+    </div>
+  </div>
+
+  @if (matches.loading()) {
+    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+      @for (i of skeletonRows; track i) {
+        <ng-container [ngTemplateOutlet]="matchSkeletonCard" />
+      }
+    </div>
+  } @else if (matches.open().length) {
+    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+      @for (m of matches.open(); track m.id) {
+        <div class="w-72 shrink-0">
+          <ng-container [ngTemplateOutlet]="openMatchCard" [ngTemplateOutletContext]="{ $implicit: m }" />
+        </div>
+      }
+    </div>
+  }
 
   @if (!auth.isObserver()) {
-    <div class="mb-6 rounded-2xl border border-border bg-card p-5">
+    <div class="mt-6 rounded-2xl border border-border bg-card p-5">
       <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerSessionType' | translate }}</p>
       <div class="mb-4 flex flex-wrap gap-2">
         @for (t of matches.sessionTypes; track t) {
@@ -42,11 +206,7 @@
           (toggled)="matches.composerFormat.set('Singles')"
           >{{ 'enums.format.Singles' | translate }}</ui-chip
         >
-        <ui-chip
-          [clickable]="true"
-          [active]="matches.composerFormat() === 'Doubles'"
-          (toggled)="matches.composerFormat.set('Doubles')"
-          >{{ 'enums.format.Doubles' | translate }}</ui-chip
+        <ui-chip [clickable]="true" [disabled]="true">{{ 'enums.format.Doubles' | translate }}</ui-chip
         >
       </div>
 
@@ -54,61 +214,65 @@
       <div class="mb-3 flex flex-wrap gap-2">
         <ui-chip
           [clickable]="true"
-          [active]="matches.composerLocationMode() === 'court'"
-          (toggled)="matches.composerLocationMode.set('court')"
-          >{{ 'matches.composerLocationCourt' | translate }}</ui-chip
-        >
-        <ui-chip
-          [clickable]="true"
           [active]="matches.composerLocationMode() === 'radius'"
           (toggled)="matches.composerLocationMode.set('radius')"
           >{{ 'matches.composerLocationArea' | translate }}</ui-chip
         >
+        <ui-chip [clickable]="true" [disabled]="true">{{ 'matches.composerLocationCourt' | translate }}</ui-chip>
       </div>
 
-      @if (matches.composerLocationMode() === 'court') {
-        <select
-          [ngModel]="matches.composerCourtId()"
-          (ngModelChange)="matches.composerCourtId.set($event)"
-          class="mb-4 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none"
-        >
-          <option value="" disabled>{{ 'matches.composerCourt' | translate }}</option>
-          @for (c of matches.courts(); track c.id) {
-            <option [value]="c.id">{{ c.flag }} {{ c.name }}</option>
-          }
-        </select>
-      } @else {
-        <input
-          [ngModel]="matches.composerCity()"
-          (ngModelChange)="matches.composerCity.set($event)"
-          [placeholder]="'matches.composerCityPlaceholder' | translate"
-          class="mb-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      <div class="mb-3 grid gap-3 sm:grid-cols-2">
+        <ui-autocomplete
+          [value]="matches.composerCountry()"
+          (valueChange)="matches.setComposerCountry($event)"
+          name="matchCountry"
+          [options]="matches.countryNames()"
+          [optionIcons]="matches.countryFlags()"
+          [placeholder]="'matches.composerSelectCountry' | translate"
         />
-        <div class="mb-4 flex flex-wrap gap-2">
-          @for (r of matches.radiusOptions; track r) {
-            <ui-chip
-              [clickable]="true"
-              [active]="matches.composerRadiusKm() === r"
-              tone="cobalt"
-              (toggled)="matches.composerRadiusKm.set(r)"
-              >±{{ r }} km</ui-chip
-            >
-          }
-        </div>
-      }
+        <ui-autocomplete
+          [value]="matches.composerCity()"
+          (valueChange)="matches.composerCity.set($event)"
+          name="matchCity"
+          [options]="matches.composerCityOptions()"
+          [disabled]="!matches.composerCountry()"
+          [placeholder]="(matches.composerCountry() ? 'matches.composerCityPlaceholder' : 'matches.composerSelectCountryFirst') | translate"
+        />
+      </div>
+      <div class="mb-4 flex flex-wrap gap-2">
+        @for (r of matches.radiusOptions; track r) {
+          <ui-chip
+            [clickable]="true"
+            [active]="matches.composerRadiusKm() === r"
+            tone="cobalt"
+            (toggled)="matches.composerRadiusKm.set(r)"
+            >±{{ r }} km</ui-chip
+          >
+        }
+      </div>
 
-      <div class="grid gap-3 sm:grid-cols-2">
-        <input
-          [ngModel]="matches.composerDate()"
-          (ngModelChange)="matches.composerDate.set($event)"
-          [placeholder]="'matches.composerDate' | translate"
-          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-        />
-        <input
-          [ngModel]="matches.composerTime()"
-          (ngModelChange)="matches.composerTime.set($event)"
+      <ui-date-picker
+        [value]="matches.composerDate()"
+        (valueChange)="matches.composerDate.set($event)"
+        name="matchDate"
+        [min]="matches.todayIso"
+        [max]="matches.maxMatchDateIso"
+        [placeholder]="'matches.composerDate' | translate"
+      />
+      <p class="mt-3 mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerTimeRange' | translate }}</p>
+      <div class="grid grid-cols-2 gap-3">
+        <ui-time-picker
+          [value]="matches.composerTime()"
+          (valueChange)="matches.setComposerTime($event)"
+          name="matchTime"
           [placeholder]="'matches.composerTime' | translate"
-          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+        />
+        <ui-time-picker
+          [value]="matches.composerTimeEnd()"
+          (valueChange)="matches.composerTimeEnd.set($event)"
+          name="matchTimeEnd"
+          [min]="matches.composerTime()"
+          [placeholder]="'matches.composerTimeEndPlaceholder' | translate"
         />
       </div>
 
@@ -122,6 +286,14 @@
             >{{ d }} min</ui-chip
           >
         }
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerDurationMinutes() === null"
+          (toggled)="matches.composerDurationMinutes.set(null)"
+        >
+          <ui-icon name="help-circle" className="size-3.5" />
+          {{ 'matches.durationUncertain' | translate }}
+        </ui-chip>
       </div>
 
       <input
@@ -132,56 +304,29 @@
       />
       <button
         type="button"
+        [disabled]="!matches.canPublish() || matches.publishing()"
         (click)="matches.publishOpenMatch()"
-        class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 sm:w-auto"
+        class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:w-auto"
       >
-        {{ 'matches.composerPublish' | translate }}
+        {{ (matches.publishing() ? 'matches.composerPublishing' : 'matches.composerPublish') | translate }}
       </button>
       <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'matches.composerHint' | translate }}</p>
-    </div>
-  }
-
-  @if (matches.open().length) {
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      @for (m of matches.open(); track m.id) {
-        <div class="rounded-2xl border border-dashed border-lime-deep bg-card p-4">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-eyebrow rounded-full bg-lime px-2 py-0.5 text-ink">{{
-              'enums.sessionType.' + (m.sessionType ?? 'FullMatch') | translate
-            }}</span>
-            @if (matches.isMine(m.playerA)) {
-              <span class="text-eyebrow text-muted-foreground">{{ 'matches.yourPost' | translate }}</span>
-            }
-          </div>
-          <p class="mt-3 text-sm font-bold">{{ matches.playerById(m.playerA)?.name }}</p>
-          <p class="mt-1 text-sm text-muted-foreground">{{ m.note }}</p>
-          <p class="mt-1 text-xs text-muted-foreground">
-            {{ matches.openMatchLocation(m) }} · {{ m.date }} {{ m.time }}
-            @if (m.durationMinutes) {
-              · {{ m.durationMinutes }} min
-            }
-          </p>
-          @if (!matches.isMine(m.playerA) && !auth.isObserver()) {
-            <button
-              type="button"
-              (click)="matches.acceptOpenMatch(m.id)"
-              class="mt-3 w-full cursor-pointer rounded-full border border-lime-deep px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
-            >
-              {{ 'matches.joinMatch' | translate }}
-            </button>
-          }
-        </div>
-      }
     </div>
   }
 </section>
 
 <section class="mb-14">
   <ui-section-header [eyebrow]="'matches.bookedEyebrow' | translate" [title]="'matches.upcoming' | translate" />
-  @if (matches.upcoming().length) {
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  @if (matches.loading()) {
+    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+      @for (i of skeletonRows; track i) {
+        <ng-container [ngTemplateOutlet]="matchSkeletonCard" />
+      }
+    </div>
+  } @else if (matches.upcoming().length) {
+    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
       @for (m of matches.upcoming(); track m.id) {
-        <rally-match-card [match]="m" />
+        <rally-match-card [match]="m" [playerA]="matches.playerById(m.playerA)" [playerB]="matches.playerById(m.playerB)" [compact]="true" />
       }
     </div>
   } @else {
@@ -195,9 +340,17 @@
 
 <section>
   <ui-section-header [eyebrow]="'matches.resultsEyebrow' | translate" [title]="'matches.played' | translate" />
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    @for (m of matches.completed(); track m.id) {
-      <rally-match-card [match]="m" />
-    }
-  </div>
+  @if (matches.loading()) {
+    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+      @for (i of skeletonRows; track i) {
+        <ng-container [ngTemplateOutlet]="matchSkeletonCard" />
+      }
+    </div>
+  } @else {
+    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
+      @for (m of matches.completed(); track m.id) {
+        <rally-match-card [match]="m" [playerA]="matches.playerById(m.playerA)" [playerB]="matches.playerById(m.playerB)" [compact]="true" />
+      }
+    </div>
+  }
 </section>

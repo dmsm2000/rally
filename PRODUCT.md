@@ -109,7 +109,7 @@ The public detail page is deliberately honest about data that has not been built
 - A gender badge belongs in the avatar's lower-right badge position. Use colour semantics: male blue, female pink, non-binary lime. It must be visually centred on Safari/iPhone.
 - “Preferências do jogador” contains play preferences, preferred time of day, and availability as separate internally labelled groups.
 - “Treino” has two distinct parts: game frequency and coaching status/frequency. Do not merge them into availability.
-- Match tabs are structured as upcoming, past, and open, but are empty until match data becomes real.
+- Match tabs are structured as upcoming, past, and open. Match data is itself real now, but wiring these tabs to it is a deliberately separate, still-pending step — they remain empty for now.
 - Passport and courts-discovered areas use empty/zero states until real per-player data exists.
 - Never fill a real player's page with unrelated mock matches, courts, passport countries, or achievements.
 
@@ -124,7 +124,7 @@ The Feed is user-authored posts, kept deliberately simple — Twitter-like, not 
 - Images and videos open full-size in a lightbox on tap.
 - A player can delete their own post at any time; nobody else can.
 - Observers can browse every scope read-only (including the lightbox) but never see the like button or "Reply" — same restriction as messaging and inviting elsewhere in the product.
-- Courts, matches, and automatic notifications are expected to post into the feed automatically once those features are themselves real — not built yet, and deliberately so.
+- Open matches (see "How do I arrange a game?" below) post into the feed automatically when published. Courts are expected to do the same once that feature is itself real — not built yet, and deliberately so.
 
 ## Current Data Reality
 
@@ -137,13 +137,13 @@ The Feed is user-authored posts, kept deliberately simple — Twitter-like, not 
 - Country/city options in profile forms.
 - Direct messaging between two registered players, delivered live (Supabase Realtime), with a real typing indicator and per-participant read state.
 - Trip intents ("show me around"): publishing a trip, browsing host requests for your own country, volunteering (which sends a real message to the traveller, without hiding the post), and managing your own trips from your profile.
-- The Feed: user-authored posts (text and/or one photo/video), scoped to your city, your country, or the world; a single like reaction; and a "Reply" that opens a real DM to the author rather than a public comment. Not yet auto-posted to by courts/matches/notifications — deliberately deferred until those are themselves real.
-- Notifications: a real, generic notifications system delivered live. The first kind is "someone volunteered to host you" — volunteering to host a traveller (see above) sends them both a real DM and a real notification. Other kinds (messages, matches, achievements, ...) will reuse the same generic system once those features are themselves real — see "Still mock today".
+- The Feed: user-authored posts (text and/or one photo/video), scoped to your city, your country, or the world; a single like reaction; and a "Reply" that opens a real DM to the author rather than a public comment. Not yet auto-posted to by courts — deliberately deferred until that feature is itself real.
+- Matches: two ways to arrange a real game. A direct invite from a player's profile ("Convidar para uma partida"), which the invitee must accept or decline; and an open match anyone can publish (court or general area, date/time, format, a note), which is joinable by any other player and also posts into the Feed automatically. Every step — invited, accepted, declined, joined, cancelled — sends the other side a real, live notification.
+- Notifications: a real, generic notifications system delivered live. Covers "someone volunteered to host you" (see Trip intents above) and every step of the match flow above, including "a match opened up near you" when someone publishes an open match in your city. Other kinds (achievements, ...) will reuse the same generic system once those features are themselves real — see "Still mock today".
 
 ### Still mock today
 
 - Courts and court activity.
-- Match scheduling/results/history.
 - Passport countries, courts, achievements, and player connections.
 - World community map/activity feed and stats.
 - Match compatibility, score, and geographic distance.

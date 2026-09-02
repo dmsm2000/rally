@@ -11,4 +11,5 @@ export * from './page-header/page-header.component';
 export * from './password-toggle/password-toggle.component';
 export * from './section-header/section-header.component';
 export * from './stat/stat.component';
+export * from './time-picker/time-picker.component';
 export * from './toast/toast-container.component';

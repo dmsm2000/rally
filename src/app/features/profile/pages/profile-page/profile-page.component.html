@@ -134,7 +134,12 @@
   @if (recentMatches().length) {
     <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
       @for (m of recentMatches(); track m.id) {
-        <rally-match-card [match]="m" [compact]="true" />
+        <rally-match-card
+          [match]="m"
+          [playerA]="matchesService.playerById(m.playerA)"
+          [playerB]="matchesService.playerById(m.playerB)"
+          [compact]="true"
+        />
       }
     </div>
   } @else {

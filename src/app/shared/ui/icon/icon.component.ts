@@ -12,6 +12,8 @@ export type IconName =
   | 'error-circle'
   | 'eye'
   | 'calendar'
+  | 'clock'
+  | 'help-circle'
   | 'sliders-horizontal'
   | 'arrow-down-up'
   | 'search'
@@ -34,6 +36,8 @@ const ICON_URLS: Record<IconName, string> = {
   'error-circle': 'assets/icons/error-circle.svg',
   eye: 'assets/icons/eye.svg',
   calendar: 'assets/icons/calendar.svg',
+  clock: 'assets/icons/clock.svg',
+  'help-circle': 'assets/icons/help-circle.svg',
   'sliders-horizontal': 'assets/icons/sliders-horizontal.svg',
   'arrow-down-up': 'assets/icons/arrow-down-up.svg',
   search: 'assets/icons/search.svg',

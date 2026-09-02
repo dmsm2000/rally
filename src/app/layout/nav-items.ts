@@ -18,8 +18,8 @@ export interface NavItem {
 export const NAV_ITEMS: readonly NavItem[] = [
   { path: '/', label: 'nav.home', icon: 'home', exact: true },
   { path: '/world', label: 'nav.world', icon: 'world', matchPrefixes: ['/players'] },
-  { path: '/courts', label: 'nav.courts', icon: 'courts' },
   { path: '/matches', label: 'nav.matches', icon: 'matches' },
+  { path: '/courts', label: 'nav.courts', icon: 'courts' },
   { path: '/passport', label: 'nav.passport', icon: 'passport' }
 ];
 

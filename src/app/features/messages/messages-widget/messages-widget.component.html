@@ -9,7 +9,7 @@
           <button type="button" (click)="widget.close()" aria-label="Close" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10">✕</button>
         </div>
 
-        <div class="flex-1 space-y-2 overflow-y-auto p-4">
+        <div class="no-scrollbar flex-1 space-y-2 overflow-y-auto p-4">
           @for (m of activeConversation()?.messages ?? []; track m.id) {
             <div class="flex" [class.justify-end]="m.senderId === messages.myId()">
               <div class="max-w-[80%] rounded-2xl px-3 py-2 text-sm" [class]="m.senderId === messages.myId() ? 'bg-lime text-ink' : 'bg-muted text-foreground'">
@@ -52,7 +52,7 @@
           <p class="text-eyebrow text-muted-foreground">{{ 'messages.title' | translate }}</p>
           <button type="button" (click)="widget.close()" aria-label="Close" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-muted">✕</button>
         </div>
-        <div class="flex-1 overflow-y-auto">
+        <div class="no-scrollbar flex-1 overflow-y-auto">
           @for (row of rows(); track row.conversation.id) {
             <div class="flex items-center gap-1 border-b border-border pr-2 transition-colors hover:bg-muted">
               <button type="button" (click)="widget.openThread(row.player.id)" class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-4 py-3 text-left">

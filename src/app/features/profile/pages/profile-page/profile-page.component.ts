@@ -83,13 +83,11 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   private readonly router = inject(Router);
   private readonly countryData = inject(CountryDataService);
 
-  private readonly myMatches = computed(() => {
-    const meId = this.profile.me().id;
-    return this.matchesService.all().filter(m => m.playerA === meId || m.playerB === meId);
-  });
+  // MatchesService's upcoming()/completed() are already scoped to the signed-in player.
+  private readonly myMatches = computed(() => [...this.matchesService.upcoming(), ...this.matchesService.completed()]);
   protected readonly recentMatches = computed(() => this.myMatches().slice(0, 6));
-  private readonly myCompletedMatches = computed(() => this.myMatches().filter(m => m.status === 'complete'));
-  private readonly myWins = computed(() => this.myCompletedMatches().filter(m => m.winner === this.profile.me().id));
+  private readonly myCompletedMatches = computed(() => this.matchesService.completed());
+  private readonly myWins = computed(() => this.myCompletedMatches().filter(m => m.winner === this.auth.currentUserId()));
   protected readonly winRatePct = computed(() =>
     this.myCompletedMatches().length ? Math.round((this.myWins().length / this.myCompletedMatches().length) * 100) : 0
   );

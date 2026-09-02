@@ -19,7 +19,7 @@
   />
   @if (open() && filteredOptions().length) {
     <ul
-      class="absolute z-20 mt-1.5 max-h-56 w-full overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-lg"
+      class="no-scrollbar absolute z-20 mt-1.5 max-h-56 w-full overflow-y-auto rounded-xl border border-border bg-card py-1 shadow-lg"
     >
       @for (o of filteredOptions(); track o) {
         <li>

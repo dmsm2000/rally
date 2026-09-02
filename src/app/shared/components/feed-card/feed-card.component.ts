@@ -24,10 +24,12 @@ export class FeedCardComponent {
   readonly canDelete = input(false);
   readonly deleting = input(false);
   readonly volunteering = input(false);
+  readonly joining = input(false);
 
   readonly liked = output<void>();
   readonly deleted = output<void>();
   readonly volunteered = output<void>();
+  readonly joined = output<void>();
 
   // Own posts route to the own-profile page (there's no /players/:id entry for yourself). Compares
   // against post().authorId, not player()?.id — the mock-bridged "me" player keeps a permanent fake
@@ -49,6 +51,16 @@ export class FeedCardComponent {
 
   protected readonly tripFlag = computed(
     () => this.countryData.countries().find(c => c.name === this.post().trip?.destinationCountry)?.flag ?? '🌍'
+  );
+
+  // Only shown to players who could realistically join — same location-level match as the
+  // Matches page's own "open near me" list, not restricted to the exact same city.
+  protected readonly canJoin = computed(
+    () =>
+      !this.auth.isObserver() &&
+      !this.isOwnPost() &&
+      this.post().match?.status === 'open' &&
+      this.auth.currentPlayer().country === this.post().match?.country
   );
 
   constructor() {

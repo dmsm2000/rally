@@ -86,12 +86,14 @@
       <rally-feed-card
         [post]="f"
         [player]="feed.playerById(f.authorId)"
-        [canDelete]="f.authorId === feed.meId() && !f.trip"
+        [canDelete]="f.authorId === feed.meId() && !f.trip && !f.match"
         [deleting]="feed.isDeleting(f.id)"
         [volunteering]="feed.isVolunteering(f.id)"
+        [joining]="feed.isJoining(f.id)"
         (liked)="feed.toggleLike(f)"
         (deleted)="feed.deletePost(f)"
         (volunteered)="feed.volunteerForTrip(f)"
+        (joined)="feed.joinMatch(f)"
       />
     } @empty {
       @if (feed.loading()) {

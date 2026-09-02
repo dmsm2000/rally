@@ -4,16 +4,20 @@
   [class.w-72]="compact()"
   [class.shrink-0]="compact()"
 >
-  <div class="flex items-center justify-between">
-    <span class="text-eyebrow text-muted-foreground">{{ match().date }} · {{ match().time }}</span>
+  <div class="flex items-center justify-between gap-2">
+    <span class="text-eyebrow rounded-full bg-lime px-2 py-0.5 text-ink">{{ 'enums.sessionType.' + (match().sessionType ?? 'FullMatch') | translate }}</span>
     <span class="text-eyebrow rounded-full px-2 py-0.5" [class]="statusClasses()">{{ statusLabel() | translate }}</span>
   </div>
+  <p class="mt-2 flex items-center gap-1.5 text-sm font-bold text-foreground">
+    <span aria-hidden="true">🗓️</span>
+    {{ match().matchDate | date: 'd MMM' }} · {{ match().matchTime.slice(0, 5) }}{{ match().matchTimeEnd ? '–' + match().matchTimeEnd!.slice(0, 5) : '' }}
+  </p>
+  <p class="mt-1 flex items-center gap-1.5 truncate text-sm font-semibold text-foreground">
+    <span aria-hidden="true">📍</span> {{ locationLabel() }}
+  </p>
   <div class="mt-3 flex items-center gap-3">
     <ui-avatar [initials]="playerA()?.initials ?? ''" [accent]="playerA()?.accent ?? 'ink'" [seed]="playerA()?.avatarSeed" [avatarStyle]="playerA()?.avatarStyle" size="sm" />
-    <div class="min-w-0 flex-1">
-      <p class="truncate text-sm font-bold">{{ playerA()?.name }} <span class="text-muted-foreground">vs</span> {{ playerB()?.name }}</p>
-      <p class="truncate text-xs text-muted-foreground">{{ court()?.flag }} {{ court()?.name }} · {{ match().format }}</p>
-    </div>
+    <p class="min-w-0 flex-1 truncate text-sm font-bold">{{ playerA()?.name }} <span class="text-muted-foreground">vs</span> {{ playerB()?.name }}</p>
     <ui-avatar [initials]="playerB()?.initials ?? ''" [accent]="playerB()?.accent ?? 'ink'" [seed]="playerB()?.avatarSeed" [avatarStyle]="playerB()?.avatarStyle" size="sm" />
   </div>
   @if (match().sets) {

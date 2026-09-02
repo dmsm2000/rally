@@ -1,4 +1,5 @@
-export type MatchStatus = 'upcoming' | 'live' | 'complete' | 'open';
+export type MatchKind = 'direct' | 'open';
+export type MatchStatus = 'pending' | 'open' | 'upcoming' | 'cancelled' | 'complete';
 export type MatchFormat = 'Singles' | 'Doubles';
 export type SessionType = 'Training' | 'HittingSession' | 'PracticeMatch' | 'FullMatch';
 
@@ -10,20 +11,27 @@ export interface MatchStat {
 
 export interface Match {
   id: string;
+  kind: MatchKind;
   status: MatchStatus;
-  date: string;
-  time: string;
-  courtId: string;
+  matchDate: string;
+  matchTime: string;
+  /** Present only when the time is a flexible window ("anytime between matchTime and this works"). */
+  matchTimeEnd?: string;
+  courtId?: string;
+  /** Always populated — denormalized from the chosen court, or entered directly when no court was picked. */
+  city: string;
+  country: string;
+  radiusKm?: number;
   format: MatchFormat;
+  sessionType?: SessionType;
   playerA: string;
   playerB?: string;
   note?: string;
+  durationMinutes?: number;
   sets?: [number, number][];
   winner?: string;
   stats?: MatchStat[];
-  sessionType?: SessionType;
-  durationMinutes?: number;
-  /** Set instead of courtId when the poster only wants to say "somewhere near this city", not a specific court. */
-  city?: string;
-  radiusKm?: number;
+  cancelledBy?: string;
+  confirmedAt?: string;
+  createdAt: string;
 }

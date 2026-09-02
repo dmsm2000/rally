@@ -3,6 +3,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { AuthService } from '../../../core/auth/auth.service';
 import { supabase } from '../../../core/auth/supabase.client';
 import { Post, PostType } from '../../../core/models';
+import { MatchesRepository } from '../../matches/data/matches.repository';
 import { PlayersRepository } from '../../players/data/players.repository';
 import { TripsRepository } from '../../world/data/trips.repository';
 
@@ -19,6 +20,7 @@ interface PostRow {
   media_type: 'image' | 'video' | null;
   type: PostType | null;
   trip_intent_id: string | null;
+  match_id: string | null;
   created_at: string;
 }
 
@@ -41,6 +43,7 @@ export class PostsRepository {
   private readonly auth = inject(AuthService);
   private readonly players = inject(PlayersRepository);
   private readonly trips = inject(TripsRepository);
+  private readonly matches = inject(MatchesRepository);
 
   private realtimeChannel?: RealtimeChannel;
 
@@ -53,14 +56,14 @@ export class PostsRepository {
    */
   subscribeToPostEvents(scope: FeedScope, handlers: PostEventHandlers): void {
     this.unsubscribeFromPostEvents();
-    const uid = this.auth.currentUserId();
     this.realtimeChannel = supabase
       .channel('posts-inbox')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
         const row = payload.new as PostRow;
-        if (row.author_id === uid) {
-          return;
-        }
+        // Own posts go through too — not just posts made from the feed composer itself (which
+        // already reload directly), but e.g. an open match's announcement post, created from
+        // /matches, needs this to reach the feed live. pullInNewPosts()'s existingIds check
+        // already no-ops the harmless case where the composer's own reload got there first.
         void this.matchesScope(scope, row).then(matches => {
           if (matches) {
             handlers.onNewPost();
@@ -92,16 +95,18 @@ export class PostsRepository {
     const uid = this.auth.currentUserId();
     let query = supabase
       .from('posts')
-      .select('id,author_id,text,media_url,media_type,type,trip_intent_id,created_at')
+      .select('id,author_id,text,media_url,media_type,type,trip_intent_id,match_id,created_at')
       .order('created_at', { ascending: false });
 
     if (scope !== 'world') {
       const me = this.auth.currentPlayer();
       const authorIds = this.authorIdsInScope(scope, me.country, me.city, uid);
-      // Trip-announcement posts are visible by destination, not by the traveller's own home — see
-      // PRODUCT.md: the useful audience is "who lives where the trip is going", i.e. potential hosts.
+      // Trip-announcement and open-match posts are visible by destination/location, not by the
+      // author's own home — see PRODUCT.md: the useful audience is "who's near where this is
+      // actually happening" (potential hosts, potential opponents).
       const tripIds = me.country ? await this.trips.idsForDestination(me.country, scope === 'city' ? me.city : undefined) : [];
-      if (authorIds.length === 0 && tripIds.length === 0) {
+      const matchIds = me.country ? await this.matches.idsForLocation(me.country, scope === 'city' ? me.city : undefined) : [];
+      if (authorIds.length === 0 && tripIds.length === 0 && matchIds.length === 0) {
         return { posts: [], hasMore: false };
       }
       const filters: string[] = [];
@@ -110,6 +115,9 @@ export class PostsRepository {
       }
       if (tripIds.length > 0) {
         filters.push(`trip_intent_id.in.(${tripIds.join(',')})`);
+      }
+      if (matchIds.length > 0) {
+        filters.push(`match_id.in.(${matchIds.join(',')})`);
       }
       query = query.or(filters.join(','));
     }
@@ -169,6 +177,20 @@ export class PostsRepository {
     return true;
   }
 
+  /** Inserts the automatic announcement post for a just-published open match — see MatchesService.publishOpenMatch(). */
+  async createMatchAnnouncement(matchId: string): Promise<boolean> {
+    const uid = this.auth.currentUserId();
+    if (!uid) {
+      return false;
+    }
+    const { error } = await supabase.from('posts').insert({ author_id: uid, match_id: matchId, text: '' });
+    if (error) {
+      console.error('Failed to create match announcement post:', error.message);
+      return false;
+    }
+    return true;
+  }
+
   async toggleLike(postId: string, liked: boolean): Promise<boolean> {
     const uid = this.auth.currentUserId();
     if (!uid) {
@@ -213,18 +235,35 @@ export class PostsRepository {
     if (scope === 'world') {
       return true;
     }
+    const uid = this.auth.currentUserId();
     const me = this.auth.currentPlayer();
-    const authorMatches = this.players
-      .getAll()
-      .some(p => p.id === row.author_id && (scope === 'country' ? p.country === me.country : p.country === me.country && p.city === me.city));
+    // Discovery excludes the signed-in player (see PlayersRepository), so a self-authored row
+    // would otherwise never match here — authorIdsInScope() already special-cases this the same
+    // way for the initial/paged fetch, this mirrors it for the realtime path.
+    const authorMatches =
+      row.author_id === uid ||
+      this.players
+        .getAll()
+        .some(p => p.id === row.author_id && (scope === 'country' ? p.country === me.country : p.country === me.country && p.city === me.city));
     if (authorMatches) {
       return true;
     }
-    if (!row.trip_intent_id || !me.country) {
+    if (!me.country) {
       return false;
     }
-    const tripIds = await this.trips.idsForDestination(me.country, scope === 'city' ? me.city : undefined);
-    return tripIds.includes(row.trip_intent_id);
+    if (row.trip_intent_id) {
+      const tripIds = await this.trips.idsForDestination(me.country, scope === 'city' ? me.city : undefined);
+      if (tripIds.includes(row.trip_intent_id)) {
+        return true;
+      }
+    }
+    if (row.match_id) {
+      const matchIds = await this.matches.idsForLocation(me.country, scope === 'city' ? me.city : undefined);
+      if (matchIds.includes(row.match_id)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private authorIdsInScope(scope: FeedScope, country: string | undefined, city: string | undefined, uid: string | undefined): string[] {
@@ -244,11 +283,13 @@ export class PostsRepository {
     }
     const ids = rows.map(r => r.id);
     const tripIds = [...new Set(rows.map(r => r.trip_intent_id).filter((id): id is string => !!id))];
+    const matchIds = [...new Set(rows.map(r => r.match_id).filter((id): id is string => !!id))];
 
-    const [likesResult, trips, volunteeredTripIds] = await Promise.all([
+    const [likesResult, trips, volunteeredTripIds, matches] = await Promise.all([
       supabase.from('post_likes').select('post_id,user_id').in('post_id', ids),
       this.trips.getByIds(tripIds),
-      this.trips.myVolunteeredTripIds(tripIds)
+      this.trips.myVolunteeredTripIds(tripIds),
+      this.matches.getByIds(matchIds)
     ]);
 
     const { data: likeRows, error } = likesResult;
@@ -264,9 +305,11 @@ export class PostsRepository {
       }
     }
     const tripById = new Map(trips.map(t => [t.id, t]));
+    const matchById = new Map(matches.map(m => [m.id, m]));
 
     return rows.map(row => {
       const trip = row.trip_intent_id ? tripById.get(row.trip_intent_id) : undefined;
+      const match = row.match_id ? matchById.get(row.match_id) : undefined;
       return {
         id: row.id,
         authorId: row.author_id,
@@ -283,6 +326,25 @@ export class PostsRepository {
               toDate: trip.toDate,
               note: trip.note,
               volunteeredByMe: volunteeredTripIds.has(trip.id)
+            }
+          : null,
+        match: match
+          ? {
+              matchId: match.id,
+              status: match.status as 'open' | 'upcoming' | 'cancelled' | 'complete',
+              format: match.format,
+              sessionType: match.sessionType,
+              city: match.city,
+              country: match.country,
+              radiusKm: match.radiusKm,
+              courtId: match.courtId,
+              matchDate: match.matchDate,
+              matchTime: match.matchTime,
+              matchTimeEnd: match.matchTimeEnd,
+              durationMinutes: match.durationMinutes,
+              note: match.note,
+              playerB: match.playerB,
+              joinedByMe: !!uid && match.playerB === uid
             }
           : null,
         createdAt: row.created_at,

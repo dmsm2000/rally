@@ -20,6 +20,8 @@ export class ChipComponent {
   readonly clickable = input(false);
   /** Read-only metadata has no hover state or colour accent. */
   readonly subtle = input(false);
+  /** For a clickable chip that isn't selectable yet (e.g. an unbuilt option) — greyed out, inert. */
+  readonly disabled = input(false);
   readonly toggled = output<void>();
 
   protected readonly classes = computed(() =>

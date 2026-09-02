@@ -32,7 +32,35 @@
         </div>
       </div>
       <p class="text-eyebrow text-muted-foreground">{{ post().createdAt | date: 'd MMM · HH:mm' }}</p>
-      @if (post().trip; as trip) {
+      @if (post().match; as match) {
+        <p class="mt-2 text-sm font-bold">
+          🎾 {{ (isOwnPost() ? 'feed.match.ownHeadline' : 'feed.match.otherHeadline') | translate: { city: match.city } }}
+        </p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          {{ match.city }}, {{ match.country }} · {{ match.matchDate | date: 'd MMM' }} · {{ match.matchTime.slice(0, 5) }}{{ match.matchTimeEnd ? '–' + match.matchTimeEnd.slice(0, 5) : '' }}
+        </p>
+        @if (match.note) {
+          <p class="mt-2 text-sm whitespace-pre-wrap">{{ match.note }}</p>
+        }
+        @if (match.status === 'cancelled') {
+          <p class="mt-3 inline-flex rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">
+            {{ 'feed.match.cancelled' | translate }}
+          </p>
+        } @else if (match.status !== 'open') {
+          <p class="mt-3 inline-flex rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">
+            {{ (match.joinedByMe ? 'feed.match.youJoined' : 'feed.match.matched') | translate }}
+          </p>
+        } @else if (canJoin()) {
+          <button
+            type="button"
+            (click)="joined.emit()"
+            [disabled]="joining()"
+            class="mt-3 cursor-pointer rounded-full border border-lime px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink disabled:pointer-events-none disabled:opacity-40"
+          >
+            {{ 'feed.match.join' | translate }}
+          </button>
+        }
+      } @else if (post().trip; as trip) {
         <p class="mt-2 text-sm font-bold">
           🧳 {{ (isOwnPost() ? 'feed.trip.ownHeadline' : 'feed.trip.otherHeadline') | translate: { city: trip.destinationCity } }}
         </p>
@@ -65,7 +93,7 @@
     </div>
   </div>
 
-  @if (!post().trip && post().mediaType === 'video') {
+  @if (!post().trip && !post().match && post().mediaType === 'video') {
     <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in bg-ink">
       <video
         [src]="post().mediaUrl"
@@ -75,7 +103,7 @@
         class="max-h-[32rem] w-full object-contain"
       ></video>
     </button>
-  } @else if (!post().trip && post().mediaType === 'image') {
+  } @else if (!post().trip && !post().match && post().mediaType === 'image') {
     <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in bg-muted">
       <img [src]="post().mediaUrl" alt="" loading="lazy" class="max-h-[32rem] w-full object-contain" />
     </button>

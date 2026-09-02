@@ -1,5 +1,12 @@
 /** Extend as new features start emitting real notifications (see supabase/migrations/0017_notifications.sql). */
-export type NotificationKind = 'trip_host_volunteered';
+export type NotificationKind =
+  | 'trip_host_volunteered'
+  | 'match_invite_received'
+  | 'match_invite_accepted'
+  | 'match_invite_declined'
+  | 'match_joined'
+  | 'match_cancelled'
+  | 'match_open_nearby';
 
 export interface AppNotification {
   id: string;

@@ -20,12 +20,13 @@ export class NotificationsService {
     return this.repository.notify(recipientId, kind, data);
   }
 
-  markRead(id: string): void {
-    this.repository.markRead(id);
+  /** Fans a notification out to many recipients at once — e.g. MatchesRepository.createOpenMatch(). */
+  notifyMany(recipientIds: string[], kind: NotificationKind, data?: Record<string, string>): Promise<void> {
+    return this.repository.notifyMany(recipientIds, kind, data);
   }
 
-  markAllRead(): void {
-    this.repository.markAllRead();
+  markRead(id: string): void {
+    this.repository.markRead(id);
   }
 
   clearAll(): Promise<boolean> {
