@@ -14,22 +14,24 @@
         <a [routerLink]="profileLink()" class="min-w-0 cursor-pointer">
           <p class="truncate text-sm font-bold hover:underline">{{ player()?.name }}</p>
         </a>
-        @if (canDelete()) {
-          <button
-            type="button"
-            (click)="deleted.emit()"
-            [disabled]="deleting()"
-            [attr.aria-label]="'feed.deletePost' | translate"
-            class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-loss disabled:pointer-events-none disabled:opacity-40"
-          >
-            <ui-icon name="trash" className="size-3.5" />
-          </button>
-        }
+        <div class="flex shrink-0 items-center gap-2">
+          @if (post().type; as type) {
+            <ui-chip [subtle]="true">{{ 'feed.type.' + type | translate }}</ui-chip>
+          }
+          @if (canDelete()) {
+            <button
+              type="button"
+              (click)="deleted.emit()"
+              [disabled]="deleting()"
+              [attr.aria-label]="'feed.deletePost' | translate"
+              class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-loss disabled:pointer-events-none disabled:opacity-40"
+            >
+              <ui-icon name="trash" className="size-3.5" />
+            </button>
+          }
+        </div>
       </div>
       <p class="text-eyebrow text-muted-foreground">{{ post().createdAt | date: 'd MMM · HH:mm' }}</p>
-      @if (post().type; as type) {
-        <ui-chip [subtle]="true" class="mt-1.5 inline-flex">{{ 'feed.type.' + type | translate }}</ui-chip>
-      }
       @if (post().text) {
         <p class="mt-2 text-sm whitespace-pre-wrap">{{ post().text }}</p>
       }
@@ -37,12 +39,18 @@
   </div>
 
   @if (post().mediaType === 'video') {
-    <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in">
-      <video [src]="post().mediaUrl" playsinline muted class="aspect-16/9 w-full bg-ink object-contain"></video>
+    <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in bg-ink">
+      <video
+        [src]="post().mediaUrl"
+        playsinline
+        muted
+        preload="metadata"
+        class="max-h-[32rem] w-full object-contain"
+      ></video>
     </button>
   } @else if (post().mediaType === 'image') {
-    <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in">
-      <img [src]="post().mediaUrl" alt="" loading="lazy" class="aspect-16/9 w-full object-cover" />
+    <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in bg-muted">
+      <img [src]="post().mediaUrl" alt="" loading="lazy" class="max-h-[32rem] w-full object-contain" />
     </button>
   }
 

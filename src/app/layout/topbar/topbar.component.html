@@ -27,9 +27,7 @@
           <a
             #navLink
             [routerLink]="item.path"
-            routerLinkActive="is-active"
-            [routerLinkActiveOptions]="{ exact: !!item.exact }"
-            (isActiveChange)="onActiveChange($event, navLink)"
+            [class.is-active]="isActive(item)"
             class="nav-link shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground"
           >
             <span class="relative z-10">{{ item.label | translate }}</span>
@@ -39,8 +37,7 @@
           <a
             #navLink
             [routerLink]="item.path"
-            routerLinkActive="is-active"
-            (isActiveChange)="onActiveChange($event, navLink)"
+            [class.is-active]="isActive(item)"
             class="nav-link shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground"
           >
             <span class="relative z-10">{{ item.label | translate }}</span>

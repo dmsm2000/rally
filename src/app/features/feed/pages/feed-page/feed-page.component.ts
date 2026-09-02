@@ -87,6 +87,16 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
     this.mainEl?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // Not an inline template expression: `target === currentTarget && closeComposer()` evaluates to
+  // the literal `false` for every click that isn't on the backdrop itself, and Angular calls
+  // event.preventDefault() whenever a bound expression returns exactly `false` — which was silently
+  // cancelling the file input's native "open picker" default action for every click inside the dialog.
+  protected onBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.feed.closeComposer();
+    }
+  }
+
   protected onMediaSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];

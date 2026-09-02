@@ -14,9 +14,7 @@
     @for (item of items(); track item.path) {
       <a
         [routerLink]="item.path"
-        routerLinkActive="is-active"
-        [routerLinkActiveOptions]="{ exact: !!item.exact }"
-        (isActiveChange)="onActiveChange($event, iconWrap)"
+        [class.is-active]="isActive(item)"
         class="nav-link flex flex-col items-center gap-1 py-2.5 text-muted-foreground"
       >
         <span #iconWrap class="nav-icon relative z-10 flex size-9 items-center justify-center rounded-full">
