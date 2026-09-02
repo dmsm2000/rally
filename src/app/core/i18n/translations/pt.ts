@@ -182,6 +182,11 @@ export const pt = {
     title: 'Notificações',
     empty: 'Ainda não há notificações',
     markAllRead: 'Marcar tudo como lido',
+    clearAll: 'Limpar tudo',
+    clearAllConfirmLead: 'Tens a certeza? Isto apaga permanentemente todas as tuas notificações e não pode ser desfeito.',
+    clearAllConfirmButton: 'Sim, limpar tudo',
+    clearAllFailed: 'Não foi possível limpar as notificações. Tenta novamente.',
+    cancel: 'Cancelar',
     kinds: {
       tripHostVolunteered: {
         text: '{name} ofereceu-se para te mostrar {city}',

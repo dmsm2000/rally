@@ -61,7 +61,7 @@
             👀
           </button>
         } @else {
-          <a routerLink="/profile" [attr.aria-label]="'nav.yourProfile' | translate">
+          <a routerLink="/profile" [attr.aria-label]="'nav.yourProfile' | translate" class="flex items-center justify-center">
             <ui-avatar
               [initials]="auth.currentPlayer().initials"
               [seed]="auth.currentPlayer().avatarSeed"

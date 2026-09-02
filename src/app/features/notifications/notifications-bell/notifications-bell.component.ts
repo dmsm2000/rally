@@ -1,7 +1,9 @@
 import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { AppNotification, NotificationKind } from '../../../core/models';
 import { TranslationService } from '../../../core/i18n/translation.service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { MessagesWidgetService } from '../../../core/services/messages-widget.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { NotificationsService } from '../notifications.service';
 
@@ -35,6 +37,8 @@ export class NotificationsBellComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly widget = inject(MessagesWidgetService);
   private readonly translation = inject(TranslationService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly toast = inject(ToastService);
 
   protected toggle(): void {
     this.open.update(value => !value);
@@ -79,6 +83,24 @@ export class NotificationsBellComponent {
 
   protected markAllRead(): void {
     this.notifications.markAllRead();
+  }
+
+  protected async clearAll(): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      message: this.translation.t('notifications.clearAllConfirmLead'),
+      confirmLabel: this.translation.t('notifications.clearAllConfirmButton'),
+      cancelLabel: this.translation.t('notifications.cancel'),
+      tone: 'destructive'
+    });
+    if (!confirmed) {
+      return;
+    }
+    const ok = await this.notifications.clearAll();
+    if (!ok) {
+      this.toast.error(this.translation.t('notifications.clearAllFailed'));
+      return;
+    }
+    this.open.set(false);
   }
 
   @HostListener('document:click', ['$event'])

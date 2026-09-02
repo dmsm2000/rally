@@ -182,6 +182,11 @@ export const es = {
     title: 'Notificaciones',
     empty: 'Todavía no hay notificaciones',
     markAllRead: 'Marcar todo como leído',
+    clearAll: 'Borrar todo',
+    clearAllConfirmLead: '¿Estás seguro? Esto elimina permanentemente todas tus notificaciones y no se puede deshacer.',
+    clearAllConfirmButton: 'Sí, borrar todo',
+    clearAllFailed: 'No se pudieron borrar las notificaciones. Inténtalo de nuevo.',
+    cancel: 'Cancelar',
     kinds: {
       tripHostVolunteered: {
         text: '{name} se ofreció a enseñarte {city}',

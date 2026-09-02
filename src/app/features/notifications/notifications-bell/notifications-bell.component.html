@@ -4,7 +4,7 @@
     (click)="toggle()"
     [attr.aria-label]="'nav.notifications' | translate"
     [attr.aria-expanded]="open()"
-    class="relative flex size-10 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-base hover:border-foreground"
+    class="relative flex size-9 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-base hover:border-foreground"
   >
     🔔
     @if (notifications.unreadCount() > 0) {
@@ -16,9 +16,14 @@
     <div class="absolute top-full right-0 z-50 mt-1.5 w-80 max-w-[90vw] overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
       <div class="flex items-center justify-between border-b border-border px-4 py-3">
         <p class="text-eyebrow text-muted-foreground">{{ 'notifications.title' | translate }}</p>
-        @if (notifications.unreadCount() > 0) {
-          <button type="button" (click)="markAllRead()" class="cursor-pointer text-xs font-bold text-muted-foreground hover:text-foreground">{{ 'notifications.markAllRead' | translate }}</button>
-        }
+        <div class="flex items-center gap-3">
+          @if (notifications.unreadCount() > 0) {
+            <button type="button" (click)="markAllRead()" class="cursor-pointer text-xs font-bold text-muted-foreground hover:text-foreground">{{ 'notifications.markAllRead' | translate }}</button>
+          }
+          @if (notifications.all().length > 0) {
+            <button type="button" (click)="clearAll()" class="cursor-pointer text-xs font-bold text-muted-foreground hover:text-clay">{{ 'notifications.clearAll' | translate }}</button>
+          }
+        </div>
       </div>
       <div class="max-h-96 overflow-y-auto">
         @for (n of notifications.all(); track n.id) {

@@ -27,4 +27,8 @@ export class NotificationsService {
   markAllRead(): void {
     this.repository.markAllRead();
   }
+
+  clearAll(): Promise<boolean> {
+    return this.repository.clearAll();
+  }
 }

@@ -91,6 +91,22 @@ export class NotificationsRepository {
       });
   }
 
+  async clearAll(): Promise<boolean> {
+    const uid = this.auth.currentUserId();
+    if (!uid || this._notifications().length === 0) {
+      return true;
+    }
+    const snapshot = this._notifications();
+    this._notifications.set([]);
+    const { error } = await supabase.from('notifications').delete().eq('recipient_id', uid);
+    if (error) {
+      console.error('Failed to clear notifications:', error.message);
+      this._notifications.set(snapshot);
+      return false;
+    }
+    return true;
+  }
+
   private async init(uid: string): Promise<void> {
     this.teardownRealtime();
     const { data, error } = await supabase

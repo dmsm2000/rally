@@ -180,6 +180,11 @@ export const en = {
     title: 'Notifications',
     empty: 'No notifications yet',
     markAllRead: 'Mark all as read',
+    clearAll: 'Clear all',
+    clearAllConfirmLead: "Are you sure? This permanently deletes all your notifications and can't be undone.",
+    clearAllConfirmButton: 'Yes, clear all',
+    clearAllFailed: "Couldn't clear your notifications. Please try again.",
+    cancel: 'Cancel',
     kinds: {
       tripHostVolunteered: {
         text: '{name} offered to host you in {city}',
