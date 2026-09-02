@@ -15,11 +15,20 @@
   <p class="mt-1 flex items-center gap-1.5 truncate text-sm font-semibold text-foreground">
     <span aria-hidden="true">📍</span> {{ locationLabel() }}
   </p>
-  <div class="mt-3 flex items-center gap-3">
-    <ui-avatar [initials]="playerA()?.initials ?? ''" [accent]="playerA()?.accent ?? 'ink'" [seed]="playerA()?.avatarSeed" [avatarStyle]="playerA()?.avatarStyle" size="sm" />
-    <p class="min-w-0 flex-1 truncate text-sm font-bold">{{ playerA()?.name }} <span class="text-muted-foreground">vs</span> {{ playerB()?.name }}</p>
-    <ui-avatar [initials]="playerB()?.initials ?? ''" [accent]="playerB()?.accent ?? 'ink'" [seed]="playerB()?.avatarSeed" [avatarStyle]="playerB()?.avatarStyle" size="sm" />
-  </div>
+  @if (match().format === 'Doubles') {
+    <div class="mt-3 flex items-center gap-2">
+      @for (p of participants(); track p?.id) {
+        <ui-avatar [initials]="p?.initials ?? ''" [accent]="p?.accent ?? 'ink'" [seed]="p?.avatarSeed" [avatarStyle]="p?.avatarStyle" size="sm" />
+      }
+      <p class="min-w-0 flex-1 truncate text-sm font-bold">{{ 'enums.format.Doubles' | translate }}</p>
+    </div>
+  } @else {
+    <div class="mt-3 flex items-center gap-3">
+      <ui-avatar [initials]="playerA()?.initials ?? ''" [accent]="playerA()?.accent ?? 'ink'" [seed]="playerA()?.avatarSeed" [avatarStyle]="playerA()?.avatarStyle" size="sm" />
+      <p class="min-w-0 flex-1 truncate text-sm font-bold">{{ playerA()?.name }} <span class="text-muted-foreground">vs</span> {{ playerB()?.name }}</p>
+      <ui-avatar [initials]="playerB()?.initials ?? ''" [accent]="playerB()?.accent ?? 'ink'" [seed]="playerB()?.avatarSeed" [avatarStyle]="playerB()?.avatarStyle" size="sm" />
+    </div>
+  }
   @if (match().sets) {
     <div class="mt-3 flex gap-2">
       @for (s of match().sets; track $index) {

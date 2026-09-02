@@ -120,7 +120,21 @@
         <span class="text-eyebrow text-muted-foreground">{{ 'matches.yourPost' | translate }}</span>
       }
     </div>
-    <p class="mt-3 text-sm font-bold">{{ matches.playerById(m.playerA)?.name }}</p>
+    @if (m.format === 'Doubles') {
+      <div class="mt-3 flex items-center gap-1.5">
+        @for (p of matches.participantsFor(m); track p?.id) {
+          <ui-avatar [initials]="p?.initials ?? ''" [accent]="p?.accent ?? 'ink'" [seed]="p?.avatarSeed" [avatarStyle]="p?.avatarStyle" size="sm" />
+        }
+        @for (slot of matches.emptyDoublesSlots(m); track slot) {
+          <div class="flex size-9 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-xs text-muted-foreground">?</div>
+        }
+      </div>
+      <p class="mt-2 text-xs font-bold text-muted-foreground">
+        {{ 'matches.doublesRoster' | translate: { count: matches.participantsFor(m).length } }}
+      </p>
+    } @else {
+      <p class="mt-3 text-sm font-bold">{{ matches.playerById(m.playerA)?.name }}</p>
+    }
     <p class="mt-2 flex items-center gap-1.5 text-sm font-bold text-foreground">
       <span aria-hidden="true">📍</span> {{ matches.openMatchLocation(m) }}
     </p>
@@ -141,6 +155,26 @@
       >
         {{ 'matches.withdraw' | translate }}
       </button>
+    } @else if (m.format === 'Doubles' && matches.hasJoined(m)) {
+      @if (!auth.isObserver()) {
+        <button
+          type="button"
+          (click)="matches.leaveDoublesMatch(m.id)"
+          class="mt-3 w-full cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
+        >
+          {{ 'matches.leaveMatch' | translate }}
+        </button>
+      }
+    } @else if (m.format === 'Doubles') {
+      @if (!auth.isObserver()) {
+        <button
+          type="button"
+          (click)="matches.joinDoublesMatch(m.id)"
+          class="mt-3 w-full cursor-pointer rounded-full border border-lime-deep px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
+        >
+          {{ 'matches.joinMatch' | translate }}
+        </button>
+      }
     } @else if (!auth.isObserver()) {
       <button
         type="button"
@@ -206,7 +240,11 @@
           (toggled)="matches.composerFormat.set('Singles')"
           >{{ 'enums.format.Singles' | translate }}</ui-chip
         >
-        <ui-chip [clickable]="true" [disabled]="true">{{ 'enums.format.Doubles' | translate }}</ui-chip
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerFormat() === 'Doubles'"
+          (toggled)="matches.composerFormat.set('Doubles')"
+          >{{ 'enums.format.Doubles' | translate }}</ui-chip
         >
       </div>
 
@@ -326,7 +364,7 @@
   } @else if (matches.upcoming().length) {
     <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
       @for (m of matches.upcoming(); track m.id) {
-        <rally-match-card [match]="m" [playerA]="matches.playerById(m.playerA)" [playerB]="matches.playerById(m.playerB)" [compact]="true" />
+        <rally-match-card [match]="m" [playerA]="matches.playerById(m.playerA)" [playerB]="matches.playerById(m.playerB)" [participants]="matches.participantsFor(m)" [compact]="true" />
       }
     </div>
   } @else {
@@ -346,11 +384,13 @@
         <ng-container [ngTemplateOutlet]="matchSkeletonCard" />
       }
     </div>
-  } @else {
+  } @else if (matches.completed().length) {
     <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
       @for (m of matches.completed(); track m.id) {
-        <rally-match-card [match]="m" [playerA]="matches.playerById(m.playerA)" [playerB]="matches.playerById(m.playerB)" [compact]="true" />
+        <rally-match-card [match]="m" [playerA]="matches.playerById(m.playerA)" [playerB]="matches.playerById(m.playerB)" [participants]="matches.participantsFor(m)" [compact]="true" />
       }
     </div>
+  } @else {
+    <ui-empty-state [title]="'matches.playedEmptyTitle' | translate" [body]="'matches.playedEmptyBody' | translate" />
   }
 </section>

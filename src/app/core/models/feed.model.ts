@@ -32,6 +32,8 @@ export interface MatchPost {
   note?: string;
   playerB?: string;
   joinedByMe: boolean;
+  /** Roster size out of 4, format 'Doubles' only — see PostsRepository's post-hydration mapping. */
+  participantCount?: number;
 }
 
 export interface Post {

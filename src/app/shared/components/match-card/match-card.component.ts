@@ -18,6 +18,8 @@ export class MatchCardComponent {
   readonly match = input.required<Match>();
   readonly playerA = input<Player | undefined>();
   readonly playerB = input<Player | undefined>();
+  /** Full doubles roster (see MatchesService.participantsFor()) — ignored for Singles matches. */
+  readonly participants = input<(Player | undefined)[]>([]);
   readonly compact = input(false);
 
   protected readonly court = computed(() => this.data.courtById(this.match().courtId ?? ''));

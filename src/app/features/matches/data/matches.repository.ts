@@ -29,6 +29,7 @@ interface MatchRow {
   cancelled_by: string | null;
   confirmed_at: string | null;
   created_at: string;
+  match_participants?: { player_id: string }[] | null;
 }
 
 export interface CreateMatchInput {
@@ -47,6 +48,9 @@ export interface CreateMatchInput {
 
 const SELECT_COLUMNS =
   'id,kind,status,player_a,player_b,format,session_type,court_id,city,country,radius_km,match_date,match_time,match_time_end,duration_minutes,note,winner,sets,cancelled_by,confirmed_at,created_at';
+// Embeds the doubles roster (see 0021_doubles_matches.sql) — Supabase follows the FK
+// automatically and enforces match_participants' own RLS on the embedded rows.
+const SELECT_COLUMNS_WITH_PARTICIPANTS = `${SELECT_COLUMNS},match_participants(player_id)`;
 
 /** Data-access boundary for real matches (see supabase/migrations/0018_matches.sql). */
 @Injectable({ providedIn: 'root' })
@@ -68,6 +72,17 @@ export class MatchesRepository {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, payload => {
         const row = (payload.new ?? payload.old) as MatchRow;
         onChange(this.toMatch(row));
+      })
+      // A doubles join/leave that doesn't fill the roster never touches the matches row itself
+      // (only the 4th join does, via the status flip) — re-fetch the full match (with its
+      // embedded roster) so 2nd/3rd-join updates still reach other viewers live.
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'match_participants' }, payload => {
+        const row = (payload.new ?? payload.old) as { match_id: string };
+        void this.getById(row.match_id).then(match => {
+          if (match) {
+            onChange(match);
+          }
+        });
       })
       .subscribe();
   }
@@ -110,10 +125,19 @@ export class MatchesRepository {
     if (!uid) {
       return [];
     }
+    // A doubles match joined as the 2nd-4th player has neither player_a nor player_b equal to
+    // me, so it's invisible to the plain player_a/player_b OR below — fold in match ids from
+    // match_participants too.
+    const { data: participantRows } = await supabase.from('match_participants').select('match_id').eq('player_id', uid);
+    const orParts = [`player_a.eq.${uid}`, `player_b.eq.${uid}`];
+    const participantMatchIds = (participantRows ?? []).map(r => r.match_id as string);
+    if (participantMatchIds.length > 0) {
+      orParts.push(`id.in.(${participantMatchIds.join(',')})`);
+    }
     const { data, error } = await supabase
       .from('matches')
-      .select(SELECT_COLUMNS)
-      .or(`player_a.eq.${uid},player_b.eq.${uid}`)
+      .select(SELECT_COLUMNS_WITH_PARTICIPANTS)
+      .or(orParts.join(','))
       .order('match_date', { ascending: true });
     if (error || !data) {
       console.error('Failed to load matches:', error?.message);
@@ -124,7 +148,12 @@ export class MatchesRepository {
 
   /** Open matches still waiting for a taker, near this location. */
   async openMatchesNear(country: string, city?: string): Promise<Match[]> {
-    let query = supabase.from('matches').select(SELECT_COLUMNS).eq('kind', 'open').eq('status', 'open').eq('country', country);
+    let query = supabase
+      .from('matches')
+      .select(SELECT_COLUMNS_WITH_PARTICIPANTS)
+      .eq('kind', 'open')
+      .eq('status', 'open')
+      .eq('country', country);
     if (city) {
       query = query.eq('city', city);
     }
@@ -140,7 +169,7 @@ export class MatchesRepository {
   async allOpenMatches(): Promise<Match[]> {
     const { data, error } = await supabase
       .from('matches')
-      .select(SELECT_COLUMNS)
+      .select(SELECT_COLUMNS_WITH_PARTICIPANTS)
       .eq('kind', 'open')
       .eq('status', 'open')
       .order('match_date', { ascending: true });
@@ -152,7 +181,7 @@ export class MatchesRepository {
   }
 
   async getById(id: string): Promise<Match | null> {
-    const { data, error } = await supabase.from('matches').select(SELECT_COLUMNS).eq('id', id).maybeSingle();
+    const { data, error } = await supabase.from('matches').select(SELECT_COLUMNS_WITH_PARTICIPANTS).eq('id', id).maybeSingle();
     if (error || !data) {
       if (error) {
         console.error('Failed to load match:', error.message);
@@ -167,7 +196,7 @@ export class MatchesRepository {
     if (ids.length === 0) {
       return [];
     }
-    const { data, error } = await supabase.from('matches').select(SELECT_COLUMNS).in('id', ids);
+    const { data, error } = await supabase.from('matches').select(SELECT_COLUMNS_WITH_PARTICIPANTS).in('id', ids);
     if (error || !data) {
       console.error('Failed to load matches by id:', error?.message);
       return [];
@@ -264,6 +293,12 @@ export class MatchesRepository {
       return null;
     }
     const matchId = data.id as string;
+    if (input.format === 'Doubles') {
+      const { error: participantError } = await supabase.from('match_participants').insert({ match_id: matchId, player_id: uid });
+      if (participantError) {
+        console.error('Failed to seed the creator as a doubles participant:', participantError.message);
+      }
+    }
     try {
       const nearbyIds = this.players
         .getAll()
@@ -321,6 +356,45 @@ export class MatchesRepository {
       console.error('Failed to notify the match poster:', err);
     }
     return this.toMatch(row);
+  }
+
+  /** Joins an open doubles match's roster. Null means it's full/gone/already joined, or the request failed. */
+  async joinDoublesMatch(matchId: string): Promise<Match | null> {
+    const { data, error } = await supabase.rpc('join_doubles_match', { p_match_id: matchId });
+    if (error || !data) {
+      console.error('Failed to join doubles match:', error?.message);
+      return null;
+    }
+    // Re-fetch rather than converting the RPC's raw row directly, so the returned Match carries
+    // the up-to-date embedded roster (the RPC's return type has no match_participants join).
+    const match = await this.getById(matchId);
+    if (match) {
+      try {
+        await this.notifications.notify(match.playerA, 'match_joined', {
+          matchId: match.id,
+          city: match.city,
+          matchDate: match.matchDate,
+          matchTime: match.matchTime
+        });
+      } catch (err) {
+        console.error('Failed to notify the match creator:', err);
+      }
+    }
+    return match;
+  }
+
+  /** Leaves a doubles roster before it fills (see the match_participants RLS delete policy). */
+  async leaveDoublesMatch(matchId: string): Promise<Match | null> {
+    const uid = this.auth.currentUserId();
+    if (!uid) {
+      return null;
+    }
+    const { error } = await supabase.from('match_participants').delete().eq('match_id', matchId).eq('player_id', uid);
+    if (error) {
+      console.error('Failed to leave doubles match:', error.message);
+      return null;
+    }
+    return this.getById(matchId);
   }
 
   /** Withdraws a pending/open match (creator only) or cancels a confirmed one (either participant). */
@@ -382,6 +456,7 @@ export class MatchesRepository {
       sessionType: row.session_type ?? undefined,
       playerA: row.player_a,
       playerB: row.player_b ?? undefined,
+      participantIds: row.format === 'Doubles' ? (row.match_participants ?? []).map(p => p.player_id) : undefined,
       note: row.note ?? undefined,
       durationMinutes: row.duration_minutes ?? undefined,
       sets: row.sets ?? undefined,

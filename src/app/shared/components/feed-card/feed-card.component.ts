@@ -54,12 +54,15 @@ export class FeedCardComponent {
   );
 
   // Only shown to players who could realistically join — same location-level match as the
-  // Matches page's own "open near me" list, not restricted to the exact same city.
+  // Matches page's own "open near me" list, not restricted to the exact same city. Doubles
+  // matches aren't joinable from the feed yet — see the roster count + "view match" link instead,
+  // which sends interested players to /matches/:id to actually join.
   protected readonly canJoin = computed(
     () =>
       !this.auth.isObserver() &&
       !this.isOwnPost() &&
       this.post().match?.status === 'open' &&
+      this.post().match?.format !== 'Doubles' &&
       this.auth.currentPlayer().country === this.post().match?.country
   );
 

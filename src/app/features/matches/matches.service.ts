@@ -10,6 +10,7 @@ import { CreateMatchInput, MatchesRepository } from './data/matches.repository';
 export const SESSION_TYPES: SessionType[] = ['FullMatch', 'Training', 'HittingSession', 'PracticeMatch'];
 export const DURATION_OPTIONS = [30, 60, 90, 120];
 export const RADIUS_OPTIONS = [5, 10, 20, 50];
+export const DOUBLES_CAPACITY = 4;
 
 @Injectable({ providedIn: 'root' })
 export class MatchesService {
@@ -64,6 +65,7 @@ export class MatchesService {
   readonly sessionTypes = SESSION_TYPES;
   readonly durationOptions = DURATION_OPTIONS;
   readonly radiusOptions = RADIUS_OPTIONS;
+  readonly doublesCapacity = DOUBLES_CAPACITY;
 
   readonly composerSessionType = signal<SessionType>('FullMatch');
   // Court selection isn't wired up yet (courts are still mock) — radius mode is the only real
@@ -198,7 +200,7 @@ export class MatchesService {
   private handleRealtimeMatch(match: Match): void {
     this.lastRealtimeMatch.set(match);
     const me = this.auth.currentPlayer();
-    const isMine = match.playerA === this.myId() || match.playerB === this.myId();
+    const isMine = match.playerA === this.myId() || match.playerB === this.myId() || !!match.participantIds?.includes(this.myId() ?? '');
     const isRelevantOpen = match.kind === 'open' && (this.openScope() === 'world' || match.country === me.country);
     if (isMine || isRelevantOpen) {
       void this.reload();
@@ -285,9 +287,6 @@ export class MatchesService {
     if (!input) {
       return;
     }
-    // Doubles isn't offered as a choice yet — it needs real 4-player modelling first, see the
-    // disabled "Doubles" chip in the composer template.
-    input.format = 'Singles';
     this.publishing.set(true);
     const matchId = await this.repository.createOpenMatch(input);
     this.publishing.set(false);
@@ -307,6 +306,38 @@ export class MatchesService {
     const result = await this.repository.acceptOpenMatch(matchId);
     if (!result) {
       this.toast.error(this.translation.t('matches.joinFailed'));
+    }
+    void this.reload();
+  }
+
+  // Roster helpers for doubles matches — participantIds is only ever populated for format
+  // 'Doubles' (see MatchesRepository.toMatch()); Singles matches render through playerA/playerB
+  // as before and never call these.
+  participantsFor(match: Match) {
+    return (match.participantIds ?? []).map(id => this.playerById(id));
+  }
+
+  emptyDoublesSlots(match: Match): number[] {
+    const filled = match.participantIds?.length ?? 0;
+    return Array.from({ length: Math.max(0, this.doublesCapacity - filled) }, (_, i) => i);
+  }
+
+  hasJoined(match: Match): boolean {
+    return !!match.participantIds?.includes(this.myId() ?? '');
+  }
+
+  async joinDoublesMatch(matchId: string): Promise<void> {
+    const result = await this.repository.joinDoublesMatch(matchId);
+    if (!result) {
+      this.toast.error(this.translation.t('matches.joinFailed'));
+    }
+    void this.reload();
+  }
+
+  async leaveDoublesMatch(matchId: string): Promise<void> {
+    const result = await this.repository.leaveDoublesMatch(matchId);
+    if (!result) {
+      this.toast.error(this.translation.t('matches.leaveFailed'));
     }
     void this.reload();
   }

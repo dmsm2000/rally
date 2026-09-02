@@ -132,6 +132,8 @@ export const en = {
     findGame: 'Find a game',
     resultsEyebrow: 'Results',
     played: 'Played',
+    playedEmptyTitle: 'No matches played',
+    playedEmptyBody: 'Finished matches will show up here once you play one.',
     notFound: 'Match not found.',
     backToMatches: 'Back to matches',
     matchComplete: 'Match complete',
@@ -176,6 +178,9 @@ export const en = {
     cancelMatch: 'Cancel match',
     withdraw: 'Withdraw',
     openSlot: 'Open slot',
+    doublesRoster: '{count}/4 registered',
+    alreadyJoined: "You're in",
+    leaveMatch: 'Leave',
     inviteTitle: 'Invite to a match',
     sendInvite: 'Send invite',
     sendingInvite: 'Sending…',
@@ -188,7 +193,8 @@ export const en = {
     respondFailed: "Couldn't respond to the invite. Please try again.",
     cancelFailed: "Couldn't cancel the match. Please try again.",
     completeFailed: "Couldn't save the result. Please try again.",
-    deleteFailed: "Couldn't delete the match. Please try again."
+    deleteFailed: "Couldn't delete the match. Please try again.",
+    leaveFailed: "Couldn't leave the match. Please try again."
   },
   messages: {
     title: 'Messages',
@@ -338,7 +344,8 @@ export const en = {
       join: 'I want to play',
       matched: 'Already matched',
       youJoined: 'You joined this match',
-      cancelled: 'Cancelled'
+      cancelled: 'Cancelled',
+      viewMatch: 'View match'
     },
     emptyTitle: 'Nothing here yet',
     emptyBody: 'Be the first person to play here!'

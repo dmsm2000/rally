@@ -134,6 +134,8 @@ export const es = {
     findGame: 'Buscar partido',
     resultsEyebrow: 'Resultados',
     played: 'Jugados',
+    playedEmptyTitle: 'Sin partidos jugados',
+    playedEmptyBody: 'Los partidos terminados aparecerán aquí en cuanto juegues uno.',
     notFound: 'Partido no encontrado.',
     backToMatches: 'Volver a partidos',
     matchComplete: 'Partido finalizado',
@@ -178,6 +180,9 @@ export const es = {
     cancelMatch: 'Cancelar partido',
     withdraw: 'Retirar publicación',
     openSlot: 'Plaza abierta',
+    doublesRoster: '{count}/4 inscritos',
+    alreadyJoined: 'Estás inscrito',
+    leaveMatch: 'Salir',
     inviteTitle: 'Invitar a un partido',
     sendInvite: 'Enviar invitación',
     sendingInvite: 'Enviando…',
@@ -190,7 +195,8 @@ export const es = {
     respondFailed: 'No se pudo responder a la invitación. Inténtalo de nuevo.',
     cancelFailed: 'No se pudo cancelar el partido. Inténtalo de nuevo.',
     completeFailed: 'No se pudo guardar el resultado. Inténtalo de nuevo.',
-    deleteFailed: 'No se pudo eliminar el partido. Inténtalo de nuevo.'
+    deleteFailed: 'No se pudo eliminar el partido. Inténtalo de nuevo.',
+    leaveFailed: 'No se pudo salir del partido. Inténtalo de nuevo.'
   },
   messages: {
     title: 'Mensajes',
@@ -339,7 +345,8 @@ export const es = {
       join: 'Quiero jugar',
       matched: 'Ya tiene rival',
       youJoined: 'Te uniste a este partido',
-      cancelled: 'Cancelado'
+      cancelled: 'Cancelado',
+      viewMatch: 'Ver partido'
     },
     emptyTitle: 'Todavía no hay nada aquí',
     emptyBody: '¡Sé la primera persona en jugar aquí!'

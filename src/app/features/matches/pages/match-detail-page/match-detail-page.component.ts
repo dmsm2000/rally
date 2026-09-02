@@ -41,6 +41,9 @@ export class MatchDetailPageComponent {
   protected readonly loading = computed(() => this.matchRaw() === undefined);
   protected readonly playerA = computed(() => this.match() && this.matches.playerById(this.match()!.playerA));
   protected readonly playerB = computed(() => this.match() && this.matches.playerById(this.match()!.playerB));
+  // Doubles roster — see MatchesService.participantsFor(). Empty for Singles matches.
+  protected readonly participants = computed(() => (this.match() ? this.matches.participantsFor(this.match()!) : []));
+  protected readonly emptyDoublesSlots = computed(() => (this.match() ? this.matches.emptyDoublesSlots(this.match()!) : []));
   // Own profile has no /players/:id entry — route there instead when a slot is me.
   protected readonly playerALink = computed(() =>
     this.match()?.playerA === this.myId() ? '/profile' : `/players/${this.match()?.playerA}`
@@ -57,7 +60,7 @@ export class MatchDetailPageComponent {
   protected readonly myId = this.auth.currentUserId;
   protected readonly isParticipant = computed(() => {
     const m = this.match();
-    return !!m && (m.playerA === this.myId() || m.playerB === this.myId());
+    return !!m && (m.playerA === this.myId() || m.playerB === this.myId() || !!m.participantIds?.includes(this.myId() ?? ''));
   });
   protected readonly canRespond = computed(() => this.match()?.status === 'pending' && this.match()?.playerB === this.myId());
   protected readonly canCancel = computed(() => {
@@ -69,6 +72,18 @@ export class MatchDetailPageComponent {
       return m.playerA === this.myId();
     }
     return m.status === 'upcoming' && this.isParticipant();
+  });
+  // Roster still open, not full, not already in it, not the creator (who withdraws the whole
+  // listing via canCancel instead) — mirrors MatchesService.hasJoined()/emptyDoublesSlots().
+  protected readonly canJoinDoubles = computed(() => {
+    const m = this.match();
+    return (
+      !!m && m.format === 'Doubles' && m.status === 'open' && !this.auth.isObserver() && !this.isParticipant() && this.emptyDoublesSlots().length > 0
+    );
+  });
+  protected readonly canLeaveDoubles = computed(() => {
+    const m = this.match();
+    return !!m && m.format === 'Doubles' && m.status === 'open' && m.playerA !== this.myId() && this.isParticipant();
   });
 
   constructor() {
@@ -106,6 +121,30 @@ export class MatchDetailPageComponent {
     }
     await this.matches.cancelMatch(id);
     void this.load(id);
+  }
+
+  protected async joinDoubles(): Promise<void> {
+    const id = this.match()?.id;
+    if (!id) {
+      return;
+    }
+    await this.matches.joinDoublesMatch(id);
+    void this.load(id);
+  }
+
+  protected async leaveDoubles(): Promise<void> {
+    const id = this.match()?.id;
+    if (!id) {
+      return;
+    }
+    await this.matches.leaveDoublesMatch(id);
+    void this.load(id);
+  }
+
+  // Own profile has no /players/:id entry — route there instead when a roster slot is me (mirrors
+  // playerALink/playerBLink above).
+  protected participantLink(id: string | undefined): string {
+    return id === this.myId() ? '/profile' : `/players/${id}`;
   }
 
   protected genderClass(gender: string | undefined): string {

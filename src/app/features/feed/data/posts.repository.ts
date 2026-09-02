@@ -344,7 +344,8 @@ export class PostsRepository {
               durationMinutes: match.durationMinutes,
               note: match.note,
               playerB: match.playerB,
-              joinedByMe: !!uid && match.playerB === uid
+              joinedByMe: !!uid && match.playerB === uid,
+              participantCount: match.format === 'Doubles' ? (match.participantIds?.length ?? 1) : undefined
             }
           : null,
         createdAt: row.created_at,

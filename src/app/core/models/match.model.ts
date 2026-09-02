@@ -26,6 +26,8 @@ export interface Match {
   sessionType?: SessionType;
   playerA: string;
   playerB?: string;
+  /** Full joined roster, in join order, including playerA. Only populated for format 'Doubles'. */
+  participantIds?: string[];
   note?: string;
   durationMinutes?: number;
   sets?: [number, number][];

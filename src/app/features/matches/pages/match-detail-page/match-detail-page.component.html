@@ -13,62 +13,89 @@
         </span>
       </div>
 
-      <div class="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-        <a [routerLink]="playerALink()" class="block text-center">
-          <ui-avatar
-            [initials]="playerA()?.initials ?? ''"
-            [accent]="playerA()?.accent ?? 'ink'"
-            [seed]="playerA()?.avatarSeed"
-            [avatarStyle]="playerA()?.avatarStyle"
-            [badgeClass]="genderClass(playerA()?.gender)"
-            [badgeIcon]="genderIcon(playerA()?.gender)"
-            size="lg"
-            class="mx-auto"
-          />
-          <p class="text-display mt-3 text-lg hover:underline sm:text-2xl">{{ playerA()?.name }}</p>
-          <p class="text-xs text-bone/60">{{ playerA()?.flag }} {{ playerA()?.city }}</p>
-        </a>
-        <div class="text-center">
-          @if (m.sets) {
-            <div class="flex gap-2">
-              @for (s of m.sets; track $index) {
-                <div class="rounded-xl border border-bone/20 px-3 py-2">
-                  <p class="text-stat text-2xl sm:text-4xl">{{ s[0] }}</p>
-                  <p class="text-stat mt-1 text-2xl text-bone/50 sm:text-4xl">{{ s[1] }}</p>
-                </div>
-              }
-            </div>
-          } @else if (playerB()) {
-            <p class="text-display text-3xl text-lime">{{ 'matches.vs' | translate }}</p>
-          } @else {
-            <p class="text-display text-3xl text-bone/40">?</p>
-          }
-        </div>
-        <div class="text-center">
-          @if (playerB(); as pB) {
-            <a [routerLink]="playerBLink()" class="block text-center">
+      @if (m.format === 'Doubles') {
+        <div class="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
+          @for (p of participants(); track p?.id) {
+            <a [routerLink]="participantLink(p?.id)" class="block text-center">
               <ui-avatar
-                [initials]="pB.initials"
-                [accent]="pB.accent"
-                [seed]="pB.avatarSeed"
-                [avatarStyle]="pB.avatarStyle"
-                [badgeClass]="genderClass(pB.gender)"
-                [badgeIcon]="genderIcon(pB.gender)"
+                [initials]="p?.initials ?? ''"
+                [accent]="p?.accent ?? 'ink'"
+                [seed]="p?.avatarSeed"
+                [avatarStyle]="p?.avatarStyle"
+                [badgeClass]="genderClass(p?.gender)"
+                [badgeIcon]="genderIcon(p?.gender)"
                 size="lg"
                 class="mx-auto"
               />
-              <p class="text-display mt-3 text-lg hover:underline sm:text-2xl">{{ pB.name }}</p>
-              <p class="text-xs text-bone/60">{{ pB.flag }} {{ pB.city }}</p>
+              <p class="text-display mt-3 text-sm hover:underline sm:text-lg">{{ p?.name }}</p>
+              <p class="text-xs text-bone/60">{{ p?.flag }} {{ p?.city }}</p>
             </a>
-          } @else {
-            <div class="mx-auto flex size-16 items-center justify-center rounded-full border border-dashed border-bone/30 text-bone/40">?</div>
-            <p class="text-display mt-3 text-lg text-bone/40 sm:text-2xl">{{ 'matches.openSlot' | translate }}</p>
+          }
+          @for (slot of emptyDoublesSlots(); track slot) {
+            <div class="text-center">
+              <div class="mx-auto flex size-16 items-center justify-center rounded-full border border-dashed border-bone/30 text-bone/40">?</div>
+              <p class="text-display mt-3 text-sm text-bone/40 sm:text-lg">{{ 'matches.openSlot' | translate }}</p>
+            </div>
           }
         </div>
-      </div>
+      } @else {
+        <div class="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+          <a [routerLink]="playerALink()" class="block text-center">
+            <ui-avatar
+              [initials]="playerA()?.initials ?? ''"
+              [accent]="playerA()?.accent ?? 'ink'"
+              [seed]="playerA()?.avatarSeed"
+              [avatarStyle]="playerA()?.avatarStyle"
+              [badgeClass]="genderClass(playerA()?.gender)"
+              [badgeIcon]="genderIcon(playerA()?.gender)"
+              size="lg"
+              class="mx-auto"
+            />
+            <p class="text-display mt-3 text-lg hover:underline sm:text-2xl">{{ playerA()?.name }}</p>
+            <p class="text-xs text-bone/60">{{ playerA()?.flag }} {{ playerA()?.city }}</p>
+          </a>
+          <div class="text-center">
+            @if (m.sets) {
+              <div class="flex gap-2">
+                @for (s of m.sets; track $index) {
+                  <div class="rounded-xl border border-bone/20 px-3 py-2">
+                    <p class="text-stat text-2xl sm:text-4xl">{{ s[0] }}</p>
+                    <p class="text-stat mt-1 text-2xl text-bone/50 sm:text-4xl">{{ s[1] }}</p>
+                  </div>
+                }
+              </div>
+            } @else if (playerB()) {
+              <p class="text-display text-3xl text-lime">{{ 'matches.vs' | translate }}</p>
+            } @else {
+              <p class="text-display text-3xl text-bone/40">?</p>
+            }
+          </div>
+          <div class="text-center">
+            @if (playerB(); as pB) {
+              <a [routerLink]="playerBLink()" class="block text-center">
+                <ui-avatar
+                  [initials]="pB.initials"
+                  [accent]="pB.accent"
+                  [seed]="pB.avatarSeed"
+                  [avatarStyle]="pB.avatarStyle"
+                  [badgeClass]="genderClass(pB.gender)"
+                  [badgeIcon]="genderIcon(pB.gender)"
+                  size="lg"
+                  class="mx-auto"
+                />
+                <p class="text-display mt-3 text-lg hover:underline sm:text-2xl">{{ pB.name }}</p>
+                <p class="text-xs text-bone/60">{{ pB.flag }} {{ pB.city }}</p>
+              </a>
+            } @else {
+              <div class="mx-auto flex size-16 items-center justify-center rounded-full border border-dashed border-bone/30 text-bone/40">?</div>
+              <p class="text-display mt-3 text-lg text-bone/40 sm:text-2xl">{{ 'matches.openSlot' | translate }}</p>
+            }
+          </div>
+        </div>
 
-      @if (done() && isFullMatch()) {
-        <p class="text-display mt-8 text-center text-2xl text-lime sm:text-4xl">{{ aWon() ? playerA()?.name : playerB()?.name }} {{ 'matches.winsSuffix' | translate }}</p>
+        @if (done() && isFullMatch()) {
+          <p class="text-display mt-8 text-center text-2xl text-lime sm:text-4xl">{{ aWon() ? playerA()?.name : playerB()?.name }} {{ 'matches.winsSuffix' | translate }}</p>
+        }
       }
 
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3 border-t border-bone/15 pt-6 text-sm text-bone/70">
@@ -100,6 +127,18 @@
         <div class="mt-6 flex justify-center border-t border-bone/15 pt-6">
           <button type="button" (click)="cancel()" class="cursor-pointer rounded-full border border-bone/30 px-6 py-3 text-xs font-extrabold tracking-wide text-bone uppercase hover:bg-bone/10">
             {{ 'matches.cancelMatch' | translate }}
+          </button>
+        </div>
+      } @else if (canJoinDoubles()) {
+        <div class="mt-6 flex justify-center border-t border-bone/15 pt-6">
+          <button type="button" (click)="joinDoubles()" class="cursor-pointer rounded-full bg-lime px-6 py-3 text-xs font-extrabold tracking-wide text-ink uppercase">
+            {{ 'matches.joinMatch' | translate }}
+          </button>
+        </div>
+      } @else if (canLeaveDoubles()) {
+        <div class="mt-6 flex justify-center border-t border-bone/15 pt-6">
+          <button type="button" (click)="leaveDoubles()" class="cursor-pointer rounded-full border border-bone/30 px-6 py-3 text-xs font-extrabold tracking-wide text-bone uppercase hover:bg-bone/10">
+            {{ 'matches.leaveMatch' | translate }}
           </button>
         </div>
       }
