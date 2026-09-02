@@ -5,6 +5,7 @@ import { TranslationService } from '../../../core/i18n/translation.service';
 import { TripIntent } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { MessagesService } from '../../messages/messages.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 
 interface TripIntentRow {
   id: string;
@@ -24,6 +25,7 @@ const UNIQUE_VIOLATION = '23505';
 export class TripsRepository {
   private readonly auth = inject(AuthService);
   private readonly messages = inject(MessagesService);
+  private readonly notifications = inject(NotificationsService);
   private readonly toast = inject(ToastService);
   private readonly translation = inject(TranslationService);
 
@@ -173,6 +175,17 @@ export class TripsRepository {
     } catch (err) {
       console.error('Failed to message the traveller:', err);
     }
+
+    try {
+      await this.notifications.notify(trip.playerId, 'trip_host_volunteered', {
+        city: trip.destinationCity,
+        fromDate: trip.fromDate,
+        toDate: trip.toDate
+      });
+    } catch (err) {
+      console.error('Failed to notify the traveller:', err);
+    }
+
     return true;
   }
 

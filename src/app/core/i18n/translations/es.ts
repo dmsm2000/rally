@@ -181,7 +181,13 @@ export const es = {
   notifications: {
     title: 'Notificaciones',
     empty: 'Todavía no hay notificaciones',
-    markAllRead: 'Marcar todo como leído'
+    markAllRead: 'Marcar todo como leído',
+    kinds: {
+      tripHostVolunteered: {
+        text: '{name} se ofreció a enseñarte {city}',
+        detail: '{fromDate} – {toDate}'
+      }
+    }
   },
   world: {
     eyebrow: 'Mundo / Comunidad',

@@ -179,7 +179,13 @@ export const en = {
   notifications: {
     title: 'Notifications',
     empty: 'No notifications yet',
-    markAllRead: 'Mark all as read'
+    markAllRead: 'Mark all as read',
+    kinds: {
+      tripHostVolunteered: {
+        text: '{name} offered to host you in {city}',
+        detail: '{fromDate} – {toDate}'
+      }
+    }
   },
   world: {
     eyebrow: 'World / Community',

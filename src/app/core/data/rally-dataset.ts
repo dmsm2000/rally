@@ -1,6 +1,5 @@
 import {
   Achievement,
-  AppNotification,
   CommunityStats,
   CountryEntry,
   Court,
@@ -639,46 +638,4 @@ export const PLAYER_INTENTS: PlayerIntent[] = [
   { id: 'pi3', playerId: 'yuki', text: "I'd love to discover a new city to play in soon.", time: '1h ago' },
   { id: 'pi4', playerId: 'pedro', text: 'Free tomorrow morning for a set or two?', time: '2h ago' },
   { id: 'pi5', playerId: 'ana', text: 'Doubles this weekend? Need one more player.', time: '4h ago' }
-];
-
-export const NOTIFICATIONS: AppNotification[] = [
-  {
-    id: 'n1',
-    kind: 'message',
-    text: 'Maria Costa sent you a message',
-    detail: 'Bring an extra can of balls just in case 🎾',
-    time: 'Just now',
-    read: false,
-    link: '/messages/maria',
-    playerId: 'maria'
-  },
-  {
-    id: 'n2',
-    kind: 'trip',
-    text: 'Ana Ferreira wants to play in Barcelona',
-    detail: 'Thinking of a Barcelona trip next month, you in?',
-    time: '2 days ago',
-    read: false,
-    link: '/messages/ana',
-    playerId: 'ana'
-  },
-  {
-    id: 'n3',
-    kind: 'match',
-    text: 'Pedro Almeida accepted your open match',
-    detail: 'Foz Seaside Courts · Sat 5 Sep 09:30',
-    time: 'Yesterday',
-    read: true,
-    link: '/matches/m2',
-    playerId: 'pedro'
-  },
-  {
-    id: 'n4',
-    kind: 'achievement',
-    text: 'Achievement unlocked: Five Countries',
-    detail: "You've now played in five different countries.",
-    time: '3 days ago',
-    read: true,
-    link: '/passport'
-  }
 ];

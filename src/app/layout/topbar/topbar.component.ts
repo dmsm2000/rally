@@ -5,7 +5,8 @@ import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { AvatarComponent } from '../../shared/ui';
-import { LanguageSwitcherComponent, ThemeToggleComponent, NotificationsBellComponent } from '../../shared/components';
+import { LanguageSwitcherComponent, ThemeToggleComponent } from '../../shared/components';
+import { NotificationsBellComponent } from '../../features/notifications/notifications-bell/notifications-bell.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { NAV_ITEMS, NavItem, isNavItemActive } from '../nav-items';
 

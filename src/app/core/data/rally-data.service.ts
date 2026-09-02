@@ -17,7 +17,6 @@ import {
   LEVELS,
   MATCHES,
   ME,
-  NOTIFICATIONS,
   PLAYERS,
   SURFACES,
   WORLD_ACTIVITY
@@ -46,7 +45,6 @@ export class RallyDataService {
   private readonly _countries = signal(COUNTRIES);
   private readonly _destinations = signal(DESTINATIONS);
   private readonly _worldActivity = signal(WORLD_ACTIVITY);
-  private readonly _notifications = signal(NOTIFICATIONS);
 
   readonly me = this._me.asReadonly();
   readonly players = this._players.asReadonly();
@@ -56,7 +54,6 @@ export class RallyDataService {
   readonly countries = this._countries.asReadonly();
   readonly destinations = this._destinations.asReadonly();
   readonly worldActivity = this._worldActivity.asReadonly();
-  readonly notifications = this._notifications.asReadonly();
 
   readonly levels = LEVELS;
   readonly surfaces = SURFACES;
@@ -171,13 +168,5 @@ export class RallyDataService {
     this._matches.update(list =>
       list.map(m => (m.id === matchId ? { ...m, status: 'upcoming', playerB: this._me().id } : m))
     );
-  }
-
-  markNotificationRead(id: string): void {
-    this._notifications.update(list => list.map(n => (n.id === id ? { ...n, read: true } : n)));
-  }
-
-  markAllNotificationsRead(): void {
-    this._notifications.update(list => list.map(n => ({ ...n, read: true })));
   }
 }

@@ -138,12 +138,12 @@ The Feed is user-authored posts, kept deliberately simple — Twitter-like, not 
 - Direct messaging between two registered players, delivered live (Supabase Realtime), with a real typing indicator and per-participant read state.
 - Trip intents ("show me around"): publishing a trip, browsing host requests for your own country, volunteering (which sends a real message to the traveller, without hiding the post), and managing your own trips from your profile.
 - The Feed: user-authored posts (text and/or one photo/video), scoped to your city, your country, or the world; a single like reaction; and a "Reply" that opens a real DM to the author rather than a public comment. Not yet auto-posted to by courts/matches/notifications — deliberately deferred until those are themselves real.
+- Notifications: a real, generic notifications system delivered live. The first kind is "someone volunteered to host you" — volunteering to host a traveller (see above) sends them both a real DM and a real notification. Other kinds (messages, matches, achievements, ...) will reuse the same generic system once those features are themselves real — see "Still mock today".
 
 ### Still mock today
 
 - Courts and court activity.
 - Match scheduling/results/history.
-- Notifications.
 - Passport countries, courts, achievements, and player connections.
 - World community map/activity feed and stats.
 - Match compatibility, score, and geographic distance.

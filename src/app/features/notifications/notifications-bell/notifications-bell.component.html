@@ -4,7 +4,7 @@
     (click)="toggle()"
     [attr.aria-label]="'nav.notifications' | translate"
     [attr.aria-expanded]="open()"
-    class="relative flex size-9 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-base hover:border-foreground"
+    class="relative flex size-10 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-base hover:border-foreground"
   >
     🔔
     @if (notifications.unreadCount() > 0) {
@@ -23,13 +23,13 @@
       <div class="max-h-96 overflow-y-auto">
         @for (n of notifications.all(); track n.id) {
           <button type="button" (click)="select(n)" class="flex w-full items-start gap-3 border-b border-border px-4 py-3 text-left transition-colors last:border-0 hover:bg-muted">
-            <span class="text-lg">{{ kindIcon[n.kind] }}</span>
+            <span class="text-lg">{{ icon(n) }}</span>
             <div class="min-w-0 flex-1">
-              <p class="text-sm" [class.font-bold]="!n.read" [class.text-muted-foreground]="n.read">{{ n.text }}</p>
-              @if (n.detail) {
-                <p class="mt-0.5 truncate text-xs text-muted-foreground">{{ n.detail }}</p>
+              <p class="text-sm" [class.font-bold]="!n.read" [class.text-muted-foreground]="n.read">{{ textKey(n) | translate: params(n) }}</p>
+              @if (detailKey(n); as key) {
+                <p class="mt-0.5 truncate text-xs text-muted-foreground">{{ key | translate: params(n) }}</p>
               }
-              <p class="mt-1 text-[10px] text-muted-foreground">{{ n.time }}</p>
+              <p class="mt-1 text-[10px] text-muted-foreground">{{ timeAgo(n) }}</p>
             </div>
             @if (!n.read) {
               <span class="mt-1.5 size-2 shrink-0 rounded-full bg-lime"></span>

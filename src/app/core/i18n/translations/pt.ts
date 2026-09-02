@@ -181,7 +181,13 @@ export const pt = {
   notifications: {
     title: 'Notificações',
     empty: 'Ainda não há notificações',
-    markAllRead: 'Marcar tudo como lido'
+    markAllRead: 'Marcar tudo como lido',
+    kinds: {
+      tripHostVolunteered: {
+        text: '{name} ofereceu-se para te mostrar {city}',
+        detail: '{fromDate} – {toDate}'
+      }
+    }
   },
   world: {
     eyebrow: 'Mundo / Comunidade',
