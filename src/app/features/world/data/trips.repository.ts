@@ -87,25 +87,60 @@ export class TripsRepository {
     return new Set(data.map(row => row.trip_intent_id as string));
   }
 
-  async publish(input: { destinationCountry: string; destinationCity: string; fromDate: string; toDate: string; note: string }): Promise<boolean> {
+  /** Returns the new trip's id (used to link its announcement post — see WorldService.publishTripIntent), or null on failure. */
+  async publish(input: { destinationCountry: string; destinationCity: string; fromDate: string; toDate: string; note: string }): Promise<string | null> {
     const uid = this.auth.currentUserId();
     if (!uid) {
-      return false;
+      return null;
     }
-    const { error } = await supabase.from('trip_intents').insert({
-      player_id: uid,
-      destination_country: input.destinationCountry,
-      destination_city: input.destinationCity,
-      from_date: input.fromDate,
-      to_date: input.toDate,
-      note: input.note
-    });
-    if (error) {
-      console.error('Failed to publish trip intent:', error.message);
+    const { data, error } = await supabase
+      .from('trip_intents')
+      .insert({
+        player_id: uid,
+        destination_country: input.destinationCountry,
+        destination_city: input.destinationCity,
+        from_date: input.fromDate,
+        to_date: input.toDate,
+        note: input.note
+      })
+      .select('id')
+      .single();
+    if (error || !data) {
+      console.error('Failed to publish trip intent:', error?.message);
       this.toast.error(this.translation.t('world.tripPublishFailed'));
-      return false;
+      return null;
     }
-    return true;
+    return data.id as string;
+  }
+
+  /** Trip intents by id, for hydrating the feed's trip-announcement posts — see PostsRepository.hydrate(). */
+  async getByIds(ids: string[]): Promise<TripIntent[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const { data, error } = await supabase
+      .from('trip_intents')
+      .select('id,player_id,destination_country,destination_city,from_date,to_date,note,created_at')
+      .in('id', ids);
+    if (error || !data) {
+      console.error('Failed to load trip intents by id:', error?.message);
+      return [];
+    }
+    return (data as TripIntentRow[]).map(row => this.toTripIntent(row));
+  }
+
+  /** Trip intent ids whose destination matches this scope — powers the feed's destination-based visibility (see PostsRepository.list()). */
+  async idsForDestination(destinationCountry: string, destinationCity?: string): Promise<string[]> {
+    let query = supabase.from('trip_intents').select('id').eq('destination_country', destinationCountry);
+    if (destinationCity) {
+      query = query.eq('destination_city', destinationCity);
+    }
+    const { data, error } = await query;
+    if (error || !data) {
+      console.error('Failed to load trip intents for destination:', error?.message);
+      return [];
+    }
+    return data.map(row => row.id as string);
   }
 
   /**

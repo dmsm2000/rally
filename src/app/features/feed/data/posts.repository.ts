@@ -4,6 +4,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { supabase } from '../../../core/auth/supabase.client';
 import { Post, PostType } from '../../../core/models';
 import { PlayersRepository } from '../../players/data/players.repository';
+import { TripsRepository } from '../../world/data/trips.repository';
 
 export type FeedScope = 'city' | 'country' | 'world';
 
@@ -17,6 +18,7 @@ interface PostRow {
   media_url: string | null;
   media_type: 'image' | 'video' | null;
   type: PostType | null;
+  trip_intent_id: string | null;
   created_at: string;
 }
 
@@ -33,11 +35,12 @@ export interface PostEventHandlers {
   onPostDeleted: (postId: string) => void;
 }
 
-/** Data-access boundary for real feed posts (see supabase/migrations/0010_posts.sql). */
+/** Data-access boundary for real feed posts (see supabase/migrations/0011_posts.sql). */
 @Injectable({ providedIn: 'root' })
 export class PostsRepository {
   private readonly auth = inject(AuthService);
   private readonly players = inject(PlayersRepository);
+  private readonly trips = inject(TripsRepository);
 
   private realtimeChannel?: RealtimeChannel;
 
@@ -55,9 +58,14 @@ export class PostsRepository {
       .channel('posts-inbox')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
         const row = payload.new as PostRow;
-        if (row.author_id !== uid && this.matchesScope(scope, row.author_id)) {
-          handlers.onNewPost();
+        if (row.author_id === uid) {
+          return;
         }
+        void this.matchesScope(scope, row).then(matches => {
+          if (matches) {
+            handlers.onNewPost();
+          }
+        });
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'posts' }, payload => {
         handlers.onPostDeleted((payload.old as { id: string }).id);
@@ -84,16 +92,26 @@ export class PostsRepository {
     const uid = this.auth.currentUserId();
     let query = supabase
       .from('posts')
-      .select('id,author_id,text,media_url,media_type,type,created_at')
+      .select('id,author_id,text,media_url,media_type,type,trip_intent_id,created_at')
       .order('created_at', { ascending: false });
 
     if (scope !== 'world') {
       const me = this.auth.currentPlayer();
       const authorIds = this.authorIdsInScope(scope, me.country, me.city, uid);
-      if (authorIds.length === 0) {
+      // Trip-announcement posts are visible by destination, not by the traveller's own home — see
+      // PRODUCT.md: the useful audience is "who lives where the trip is going", i.e. potential hosts.
+      const tripIds = me.country ? await this.trips.idsForDestination(me.country, scope === 'city' ? me.city : undefined) : [];
+      if (authorIds.length === 0 && tripIds.length === 0) {
         return { posts: [], hasMore: false };
       }
-      query = query.in('author_id', authorIds);
+      const filters: string[] = [];
+      if (authorIds.length > 0) {
+        filters.push(`author_id.in.(${authorIds.join(',')})`);
+      }
+      if (tripIds.length > 0) {
+        filters.push(`trip_intent_id.in.(${tripIds.join(',')})`);
+      }
+      query = query.or(filters.join(','));
     }
 
     const from = page * PAGE_SIZE;
@@ -132,6 +150,20 @@ export class PostsRepository {
       .insert({ author_id: uid, text: input.text, media_url: mediaUrl, media_type: mediaType, type: input.type ?? null });
     if (error) {
       console.error('Failed to publish post:', error.message);
+      return false;
+    }
+    return true;
+  }
+
+  /** Inserts the automatic announcement post for a just-published trip — see WorldService.publishTripIntent(). */
+  async createTripAnnouncement(tripIntentId: string): Promise<boolean> {
+    const uid = this.auth.currentUserId();
+    if (!uid) {
+      return false;
+    }
+    const { error } = await supabase.from('posts').insert({ author_id: uid, trip_intent_id: tripIntentId, text: '' });
+    if (error) {
+      console.error('Failed to create trip announcement post:', error.message);
       return false;
     }
     return true;
@@ -177,14 +209,22 @@ export class PostsRepository {
     return true;
   }
 
-  private matchesScope(scope: FeedScope, authorId: string): boolean {
+  private async matchesScope(scope: FeedScope, row: PostRow): Promise<boolean> {
     if (scope === 'world') {
       return true;
     }
     const me = this.auth.currentPlayer();
-    return this.players
+    const authorMatches = this.players
       .getAll()
-      .some(p => p.id === authorId && (scope === 'country' ? p.country === me.country : p.country === me.country && p.city === me.city));
+      .some(p => p.id === row.author_id && (scope === 'country' ? p.country === me.country : p.country === me.country && p.city === me.city));
+    if (authorMatches) {
+      return true;
+    }
+    if (!row.trip_intent_id || !me.country) {
+      return false;
+    }
+    const tripIds = await this.trips.idsForDestination(me.country, scope === 'city' ? me.city : undefined);
+    return tripIds.includes(row.trip_intent_id);
   }
 
   private authorIdsInScope(scope: FeedScope, country: string | undefined, city: string | undefined, uid: string | undefined): string[] {
@@ -203,7 +243,15 @@ export class PostsRepository {
       return [];
     }
     const ids = rows.map(r => r.id);
-    const { data: likeRows, error } = await supabase.from('post_likes').select('post_id,user_id').in('post_id', ids);
+    const tripIds = [...new Set(rows.map(r => r.trip_intent_id).filter((id): id is string => !!id))];
+
+    const [likesResult, trips, volunteeredTripIds] = await Promise.all([
+      supabase.from('post_likes').select('post_id,user_id').in('post_id', ids),
+      this.trips.getByIds(tripIds),
+      this.trips.myVolunteeredTripIds(tripIds)
+    ]);
+
+    const { data: likeRows, error } = likesResult;
     if (error) {
       console.error('Failed to load post likes:', error.message);
     }
@@ -215,17 +263,33 @@ export class PostsRepository {
         likedByMe.add(row.post_id);
       }
     }
-    return rows.map(row => ({
-      id: row.id,
-      authorId: row.author_id,
-      text: row.text,
-      mediaUrl: row.media_url,
-      mediaType: row.media_type,
-      type: row.type,
-      createdAt: row.created_at,
-      likeCount: countByPost.get(row.id) ?? 0,
-      likedByMe: likedByMe.has(row.id)
-    }));
+    const tripById = new Map(trips.map(t => [t.id, t]));
+
+    return rows.map(row => {
+      const trip = row.trip_intent_id ? tripById.get(row.trip_intent_id) : undefined;
+      return {
+        id: row.id,
+        authorId: row.author_id,
+        text: row.text,
+        mediaUrl: row.media_url,
+        mediaType: row.media_type,
+        type: row.type,
+        trip: trip
+          ? {
+              intentId: trip.id,
+              destinationCountry: trip.destinationCountry,
+              destinationCity: trip.destinationCity,
+              fromDate: trip.fromDate,
+              toDate: trip.toDate,
+              note: trip.note,
+              volunteeredByMe: volunteeredTripIds.has(trip.id)
+            }
+          : null,
+        createdAt: row.created_at,
+        likeCount: countByPost.get(row.id) ?? 0,
+        likedByMe: likedByMe.has(row.id)
+      };
+    });
   }
 
   private extractStoragePath(url: string): string | null {

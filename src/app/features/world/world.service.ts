@@ -6,6 +6,7 @@ import { TranslationService } from '../../core/i18n/translation.service';
 import { Player, TripIntent } from '../../core/models';
 import { ToastService } from '../../core/services/toast.service';
 import { MapMarker } from '../../shared/components';
+import { PostsRepository } from '../feed/data/posts.repository';
 import { PlayersService } from '../players/players.service';
 import { TripsRepository } from './data/trips.repository';
 
@@ -16,6 +17,7 @@ export class WorldService {
   private readonly countryData = inject(CountryDataService);
   private readonly players = inject(PlayersService);
   private readonly trips = inject(TripsRepository);
+  private readonly posts = inject(PostsRepository);
   private readonly toast = inject(ToastService);
   private readonly translation = inject(TranslationService);
 
@@ -148,7 +150,7 @@ export class WorldService {
       return;
     }
     this.tripPublishing.set(true);
-    const success = await this.trips.publish({
+    const tripId = await this.trips.publish({
       destinationCountry: this.tripCountry(),
       destinationCity: this.tripCity(),
       fromDate: this.tripFromDate(),
@@ -156,9 +158,12 @@ export class WorldService {
       note: this.tripNote().trim(),
     });
     this.tripPublishing.set(false);
-    if (!success) {
+    if (!tripId) {
       return;
     }
+    // Best-effort: the trip itself already published successfully (hosting still works from
+    // World either way), so a failure here is logged by PostsRepository but not surfaced.
+    void this.posts.createTripAnnouncement(tripId);
     this.tripCountry.set('');
     this.tripCity.set('');
     this.tripFromDate.set('');
@@ -181,6 +186,8 @@ export class WorldService {
     });
     if (success) {
       this.volunteeredTripIds.update((ids) => new Set(ids).add(intent.id));
+      const name = this.players.getById(intent.playerId)?.name ?? intent.destinationCity;
+      this.toast.success(this.translation.t('world.volunteerSuccess', { name }));
     }
   }
 

@@ -218,6 +218,7 @@ export const pt = {
     volunteer: 'Vou mostrar-te!',
     volunteered: 'Já te ofereceste',
     volunteerFailed: 'Não foi possível enviar. Tenta novamente.',
+    volunteerSuccess: 'Enviámos uma mensagem a {name}!',
     hostAutoMessage: 'Vou mostrar-te {city}! 🎾 Vi que vais estar por cá de {fromDate} a {toDate} — combinamos um jogo?'
   },
   feed: {
@@ -268,6 +269,10 @@ export const pt = {
     loadMore: 'Carregar mais',
     loadingMore: 'A carregar…',
     newPosts: 'Novos posts',
+    trip: {
+      ownHeadline: 'Vou visitar {city}!',
+      otherHeadline: 'Vai visitar {city}!'
+    },
     emptyTitle: 'Ainda não há nada aqui',
     emptyBody: 'Sê a primeira pessoa a jogar aqui!'
   },

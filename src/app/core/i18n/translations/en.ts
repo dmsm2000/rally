@@ -216,6 +216,7 @@ export const en = {
     volunteer: "I'll show you around!",
     volunteered: 'You offered to help',
     volunteerFailed: "Couldn't send that. Please try again.",
+    volunteerSuccess: 'We sent {name} a message!',
     hostAutoMessage:
       "I'll show you around {city}! 🎾 Saw you'll be around from {fromDate} to {toDate} — want to play a game?"
   },
@@ -267,6 +268,10 @@ export const en = {
     loadMore: 'Load more',
     loadingMore: 'Loading…',
     newPosts: 'New posts',
+    trip: {
+      ownHeadline: 'I’m visiting {city}!',
+      otherHeadline: 'Is visiting {city}!'
+    },
     emptyTitle: 'Nothing here yet',
     emptyBody: 'Be the first person to play here!'
   },

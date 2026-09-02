@@ -32,13 +32,40 @@
         </div>
       </div>
       <p class="text-eyebrow text-muted-foreground">{{ post().createdAt | date: 'd MMM · HH:mm' }}</p>
-      @if (post().text) {
+      @if (post().trip; as trip) {
+        <p class="mt-2 text-sm font-bold">
+          🧳 {{ (isOwnPost() ? 'feed.trip.ownHeadline' : 'feed.trip.otherHeadline') | translate: { city: trip.destinationCity } }}
+        </p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          {{ tripFlag() }} {{ trip.destinationCity }}, {{ trip.destinationCountry }} ·
+          {{ trip.fromDate | date: 'd MMM' }} – {{ trip.toDate | date: 'd MMM' }}
+        </p>
+        @if (trip.note) {
+          <p class="mt-2 text-sm whitespace-pre-wrap">{{ trip.note }}</p>
+        }
+        @if (canHost()) {
+          @if (trip.volunteeredByMe) {
+            <p class="mt-3 inline-flex rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">
+              {{ 'world.volunteered' | translate }}
+            </p>
+          } @else {
+            <button
+              type="button"
+              (click)="volunteered.emit()"
+              [disabled]="volunteering()"
+              class="mt-3 cursor-pointer rounded-full border border-lime px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink disabled:pointer-events-none disabled:opacity-40"
+            >
+              {{ 'world.volunteer' | translate }}
+            </button>
+          }
+        }
+      } @else if (post().text) {
         <p class="mt-2 text-sm whitespace-pre-wrap">{{ post().text }}</p>
       }
     </div>
   </div>
 
-  @if (post().mediaType === 'video') {
+  @if (!post().trip && post().mediaType === 'video') {
     <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in bg-ink">
       <video
         [src]="post().mediaUrl"
@@ -48,15 +75,14 @@
         class="max-h-[32rem] w-full object-contain"
       ></video>
     </button>
-  } @else if (post().mediaType === 'image') {
+  } @else if (!post().trip && post().mediaType === 'image') {
     <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in bg-muted">
       <img [src]="post().mediaUrl" alt="" loading="lazy" class="max-h-[32rem] w-full object-contain" />
     </button>
   }
 
   <div class="flex items-center gap-4 p-4 pt-3">
-    <!-- canDelete() is only true for the post's own author — reused here to block liking your own post. -->
-    @if (!auth.isObserver() && !canDelete()) {
+    @if (!auth.isObserver() && !isOwnPost()) {
       <button
         type="button"
         (click)="liked.emit()"

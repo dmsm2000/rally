@@ -218,6 +218,7 @@ export const es = {
     volunteer: '¡Te lo enseño yo!',
     volunteered: 'Ya te ofreciste',
     volunteerFailed: 'No se pudo enviar. Inténtalo de nuevo.',
+    volunteerSuccess: '¡Le enviamos un mensaje a {name}!',
     hostAutoMessage: '¡Te enseño {city}! 🎾 Vi que estarás por aquí del {fromDate} al {toDate} — ¿jugamos?'
   },
   feed: {
@@ -268,6 +269,10 @@ export const es = {
     loadMore: 'Cargar más',
     loadingMore: 'Cargando…',
     newPosts: 'Publicaciones nuevas',
+    trip: {
+      ownHeadline: '¡Voy a visitar {city}!',
+      otherHeadline: '¡Va a visitar {city}!'
+    },
     emptyTitle: 'Todavía no hay nada aquí',
     emptyBody: '¡Sé la primera persona en jugar aquí!'
   },

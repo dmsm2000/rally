@@ -6,6 +6,7 @@ import { Post, PostType } from '../../core/models';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { ToastService } from '../../core/services/toast.service';
 import { PlayersService } from '../players/players.service';
+import { TripsRepository } from '../world/data/trips.repository';
 import { FeedScope, PostsRepository } from './data/posts.repository';
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -16,6 +17,7 @@ export class FeedService {
   private readonly auth = inject(AuthService);
   private readonly repository = inject(PostsRepository);
   private readonly players = inject(PlayersService);
+  private readonly trips = inject(TripsRepository);
   private readonly toast = inject(ToastService);
   private readonly translation = inject(TranslationService);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -33,6 +35,9 @@ export class FeedService {
   readonly loading = signal(false);
   readonly hasMore = signal(false);
   readonly hasNewPosts = signal(false);
+  // Set by FeedPageComponent's scroll listener — while true, a new matching post is pulled
+  // straight to the top of the list instead of surfacing the "new posts" banner.
+  readonly isNearTop = signal(true);
   private page = 0;
 
   readonly composerOpen = signal(false);
@@ -45,6 +50,7 @@ export class FeedService {
   readonly canPublish = computed(() => this.composerText().trim().length > 0 || this.composerFile() !== null);
 
   private readonly deletingPostIds = signal<Set<string>>(new Set());
+  private readonly volunteeringPostIds = signal<Set<string>>(new Set());
 
   // Re-derives only when city/country actually change value — reloads once real profile data
   // (rather than the mock bridge's defaults) is available, same pattern as WorldService.
@@ -61,7 +67,13 @@ export class FeedService {
         void this.reload();
         this.hasNewPosts.set(false);
         this.repository.subscribeToPostEvents(scope, {
-          onNewPost: () => this.hasNewPosts.set(true),
+          onNewPost: () => {
+            if (this.isNearTop()) {
+              void this.pullInNewPosts();
+            } else {
+              this.hasNewPosts.set(true);
+            }
+          },
           onLikeAdded: (postId, userId) => this.applyRemoteLike(postId, userId, true),
           onLikeRemoved: (postId, userId) => this.applyRemoteLike(postId, userId, false),
           onPostDeleted: postId => this._posts.update(list => list.filter(p => p.id !== postId))
@@ -91,6 +103,10 @@ export class FeedService {
 
   isDeleting(postId: string): boolean {
     return this.deletingPostIds().has(postId);
+  }
+
+  isVolunteering(postId: string): boolean {
+    return this.volunteeringPostIds().has(postId);
   }
 
   async loadMore(): Promise<void> {
@@ -194,6 +210,36 @@ export class FeedService {
     }
   }
 
+  /** Volunteers to host straight from the feed card — reuses TripsRepository.volunteer(), which
+   * also sends the traveller the same automatic DM as volunteering from World. */
+  async volunteerForTrip(post: Post): Promise<void> {
+    const trip = post.trip;
+    if (!trip || trip.volunteeredByMe || this.isVolunteering(post.id)) {
+      return;
+    }
+    this.volunteeringPostIds.update(ids => new Set(ids).add(post.id));
+    const success = await this.trips.volunteer({
+      id: trip.intentId,
+      playerId: post.authorId,
+      destinationCountry: trip.destinationCountry,
+      destinationCity: trip.destinationCity,
+      fromDate: trip.fromDate,
+      toDate: trip.toDate,
+      note: trip.note,
+      createdAt: post.createdAt
+    });
+    this.volunteeringPostIds.update(ids => {
+      const next = new Set(ids);
+      next.delete(post.id);
+      return next;
+    });
+    if (success) {
+      this._posts.update(list => list.map(p => (p.id === post.id && p.trip ? { ...p, trip: { ...p.trip, volunteeredByMe: true } } : p)));
+      const name = this.playerById(post.authorId)?.name ?? trip.destinationCity;
+      this.toast.success(this.translation.t('world.volunteerSuccess', { name }));
+    }
+  }
+
   private applyLike(postId: string, liked: boolean): void {
     this._posts.update(list =>
       list.map(p => {
@@ -216,6 +262,17 @@ export class FeedService {
     this._posts.update(list =>
       list.map(p => (p.id === postId ? { ...p, likeCount: Math.max(0, p.likeCount + (liked ? 1 : -1)) } : p))
     );
+  }
+
+  /** Silently prepends whatever's new in page 0 that isn't already showing — no skeleton flash,
+   * no scroll jump, since the viewer is already looking at the top of the list. */
+  private async pullInNewPosts(): Promise<void> {
+    const { posts } = await this.repository.list(this.scope(), 0);
+    const existingIds = new Set(this._posts().map(p => p.id));
+    const freshOnes = posts.filter(p => !existingIds.has(p.id));
+    if (freshOnes.length > 0) {
+      this._posts.update(list => [...freshOnes, ...list]);
+    }
   }
 
   private async reload(): Promise<void> {

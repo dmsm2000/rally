@@ -18,6 +18,10 @@ const MOBILE_BREAKPOINT_PX = 1024;
 // the topbar, so it only needs to travel past its own height once the topbar has already scrolled
 // fully out of view above it — both are driven by the same raw scroll delta, so they move in lockstep.
 const TABS_TRACK_MAX_PX = 64 + 48;
+// Below this scroll offset, a live-arriving post is pulled straight into the list instead of
+// surfacing the "new posts" banner — the viewer is already looking at the top, so there's nothing
+// to interrupt.
+const NEAR_TOP_THRESHOLD_PX = 24;
 
 @Component({
   selector: 'rally-feed-page',
@@ -109,6 +113,7 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
   // Mirrors AppShellComponent.onMainScroll so this tab bar hides/reveals in step with the topbar.
   private readonly onMainScroll = (): void => {
     const scrollTop = this.mainEl?.scrollTop ?? 0;
+    this.feed.isNearTop.set(scrollTop <= NEAR_TOP_THRESHOLD_PX);
     if (window.innerWidth >= MOBILE_BREAKPOINT_PX || scrollTop <= 0) {
       this.tabsHideOffset.set(0);
     } else {
