@@ -88,7 +88,7 @@
     [attr.aria-label]="'messages.title' | translate"
     class="relative flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5"
   >
-    <span [class.animate-tennis-bounce]="messages.unreadTotal() > 0 && !widget.isOpen()">🎾</span>
+    <span [class.animate-tennis-bounce]="messages.unreadTotal() > 0 && !widget.isOpen()">💬</span>
     @if (messages.unreadTotal() > 0) {
       <span class="animate-tennis-pop absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-clay px-1 text-[10px] font-extrabold text-bone">{{ messages.unreadTotal() }}</span>
     }

@@ -40,4 +40,12 @@ export class WorldPageComponent {
   protected readonly world = inject(WorldService);
   protected readonly players = inject(PlayersService);
   protected readonly auth = inject(AuthService);
+
+  // Mirrors FeedPageComponent.onBackdropClick — only closes when the backdrop itself (not the
+  // dialog panel or one of its inputs) receives the click.
+  protected onTripBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.world.closeTripComposer();
+    }
+  }
 }

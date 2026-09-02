@@ -42,4 +42,12 @@ export class MatchesListPageComponent {
   protected readonly auth = inject(AuthService);
   // Placeholder rows shown in place of each list while the first load is in flight.
   protected readonly skeletonRows = [0, 1, 2];
+
+  // Mirrors FeedPageComponent.onBackdropClick — only closes when the backdrop itself (not the
+  // dialog panel or one of its inputs) receives the click.
+  protected onComposerBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.matches.closeComposer();
+    }
+  }
 }

@@ -174,128 +174,155 @@
   <section class="animate-rise relative rounded-3xl border border-border bg-ink text-bone">
     <div class="court-grid-ink pointer-events-none absolute inset-0 overflow-hidden rounded-3xl" aria-hidden="true"></div>
     <div class="relative p-6 sm:p-10 lg:p-12">
-      <p class="text-eyebrow text-lime">{{ 'world.tripEyebrow' | translate }}</p>
-      <h2 class="text-display mt-2 max-w-xl text-3xl sm:text-4xl">{{ 'world.tripTitle' | translate }}</h2>
+      <p class="text-eyebrow text-bone/60">{{ 'world.hostEyebrow' | translate }}</p>
+      <h2 class="text-display mt-1 max-w-xl text-2xl sm:text-3xl">{{ 'world.hostTitle' | translate }}</h2>
 
-      <div class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-12">
-        <div>
-          <div class="grid gap-3 sm:grid-cols-2">
-            <ui-autocomplete
-              [value]="world.tripCountry()"
-              (valueChange)="world.setTripCountry($event)"
-              name="tripCountry"
-              [options]="world.countryNames()"
-              [optionIcons]="world.countryFlags()"
-              [placeholder]="'world.tripSelectCountry' | translate"
+      <ng-template #hostRequestRow let-row>
+        <div class="rounded-2xl border border-dashed border-lime bg-bone/10 p-4">
+          <div class="flex items-center gap-3">
+            <ui-avatar
+              [initials]="row.player.initials"
+              [accent]="row.player.accent"
+              [seed]="row.player.avatarSeed"
+              [avatarStyle]="row.player.avatarStyle"
+              size="sm"
             />
-            <ui-autocomplete
-              [value]="world.tripCity()"
-              (valueChange)="world.tripCity.set($event)"
-              name="tripCity"
-              [options]="world.tripCityOptions()"
-              [disabled]="!world.tripCountry()"
-              [placeholder]="(world.tripCountry() ? 'world.tripSelectCity' : 'world.tripSelectCountryFirst') | translate"
-            />
-          </div>
-          <div class="mt-3 grid gap-3 sm:grid-cols-2">
-            <ui-date-picker
-              [value]="world.tripFromDate()"
-              (valueChange)="world.tripFromDate.set($event)"
-              name="tripFromDate"
-              [min]="world.todayIso"
-              [max]="world.maxTripDateIso"
-              [placeholder]="'world.tripFrom' | translate"
-            />
-            <ui-date-picker
-              [value]="world.tripToDate()"
-              (valueChange)="world.tripToDate.set($event)"
-              name="tripToDate"
-              [min]="world.tripFromDate() || world.todayIso"
-              [max]="world.maxTripDateIso"
-              [placeholder]="'world.tripTo' | translate"
-            />
-          </div>
-          <input
-            [ngModel]="world.tripNote()"
-            (ngModelChange)="world.tripNote.set($event)"
-            [placeholder]="'world.tripNotePlaceholder' | translate"
-            class="mt-3 w-full rounded-xl border border-bone/20 bg-bone/10 px-3 py-2.5 text-sm text-bone outline-none placeholder:text-bone/50"
-          />
-          <button
-            type="button"
-            (click)="world.publishTripIntent()"
-            [disabled]="!world.canPublishTrip() || world.tripPublishing()"
-            class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40 sm:w-auto"
-          >
-            {{ (world.tripPublishing() ? 'world.tripPublishing' : 'world.tripPublish') | translate }}
-          </button>
-          <p class="text-eyebrow mt-3 text-bone/50">{{ 'world.tripHint' | translate }}</p>
-        </div>
-
-        <div class="border-t border-bone/15 pt-8 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-12">
-          <p class="text-eyebrow text-bone/60">{{ 'world.hostEyebrow' | translate }}</p>
-          <p class="text-display mt-1 text-xl">{{ 'world.hostTitle' | translate }}</p>
-
-          <ng-template #hostRequestRow let-row>
-            <div class="rounded-2xl border border-dashed border-lime bg-bone/10 p-4">
-              <div class="flex items-center gap-3">
-                <ui-avatar
-                  [initials]="row.player.initials"
-                  [accent]="row.player.accent"
-                  [seed]="row.player.avatarSeed"
-                  [avatarStyle]="row.player.avatarStyle"
-                  size="sm"
-                />
-                <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-bold">{{ row.player.name }}</p>
-                  <p class="truncate text-xs text-bone/60">
-                    {{ world.countryFlag(row.intent.destinationCountry) }} {{ row.intent.destinationCity }} · {{ world.formatDate(row.intent.fromDate) }} –
-                    {{ world.formatDate(row.intent.toDate) }}
-                  </p>
-                </div>
-              </div>
-              <p class="mt-3 text-sm text-bone/80">{{ row.intent.note }}</p>
-              @if ((!world.meId() || row.intent.playerId !== world.meId()) && !auth.isObserver()) {
-                @if (world.hasVolunteered(row.intent.id)) {
-                  <p class="mt-3 w-full rounded-full border border-bone/20 px-4 py-2 text-center text-xs font-extrabold tracking-wide text-bone/60 uppercase">
-                    {{ 'world.volunteered' | translate }}
-                  </p>
-                } @else {
-                  <button
-                    type="button"
-                    (click)="world.volunteerForTrip(row.intent)"
-                    [disabled]="world.isVolunteering(row.intent.id)"
-                    class="mt-3 w-full cursor-pointer rounded-full border border-lime px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink disabled:pointer-events-none disabled:opacity-40"
-                  >
-                    {{ 'world.volunteer' | translate }}
-                  </button>
-                }
-              }
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-bold">{{ row.player.name }}</p>
+              <p class="truncate text-xs text-bone/60">
+                {{ world.countryFlag(row.intent.destinationCountry) }} {{ row.intent.destinationCity }} · {{ world.formatDate(row.intent.fromDate) }} –
+                {{ world.formatDate(row.intent.toDate) }}
+              </p>
             </div>
-          </ng-template>
-
-          @if (world.hostRequestsForMyCountry().length) {
-            <div class="mt-5 space-y-3">
-              @for (row of world.visibleHostRequestsForMyCountry(); track row.intent.id) {
-                <ng-container [ngTemplateOutlet]="hostRequestRow" [ngTemplateOutletContext]="{ $implicit: row }" />
-              }
-            </div>
-            @if (world.hasMoreHostRequests()) {
+          </div>
+          <p class="mt-3 text-sm text-bone/80">{{ row.intent.note }}</p>
+          @if ((!world.meId() || row.intent.playerId !== world.meId()) && !auth.isObserver()) {
+            @if (world.hasVolunteered(row.intent.id)) {
+              <p class="mt-3 w-full rounded-full border border-bone/20 px-4 py-2 text-center text-xs font-extrabold tracking-wide text-bone/60 uppercase">
+                {{ 'world.volunteered' | translate }}
+              </p>
+            } @else {
               <button
                 type="button"
-                (click)="world.openHostDialog()"
-                class="mt-3 w-full cursor-pointer rounded-full border border-bone/20 px-4 py-2 text-xs font-extrabold tracking-wide text-bone/70 uppercase transition-colors hover:border-bone/40 hover:text-bone"
+                (click)="world.volunteerForTrip(row.intent)"
+                [disabled]="world.isVolunteering(row.intent.id)"
+                class="mt-3 w-full cursor-pointer rounded-full border border-lime px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink disabled:pointer-events-none disabled:opacity-40"
               >
-                {{ 'world.viewAll' | translate }}
+                {{ 'world.volunteer' | translate }}
               </button>
             }
-          } @else {
-            <p class="mt-5 text-sm text-bone/60">{{ 'world.hostEmpty' | translate }}</p>
           }
         </div>
-      </div>
+      </ng-template>
+
+      @if (world.hostRequestsForMyCountry().length) {
+        <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          @for (row of world.visibleHostRequestsForMyCountry(); track row.intent.id) {
+            <ng-container [ngTemplateOutlet]="hostRequestRow" [ngTemplateOutletContext]="{ $implicit: row }" />
+          }
+        </div>
+        @if (world.hasMoreHostRequests()) {
+          <button
+            type="button"
+            (click)="world.openHostDialog()"
+            class="mt-4 w-full cursor-pointer rounded-full border border-bone/20 px-4 py-2 text-xs font-extrabold tracking-wide text-bone/70 uppercase transition-colors hover:border-bone/40 hover:text-bone sm:w-auto"
+          >
+            {{ 'world.viewAll' | translate }}
+          </button>
+        }
+      } @else {
+        <p class="mt-6 text-sm text-bone/60">{{ 'world.hostEmpty' | translate }}</p>
+      }
     </div>
   </section>
+
+  <button
+    type="button"
+    (click)="world.openTripComposer()"
+    [attr.aria-label]="'world.tripComposerFabLabel' | translate"
+    class="fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 lg:right-6 lg:bottom-[6.25rem]"
+  >
+    🗺️
+  </button>
+
+  @if (world.tripComposerOpen()) {
+    <div
+      class="fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 sm:items-center sm:p-4"
+      role="presentation"
+      (click)="onTripBackdropClick($event)"
+    >
+      <div
+        class="animate-tennis-pop no-scrollbar max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-border bg-card p-5 shadow-xl sm:rounded-3xl sm:p-6"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-eyebrow text-muted-foreground">{{ 'world.tripEyebrow' | translate }}</p>
+          <button
+            type="button"
+            (click)="world.closeTripComposer()"
+            [attr.aria-label]="'world.cancel' | translate"
+            class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <ui-icon name="close" className="size-4" />
+          </button>
+        </div>
+        <h2 class="text-display mt-2 text-xl">{{ 'world.tripTitle' | translate }}</h2>
+
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          <ui-autocomplete
+            [value]="world.tripCountry()"
+            (valueChange)="world.setTripCountry($event)"
+            name="tripCountry"
+            [options]="world.countryNames()"
+            [optionIcons]="world.countryFlags()"
+            [placeholder]="'world.tripSelectCountry' | translate"
+          />
+          <ui-autocomplete
+            [value]="world.tripCity()"
+            (valueChange)="world.tripCity.set($event)"
+            name="tripCity"
+            [options]="world.tripCityOptions()"
+            [disabled]="!world.tripCountry()"
+            [placeholder]="(world.tripCountry() ? 'world.tripSelectCity' : 'world.tripSelectCountryFirst') | translate"
+          />
+        </div>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          <ui-date-picker
+            [value]="world.tripFromDate()"
+            (valueChange)="world.tripFromDate.set($event)"
+            name="tripFromDate"
+            [min]="world.todayIso"
+            [max]="world.maxTripDateIso"
+            [placeholder]="'world.tripFrom' | translate"
+          />
+          <ui-date-picker
+            [value]="world.tripToDate()"
+            (valueChange)="world.tripToDate.set($event)"
+            name="tripToDate"
+            [min]="world.tripFromDate() || world.todayIso"
+            [max]="world.maxTripDateIso"
+            [placeholder]="'world.tripTo' | translate"
+          />
+        </div>
+        <input
+          [ngModel]="world.tripNote()"
+          (ngModelChange)="world.tripNote.set($event)"
+          [placeholder]="'world.tripNotePlaceholder' | translate"
+          class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+        />
+        <button
+          type="button"
+          (click)="world.publishTripIntent()"
+          [disabled]="!world.canPublishTrip() || world.tripPublishing()"
+          class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40 sm:w-auto"
+        >
+          {{ (world.tripPublishing() ? 'world.tripPublishing' : 'world.tripPublish') | translate }}
+        </button>
+        <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'world.tripHint' | translate }}</p>
+      </div>
+    </div>
+  }
 
   @if (world.hostDialogOpen()) {
     <div class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4" role="presentation">

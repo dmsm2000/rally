@@ -55,6 +55,7 @@ export class WorldService {
   readonly tripNote = signal('');
   readonly tripCityOptions = signal<string[]>([]);
   readonly tripPublishing = signal(false);
+  readonly tripComposerOpen = signal(false);
 
   // ui-date-picker defaults its `max` to today (right for a birth date) — trips need the opposite:
   // any day from today up to a couple of years out.
@@ -124,6 +125,14 @@ export class WorldService {
     });
   }
 
+  openTripComposer(): void {
+    this.tripComposerOpen.set(true);
+  }
+
+  closeTripComposer(): void {
+    this.tripComposerOpen.set(false);
+  }
+
   setTripCountry(name: string): void {
     this.tripCountry.set(name);
     this.tripCity.set('');
@@ -169,6 +178,7 @@ export class WorldService {
     this.tripFromDate.set('');
     this.tripToDate.set('');
     this.tripNote.set('');
+    this.closeTripComposer();
     this.toast.success(this.translation.t('world.tripPublished'));
     void this.loadHostRequests(this.auth.currentPlayer().country);
   }

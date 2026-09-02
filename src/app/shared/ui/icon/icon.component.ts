@@ -22,8 +22,7 @@ export type IconName =
   | 'gender-nonbinary'
   | 'trash'
   | 'tennis-ball'
-  | 'close'
-  | 'plus';
+  | 'close';
 
 // Maps each name to its dedicated file under public/assets/icons/.
 const ICON_URLS: Record<IconName, string> = {
@@ -46,8 +45,7 @@ const ICON_URLS: Record<IconName, string> = {
   'gender-nonbinary': 'assets/icons/gender-nonbinary.svg',
   trash: 'assets/icons/trash.svg',
   'tennis-ball': 'assets/icons/tennis-ball.svg',
-  close: 'assets/icons/close.svg',
-  plus: 'assets/icons/plus.svg'
+  close: 'assets/icons/close.svg'
 };
 
 /** Public icon API — loads the real .svg file for `name()` and inlines it so `stroke="currentColor"` still themes correctly. */

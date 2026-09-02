@@ -85,6 +85,7 @@ export class MatchesService {
   readonly composerFormat = signal<MatchFormat>('Singles');
   readonly composerNote = signal('');
   readonly publishing = signal(false);
+  readonly composerOpen = signal(false);
 
   readonly todayIso = new Date().toISOString().slice(0, 10);
   // ui-date-picker defaults its `max` to today (right for a birth date) — matches need the
@@ -167,6 +168,14 @@ export class MatchesService {
         }
       });
     });
+  }
+
+  openComposer(): void {
+    this.composerOpen.set(true);
+  }
+
+  closeComposer(): void {
+    this.composerOpen.set(false);
   }
 
   setComposerCountry(name: string): void {
@@ -298,6 +307,7 @@ export class MatchesService {
     // /matches either way), so a failure here is logged by PostsRepository but not surfaced.
     void this.posts.createMatchAnnouncement(matchId);
     this.resetComposer();
+    this.closeComposer();
     this.toast.success(this.translation.t('matches.publishSuccess'));
     void this.reload();
   }
