@@ -170,13 +170,17 @@
             [avatarStyle]="feed.me().avatarStyle"
             size="sm"
           />
-          <textarea
-            [ngModel]="feed.composerText()"
-            (ngModelChange)="feed.composerText.set($event)"
-            [placeholder]="'feed.composerPlaceholder' | translate"
-            rows="3"
-            class="min-w-0 flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-          ></textarea>
+          <div class="min-w-0 flex-1">
+            <textarea
+              [ngModel]="feed.composerText()"
+              (ngModelChange)="feed.composerText.set($event)"
+              [placeholder]="'feed.composerPlaceholder' | translate"
+              rows="3"
+              maxlength="280"
+              class="w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+            ></textarea>
+            <span class="mt-1 block text-right text-xs text-muted-foreground">{{ feed.composerText().length }}/280</span>
+          </div>
         </div>
 
         @if (feed.composerPreviewUrl()) {
@@ -208,12 +212,21 @@
         </div>
 
         <div class="mt-4 flex items-center justify-between gap-3">
-          <label
+          <button
+            type="button"
+            (click)="fileInput.click()"
             class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
           >
             📷 {{ 'feed.composerAddMedia' | translate }}
-            <input type="file" accept="image/*,video/*" class="hidden" (change)="onMediaSelected($event)" />
-          </label>
+          </button>
+          <!-- display:none (Tailwind's `hidden`) silently blocks Safari from opening the picker via .click() — absolute + zero-size keeps it "rendered" instead. -->
+          <input
+            #fileInput
+            type="file"
+            accept="image/*,video/*"
+            class="absolute size-0 opacity-0"
+            (change)="onMediaSelected($event)"
+          />
           <button
             type="button"
             [disabled]="!feed.canPublish() || feed.publishing()"
