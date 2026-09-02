@@ -1,121 +1,213 @@
-<section class="animate-rise relative mb-10 overflow-hidden rounded-3xl border border-border bg-ink">
-  <img
-    [src]="feed.heroImage"
-    alt="Two players in a rally on a rooftop court above a Mediterranean city"
-    class="absolute inset-0 size-full object-cover opacity-55"
-  />
-  <div class="court-grid-ink relative p-6 sm:p-10 lg:p-14">
-    <p class="text-eyebrow text-bone/70">
-      {{ 'feed.greeting' | translate }}, {{ feed.me().name.split(' ')[0] }} · {{ feed.me().flag }} {{ feed.me().city }}
-    </p>
-    <h1 class="text-display mt-4 max-w-3xl text-4xl text-bone sm:text-6xl lg:text-7xl">
-      {{ 'feed.heroTitleLine1' | translate }}<br />{{ 'feed.heroTitleLine2' | translate }}<br /><span
-        class="text-lime"
-        >{{ 'feed.heroTitleLine3' | translate }}</span
-      >
-    </h1>
-    <p class="mt-5 max-w-md text-sm text-bone/80">{{ 'feed.heroCopy' | translate }}</p>
-    <div class="mt-7 flex flex-wrap gap-3">
-      <a
-        routerLink="/world"
-        class="inline-flex items-center gap-2 rounded-full bg-lime px-6 py-3.5 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5"
-      >
-        {{ 'feed.findGame' | translate }} →
-      </a>
-      <a
-        routerLink="/world"
-        class="inline-flex items-center gap-2 rounded-full border border-bone/30 px-6 py-3.5 text-sm font-extrabold tracking-wide text-bone uppercase hover:bg-bone/10"
-      >
-        {{ 'feed.exploreWorld' | translate }}
-      </a>
-    </div>
-    <div class="mt-10 grid max-w-xl grid-cols-4 gap-4 border-t border-bone/15 pt-6 text-bone">
-      <ui-stat size="sm" [value]="feed.me().stats.wins" [label]="'stats.wins' | translate" />
-      <ui-stat size="sm" [value]="feed.me().stats.matches" [label]="'stats.matches' | translate" />
-      <ui-stat size="sm" [value]="feed.me().stats.courts" [label]="'stats.courts' | translate" />
-      <ui-stat size="sm" [value]="feed.me().stats.countries" [label]="'stats.countries' | translate" />
-    </div>
-  </div>
-</section>
-
-<div class="mx-auto max-w-2xl">
-  @if (!auth.isObserver()) {
-    <div class="animate-rise mb-6 rounded-2xl border border-border bg-card p-4">
-      <div class="flex gap-3">
-        <ui-avatar
-          [initials]="feed.me().initials"
-          [accent]="feed.me().accent"
-          [seed]="feed.me().avatarSeed"
-          [avatarStyle]="feed.me().avatarStyle"
-          size="sm"
-        />
-        <textarea
-          [ngModel]="feed.composerText()"
-          (ngModelChange)="feed.composerText.set($event)"
-          [placeholder]="'feed.composerPlaceholder' | translate"
-          rows="2"
-          class="min-w-0 flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-        ></textarea>
-      </div>
-
-      @if (feed.composerMediaUrl()) {
-        <div class="relative mt-3 overflow-hidden rounded-xl border border-border">
-          @if (feed.composerMediaType() === 'video') {
-            <video [src]="feed.composerMediaUrl()" controls class="max-h-72 w-full bg-ink object-contain"></video>
-          } @else {
-            <img [src]="feed.composerMediaUrl()" alt="" class="max-h-72 w-full object-contain" />
-          }
-          <button
-            type="button"
-            (click)="feed.clearMedia()"
-            class="absolute top-2 right-2 cursor-pointer rounded-full bg-ink/70 px-3 py-1 text-xs font-bold text-bone uppercase"
-          >
-            {{ 'feed.removeMedia' | translate }}
-          </button>
-        </div>
-      }
-
-      <div class="mt-3 flex items-center justify-between gap-3">
-        <label
-          class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
-        >
-          📷 {{ 'feed.composerAddMedia' | translate }}
-          <input type="file" accept="image/*,video/*" class="hidden" (change)="onMediaSelected($event)" />
-        </label>
-        <button
-          type="button"
-          [disabled]="!feed.canPublish()"
-          (click)="feed.publishPost()"
-          class="cursor-pointer rounded-full bg-lime px-6 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
-        >
-          {{ 'feed.composerPublish' | translate }}
-        </button>
-      </div>
-    </div>
-  }
-
-  <div class="mb-6 flex gap-2 border-b border-border">
-    @for (t of feed.tabs; track t) {
+<div
+  class="fixed inset-x-0 top-16 z-30 h-12 border-b border-border bg-background/95 backdrop-blur-md"
+  [style.transform]="'translateY(-' + tabsHideOffset() + 'px)'"
+>
+  <div class="mx-auto flex h-12 max-w-2xl">
+    @for (s of scopes(); track s) {
       <button
         type="button"
-        (click)="feed.selectTab(t)"
-        class="px-1 pb-3 text-sm font-semibold transition-colors"
+        (click)="onScopeClick(s)"
+        class="flex-1 cursor-pointer text-center text-sm font-semibold transition-colors"
         [class]="
-          feed.activeTab() === t
+          feed.scope() === s
             ? 'border-b-2 border-lime-deep text-foreground'
             : 'text-muted-foreground hover:text-foreground'
         "
       >
-        {{ t | translate }}
+        {{ 'feed.scope.' + s | translate }}
       </button>
     }
   </div>
+</div>
 
+@if (feed.hasNewPosts()) {
+  <div class="fixed inset-x-0 top-28 z-30 flex justify-center px-4">
+    <button
+      type="button"
+      (click)="showNewPosts()"
+      class="animate-toast-in inline-flex cursor-pointer items-center gap-2 rounded-full bg-lime px-4 py-2 text-xs font-extrabold tracking-wide text-ink uppercase shadow-lg transition-transform hover:-translate-y-0.5"
+    >
+      <ui-icon name="tennis-ball" className="size-4" />
+      {{ 'feed.newPosts' | translate }}
+    </button>
+  </div>
+}
+
+<div class="mx-auto max-w-2xl pt-16">
   <div class="space-y-5">
-    @for (f of feed.items(); track f.id) {
-      <rally-feed-card [item]="f" />
+    @if (!welcomeDismissed() && !auth.isObserver()) {
+      <article class="animate-slide-in relative overflow-hidden rounded-2xl border border-border bg-ink">
+        <img
+          [src]="feed.heroImage"
+          alt="Two players in a rally on a rooftop court above a Mediterranean city"
+          class="absolute inset-0 size-full object-cover opacity-30"
+        />
+        <button
+          type="button"
+          (click)="dismissWelcome()"
+          [attr.aria-label]="'feed.dismissWelcome' | translate"
+          class="absolute top-3 right-3 z-10 flex cursor-pointer items-center justify-center rounded-full bg-ink/50 p-1.5 text-bone hover:bg-ink/70"
+        >
+          <ui-icon name="close" className="size-4" />
+        </button>
+        <div class="court-grid-ink relative p-6 sm:p-8">
+          <p class="text-eyebrow text-bone/70">
+            {{ 'feed.greeting' | translate }}, {{ feed.me().name.split(' ')[0] }} · {{ feed.me().flag }}
+            {{ feed.me().city }}
+          </p>
+          <h2 class="text-display mt-3 max-w-lg text-2xl text-bone sm:text-4xl">
+            {{ 'feed.heroTitleLine1' | translate }} {{ 'feed.heroTitleLine2.' + feed.scope() | translate }}
+            <span class="text-lime">{{ 'feed.heroTitleLine3' | translate }}</span>
+          </h2>
+          <p class="mt-3 max-w-md text-sm text-bone/80">{{ 'feed.heroCopy.' + feed.scope() | translate }}</p>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <a
+              routerLink="/world"
+              class="inline-flex items-center gap-2 rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5"
+            >
+              {{ 'feed.findGame' | translate }} →
+            </a>
+            <a
+              routerLink="/world"
+              class="inline-flex items-center gap-2 rounded-full border border-bone/30 px-5 py-2.5 text-xs font-extrabold tracking-wide text-bone uppercase hover:bg-bone/10"
+            >
+              {{ 'feed.exploreWorld' | translate }}
+            </a>
+          </div>
+          <div class="mt-6 grid max-w-xl grid-cols-4 gap-4 border-t border-bone/15 pt-5 text-bone">
+            <ui-stat size="sm" [value]="feed.me().stats.wins" [label]="'stats.wins' | translate" />
+            <ui-stat size="sm" [value]="feed.me().stats.matches" [label]="'stats.matches' | translate" />
+            <ui-stat size="sm" [value]="feed.me().stats.courts" [label]="'stats.courts' | translate" />
+            <ui-stat size="sm" [value]="feed.me().stats.countries" [label]="'stats.countries' | translate" />
+          </div>
+        </div>
+      </article>
+    }
+    @for (f of feed.posts(); track feed.scope() + f.id) {
+      <rally-feed-card
+        [post]="f"
+        [player]="feed.playerById(f.authorId)"
+        [canDelete]="f.authorId === feed.meId()"
+        [deleting]="feed.isDeleting(f.id)"
+        (liked)="feed.toggleLike(f)"
+        (deleted)="feed.deletePost(f)"
+      />
     } @empty {
-      <ui-empty-state [title]="'feed.emptyTitle' | translate" [body]="'feed.emptyBody' | translate" />
+      @if (!feed.loading()) {
+        <ui-empty-state [title]="'feed.emptyTitle' | translate" [body]="'feed.emptyBody' | translate" />
+      }
     }
   </div>
+
+  @if (feed.hasMore()) {
+    <div class="mt-6 flex justify-center">
+      <button
+        type="button"
+        (click)="feed.loadMore()"
+        [disabled]="feed.loading()"
+        class="cursor-pointer rounded-full border border-border px-6 py-2.5 text-xs font-extrabold tracking-wide uppercase hover:border-foreground disabled:pointer-events-none disabled:opacity-40"
+      >
+        {{ (feed.loading() ? 'feed.loadingMore' : 'feed.loadMore') | translate }}
+      </button>
+    </div>
+  }
 </div>
+
+@if (!auth.isObserver()) {
+  <button
+    type="button"
+    (click)="feed.openComposer()"
+    [attr.aria-label]="'feed.composerFabLabel' | translate"
+    class="fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-ink shadow-lg transition-transform hover:-translate-y-0.5 lg:right-6 lg:bottom-[6.25rem]"
+  >
+    <ui-icon name="plus" className="size-6" />
+  </button>
+
+  @if (feed.composerOpen()) {
+    <div
+      class="fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 sm:items-center sm:p-4"
+      role="presentation"
+      (click)="$event.target === $event.currentTarget && feed.closeComposer()"
+    >
+      <div
+        class="animate-tennis-pop w-full max-w-lg rounded-t-3xl border border-border bg-card p-5 shadow-xl sm:rounded-3xl sm:p-6"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-eyebrow text-muted-foreground">{{ 'feed.composerTitle' | translate }}</p>
+          <button
+            type="button"
+            (click)="feed.closeComposer()"
+            [attr.aria-label]="'feed.cancel' | translate"
+            class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <ui-icon name="close" className="size-4" />
+          </button>
+        </div>
+
+        <div class="mt-4 flex gap-3">
+          <ui-avatar
+            [initials]="feed.me().initials"
+            [accent]="feed.me().accent"
+            [seed]="feed.me().avatarSeed"
+            [avatarStyle]="feed.me().avatarStyle"
+            size="sm"
+          />
+          <textarea
+            [ngModel]="feed.composerText()"
+            (ngModelChange)="feed.composerText.set($event)"
+            [placeholder]="'feed.composerPlaceholder' | translate"
+            rows="3"
+            class="min-w-0 flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+          ></textarea>
+        </div>
+
+        @if (feed.composerPreviewUrl()) {
+          <div class="relative mt-3 overflow-hidden rounded-xl border border-border">
+            @if (feed.composerMediaType() === 'video') {
+              <video [src]="feed.composerPreviewUrl()" controls class="max-h-64 w-full bg-ink object-contain"></video>
+            } @else {
+              <img [src]="feed.composerPreviewUrl()" alt="" class="max-h-64 w-full object-contain" />
+            }
+            <button
+              type="button"
+              (click)="feed.clearMedia()"
+              class="absolute top-2 right-2 cursor-pointer rounded-full bg-ink/70 px-3 py-1 text-xs font-bold text-bone uppercase"
+            >
+              {{ 'feed.removeMedia' | translate }}
+            </button>
+          </div>
+        }
+
+        <div class="mt-4">
+          <p class="text-eyebrow text-muted-foreground">{{ 'feed.typeLabel' | translate }}</p>
+          <div class="mt-2 flex flex-wrap gap-2">
+            @for (type of postTypes; track type) {
+              <ui-chip [clickable]="true" [active]="feed.composerType() === type" (toggled)="feed.setComposerType(type)">
+                {{ 'feed.type.' + type | translate }}
+              </ui-chip>
+            }
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between gap-3">
+          <label
+            class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
+          >
+            📷 {{ 'feed.composerAddMedia' | translate }}
+            <input type="file" accept="image/*,video/*" class="hidden" (change)="onMediaSelected($event)" />
+          </label>
+          <button
+            type="button"
+            [disabled]="!feed.canPublish() || feed.publishing()"
+            (click)="feed.publishPost()"
+            class="cursor-pointer rounded-full bg-lime px-6 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+          >
+            {{ (feed.publishing() ? 'feed.publishing' : 'feed.composerPublish') | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+}

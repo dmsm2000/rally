@@ -6,6 +6,7 @@ export * from './date-picker/date-picker.component';
 export * from './empty-state/empty-state.component';
 export * from './icon/icon.component';
 export * from './match-score/match-score.component';
+export * from './media-lightbox/media-lightbox.component';
 export * from './page-header/page-header.component';
 export * from './password-toggle/password-toggle.component';
 export * from './section-header/section-header.component';

@@ -1,0 +1,17 @@
+@if (lightbox.active(); as media) {
+  <div class="fixed inset-0 z-[120] flex items-center justify-center bg-ink/90 p-4" role="presentation">
+    <button
+      type="button"
+      (click)="lightbox.close()"
+      aria-label="Close"
+      class="absolute top-4 right-4 flex size-10 cursor-pointer items-center justify-center rounded-full bg-bone/10 text-lg text-bone hover:bg-bone/20"
+    >
+      ✕
+    </button>
+    @if (media.type === 'video') {
+      <video [src]="media.url" controls autoplay playsinline class="max-h-full max-w-full rounded-2xl"></video>
+    } @else {
+      <img [src]="media.url" alt="" class="max-h-full max-w-full rounded-2xl object-contain" />
+    }
+  </div>
+}

@@ -1,18 +1,15 @@
-export type FeedKind = 'match' | 'court' | 'review' | 'milestone' | 'meet' | 'challenge' | 'trip' | 'highlight';
+export const POST_TYPES = ['outfit', 'material', 'highlight', 'spot', 'other'] as const;
+export type PostType = (typeof POST_TYPES)[number];
 
-export interface FeedStat {
-  label: string;
-  value: string;
-}
-
-export interface FeedItem {
+export interface Post {
   id: string;
-  playerId: string;
-  kind: FeedKind;
+  authorId: string;
   text: string;
-  detail?: string;
-  time: string;
-  image?: string;
-  video?: string;
-  stat?: FeedStat[];
+  mediaUrl: string | null;
+  mediaType: 'image' | 'video' | null;
+  type: PostType | null;
+  /** ISO timestamp. */
+  createdAt: string;
+  likeCount: number;
+  likedByMe: boolean;
 }

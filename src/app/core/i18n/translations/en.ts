@@ -208,34 +208,67 @@ export const en = {
     tripPublishing: 'Publishing…',
     tripPublished: 'Trip published!',
     tripPublishFailed: "Couldn't publish your trip. Please try again.",
-    tripHint: "Visible to players in that city, who can offer to show you around.",
+    tripHint: 'Visible to players in that city, who can offer to show you around.',
     hostEyebrow: 'Volunteer',
     hostTitle: 'Who needs a local host',
     hostEmpty: 'No open requests in your country right now.',
     viewAll: 'View all',
     volunteer: "I'll show you around!",
-    volunteered: "You offered to help",
+    volunteered: 'You offered to help',
     volunteerFailed: "Couldn't send that. Please try again.",
-    hostAutoMessage: "I'll show you around {city}! 🎾 Saw you'll be around from {fromDate} to {toDate} — want to play a game?"
+    hostAutoMessage:
+      "I'll show you around {city}! 🎾 Saw you'll be around from {fromDate} to {toDate} — want to play a game?"
   },
   feed: {
     greeting: 'Good evening',
     heroTitleLine1: 'Six players',
-    heroTitleLine2: 'near you want',
-    heroTitleLine3: 'a game tonight.',
-    heroCopy: 'Courts are open until 23:00 at Clube de Ténis do Porto. Your rating moved +4 places this week.',
+    heroTitleLine2: {
+      city: 'near you',
+      country: 'in your country',
+      world: 'around the world'
+    },
+    heroTitleLine3: 'want to rally with you.',
+    heroCopy: {
+      city: 'Courts are open until 23:00 at Clube de Ténis do Porto. Your rating moved +4 places this week.',
+      country: 'Players all over the country are posting their games — see what’s happening near you.',
+      world: 'Players everywhere are sharing what they’re up to right now. Take a look around.'
+    },
     findGame: 'Find a game',
     exploreWorld: 'Explore the world',
-    tabEveryone: 'Everyone',
-    tabFollowing: 'Following',
-    tabYourCity: 'Your city',
-    tabAroundWorld: 'Around the world',
+    dismissWelcome: 'Dismiss',
+    scope: {
+      city: 'In my city',
+      country: 'In my country',
+      world: 'In the world'
+    },
+    composerFabLabel: 'New post',
+    composerTitle: 'New post',
     composerPlaceholder: "What's happening on the court today?",
     composerAddMedia: 'Photo / clip',
     composerPublish: 'Post',
+    publishing: 'Posting…',
+    typeLabel: 'Type (optional)',
+    type: {
+      outfit: 'Outfit',
+      material: 'Gear',
+      highlight: 'Highlight',
+      spot: 'Spot',
+      other: 'Other'
+    },
+    postPublished: 'Posted!',
+    postFailed: "Couldn't publish your post. Please try again.",
+    imageTooLarge: 'That image is too large (max 8 MB).',
+    videoTooLarge: 'That video is too large (max 50 MB).',
     removeMedia: 'Remove',
+    deletePost: 'Delete post',
+    deletePostConfirmLead: "Are you sure? This removes the post for everyone and can't be undone.",
+    deletePostConfirmButton: 'Yes, delete post',
+    cancel: 'Cancel',
+    loadMore: 'Load more',
+    loadingMore: 'Loading…',
+    newPosts: 'New posts',
     emptyTitle: 'Nothing here yet',
-    emptyBody: 'Play a match with someone to start following their posts here.'
+    emptyBody: 'Be the first person to play here!'
   },
   passport: {
     eyebrow: 'Tennis passport',

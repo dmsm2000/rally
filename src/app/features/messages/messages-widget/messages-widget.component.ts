@@ -49,6 +49,10 @@ export class MessagesWidgetComponent {
         return;
       }
       untracked(() => {
+        const pendingDraft = this.widget.consumePendingDraft();
+        if (pendingDraft !== null) {
+          this.draft.set(pendingDraft);
+        }
         void (async () => {
           const conversationId = await this.messages.ensureConversationWithPlayer(playerId);
           this.messages.markRead(conversationId);

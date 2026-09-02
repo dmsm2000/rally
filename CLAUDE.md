@@ -111,6 +111,12 @@ Apply in order on a new project:
 7. `0007_discover_profile_preferences.sql` replaces it again with public tennis preferences.
 8. `0008_discover_profile_gender.sql` is the current/latest discovery RPC; it adds gender while converting `PreferNotToSay` to `null`.
 9. `0009_messages_and_trips.sql` adds real-time direct messaging (`conversations`, `messages`, `conversation_reads`, the `ensure_conversation()` RPC, Realtime publication) and "show me around" trip intents (`trip_intents`, `trip_hosts`), all participant/owner-scoped RLS.
+10. `0011_posts.sql` adds real feed posts (`posts`, `post_likes`) and creates the public `feed-media` Storage bucket with its own object-level policies (own-folder-only upload/delete, public read).
+11. `0012_post_type.sql` adds an optional `type` column to `posts` (`outfit` | `material` | `highlight` | `spot` | `other` — see `PostType` in `feed.model.ts`), chosen from the composer dialog and shown as a tag on the post card.
+12. `0013_posts_realtime.sql` adds `public.posts` to the `supabase_realtime` publication, powering the feed's live "new posts" banner.
+13. `0014_post_likes_realtime.sql` adds `public.post_likes` too, so likes/unlikes and post deletions from other viewers also update the feed live (`PostsRepository.subscribeToPostEvents`).
+
+Note: migration filenames on disk don't currently match this list's numbering 1:1 (e.g. an early renumbering shifted 0009-0011) — trust the filenames in `supabase/migrations/` over the ordinal prefix here if they ever disagree.
 
 `discover_profiles()` is intentionally `security definer`, granted to `anon` and `authenticated`, because observers may browse public profiles while unauthenticated. It must return only carefully selected public data: name, member number, city/country, gender opted into sharing, tennis preferences, bio, and avatar inputs. Never add email, birth date, or other private identity information.
 
@@ -125,10 +131,11 @@ Apply in order on a new project:
 - Country and city dropdown data: `@countrystatecity/countries-browser`, via `CountryDataService` with lazy caching.
 - Direct messaging: the floating `rally-messages-widget` is backed by real `conversations`/`messages` tables, delivered live via Supabase Realtime (Postgres Changes for messages, Broadcast for the ephemeral typing indicator). See `MessagesRepository` (`features/messages/data/messages.repository.ts`).
 - Trip intents ("show me around") at `/world` and "My trips" on the profile page: real `trip_intents`/`trip_hosts` tables. Volunteering to host doesn't hide the trip (others may also host) — it just sends the traveller a real automatic message via `MessagesService`. See `TripsRepository` (`features/world/data/trips.repository.ts`).
+- The Feed: user-authored posts (text and/or one photo/video, uploaded to the `feed-media` Storage bucket) scoped by "In my city" / "In my country" / "In the world", a single like toggle, and "Reply" that never creates a public comment — it opens a real DM to the author via `MessagesWidgetService.openThreadWithDraft()` instead. See `PostsRepository` (`features/feed/data/posts.repository.ts`). The old synthetic `kind`-tagged activity (match/court/trip/milestone auto-posts) was retired with it — deliberately deferred until courts/matches/notifications are themselves real, at which point they can post into `posts` the same way.
 
 ### Mock today
 
-- Feed, courts, open matches, match history/results, notifications, passport countries/courts/achievements and community stats still originate in `RallyDataService` / `rally-dataset.ts`.
+- Courts, open matches, match history/results, notifications, passport countries/courts/achievements and community stats still originate in `RallyDataService` / `rally-dataset.ts`.
 - Real discovery profiles map into the older rich `Player` UI contract with neutral placeholder activity values: no distance, zero stats/match score, no real courts or matches.
 - The player detail deliberately shows empty states for real player match tabs and discovered courts, and a zeroed passport block. Do not reintroduce unrelated mock courts/matches/achievements into a real player's profile.
 
@@ -184,6 +191,7 @@ Own profile page:
 - The country dataset is ODbL-1.0; the project includes attribution in the profile footer.
 - Twemoji is served from a jsDelivr URL pinned to `@twemoji/api` version. `TwemojiRendererService` parses dynamic DOM with a `MutationObserver`.
 - Do not interpolate a reactive emoji flag where Twemoji will replace its text node. For the language selector, use `TwemojiRendererService.urlFor()` with a reactive `<img [src]>`.
+- User-uploaded feed media lives in the public Supabase Storage bucket `feed-media` (see `0010_posts.sql`), one object per post at `{authorId}/{uuid}.{ext}` — this is the only real file-upload path in the app; avatars are seed-generated, not uploaded.
 
 ## High-Value Gotchas
 

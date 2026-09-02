@@ -223,22 +223,53 @@ export const pt = {
   feed: {
     greeting: 'Boa noite',
     heroTitleLine1: 'Seis jogadores',
-    heroTitleLine2: 'perto de ti querem',
-    heroTitleLine3: 'jogar esta noite.',
-    heroCopy:
-      'Os courts estão abertos até às 23:00 no Clube de Ténis do Porto. O teu rating subiu 4 posições esta semana.',
+    heroTitleLine2: {
+      city: 'perto de ti',
+      country: 'no teu país',
+      world: 'pelo mundo'
+    },
+    heroTitleLine3: 'querem bater bolas contigo.',
+    heroCopy: {
+      city: 'Os courts estão abertos até às 23:00 no Clube de Ténis do Porto. O teu rating subiu 4 posições esta semana.',
+      country: 'Jogadores por todo o país estão a publicar os seus jogos — vê o que se passa perto de ti.',
+      world: 'Jogadores por todo o mundo estão a partilhar o que andam a fazer agora mesmo. Dá uma vista de olhos.'
+    },
     findGame: 'Encontrar jogo',
     exploreWorld: 'Explorar o mundo',
-    tabEveryone: 'Todos',
-    tabFollowing: 'A seguir',
-    tabYourCity: 'A tua cidade',
-    tabAroundWorld: 'Pelo mundo',
+    dismissWelcome: 'Dispensar',
+    scope: {
+      city: 'Na minha cidade',
+      country: 'No meu país',
+      world: 'No mundo'
+    },
+    composerFabLabel: 'Nova publicação',
+    composerTitle: 'Nova publicação',
     composerPlaceholder: 'O que se passou no court hoje?',
     composerAddMedia: 'Foto / clip',
     composerPublish: 'Publicar',
+    publishing: 'A publicar…',
+    typeLabel: 'Tipo (opcional)',
+    type: {
+      outfit: 'Outfit',
+      material: 'Material',
+      highlight: 'Destaque',
+      spot: 'Spot',
+      other: 'Outro'
+    },
+    postPublished: 'Publicado!',
+    postFailed: 'Não foi possível publicar. Tenta novamente.',
+    imageTooLarge: 'Essa imagem é demasiado grande (máx. 8 MB).',
+    videoTooLarge: 'Esse vídeo é demasiado grande (máx. 50 MB).',
     removeMedia: 'Remover',
+    deletePost: 'Apagar publicação',
+    deletePostConfirmLead: 'Tens a certeza? Isto remove a publicação para todos e não pode ser desfeito.',
+    deletePostConfirmButton: 'Sim, apagar publicação',
+    cancel: 'Cancelar',
+    loadMore: 'Carregar mais',
+    loadingMore: 'A carregar…',
+    newPosts: 'Novos posts',
     emptyTitle: 'Ainda não há nada aqui',
-    emptyBody: 'Joga uma partida com alguém para começares a seguir as publicações dessa pessoa aqui.'
+    emptyBody: 'Sê a primeira pessoa a jogar aqui!'
   },
   passport: {
     eyebrow: 'Passaporte de ténis',

@@ -14,6 +14,10 @@ export class MessagesWidgetService {
   // the page) bubbles up to the document.
   private suppressNextOutsideClose = false;
 
+  // One-shot pre-filled draft (e.g. a quoted reply from the feed) — consumed the same way as the
+  // outside-close suppression above, so it never leaks into a later, unrelated thread open.
+  private pendingDraft: string | null = null;
+
   toggle(): void {
     const nowOpen = !this._isOpen();
     this._isOpen.set(nowOpen);
@@ -46,8 +50,21 @@ export class MessagesWidgetService {
     this.suppressNextOutsideClose = true;
   }
 
+  // Opens straight into a thread with a pre-filled draft, e.g. a quoted reply from a feed post.
+  openThreadWithDraft(playerId: string, draft: string): void {
+    this.pendingDraft = draft;
+    this.openThread(playerId);
+  }
+
   backToList(): void {
     this._activePlayerId.set(null);
+  }
+
+  // Consumes the pending draft (if any) — returns it once, then clears it.
+  consumePendingDraft(): string | null {
+    const draft = this.pendingDraft;
+    this.pendingDraft = null;
+    return draft;
   }
 
   // Consumes the suppression flag — returns true (once) right after an open call.

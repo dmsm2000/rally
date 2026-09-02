@@ -5,7 +5,6 @@ import {
   CountryEntry,
   Court,
   Destination,
-  FeedItem,
   Match,
   Player,
   PlayerIntent,
@@ -437,58 +436,6 @@ export const MATCHES: Match[] = [
     format: 'Doubles',
     playerA: 'ana',
     note: 'Doubles this weekend? Need one more player.'
-  }
-];
-
-export const FEED: FeedItem[] = [
-  {
-    id: 'f1',
-    playerId: 'joao',
-    kind: 'milestone',
-    text: 'You have now played tennis in 7 countries.',
-    detail: 'Japan is 1 court away from unlocking.',
-    time: '2h ago',
-    stat: [
-      { label: 'Countries', value: '7' },
-      { label: 'Courts', value: '23' },
-      { label: 'Players met', value: '48' }
-    ]
-  },
-  {
-    id: 'f2',
-    playerId: 'marc',
-    kind: 'match',
-    text: 'Marc Puig played João Silva at Marina Bay Courts.',
-    detail: '6-4 · 3-6 · 7-5',
-    time: '5h ago',
-    image: `${IMG}/court-hard.jpg`
-  },
-  {
-    id: 'f3',
-    playerId: 'ana',
-    kind: 'court',
-    text: 'Ana Ferreira played her first match in Barcelona.',
-    detail: 'Court #7 discovered · Spain 🇪🇸',
-    time: 'Yesterday',
-    image: `${IMG}/court-hard.jpg`
-  },
-  {
-    id: 'f4',
-    playerId: 'pedro',
-    kind: 'review',
-    text: 'Pedro Almeida reviewed Hedgerow Lawn Club.',
-    detail: '"Best three grass courts I\'ve played on outside a tournament." 4.9',
-    time: 'Yesterday',
-    image: `${IMG}/court-grass.jpg`
-  },
-  {
-    id: 'f5',
-    playerId: 'yuki',
-    kind: 'meet',
-    text: 'Yuki Tanaka and Sofia Rossi played their first match.',
-    detail: 'Shinjuku Night Courts · Tokyo 🇯🇵',
-    time: '2 days ago',
-    image: `${IMG}/court-urban.jpg`
   }
 ];
 

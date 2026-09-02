@@ -1,7 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import {
   Court,
-  FeedItem,
   Match,
   MatchFormat,
   Player,
@@ -14,7 +13,6 @@ import {
   COUNTRIES,
   COURTS,
   DESTINATIONS,
-  FEED,
   HERO_IMAGE,
   LEVELS,
   MATCHES,
@@ -44,7 +42,6 @@ export class RallyDataService {
   private readonly _players = signal(PLAYERS);
   private readonly _courts = signal(COURTS);
   private readonly _matches = signal(MATCHES);
-  private readonly _feed = signal(FEED);
   private readonly _achievements = signal(ACHIEVEMENTS);
   private readonly _countries = signal(COUNTRIES);
   private readonly _destinations = signal(DESTINATIONS);
@@ -55,7 +52,6 @@ export class RallyDataService {
   readonly players = this._players.asReadonly();
   readonly courts = this._courts.asReadonly();
   readonly matches = this._matches.asReadonly();
-  readonly feed = this._feed.asReadonly();
   readonly achievements = this._achievements.asReadonly();
   readonly countries = this._countries.asReadonly();
   readonly destinations = this._destinations.asReadonly();
@@ -100,7 +96,6 @@ export class RallyDataService {
     return [...ids];
   }
 
-  // Posting an open match also drops a matching post in the feed, same as a real capture/challenge would.
   createOpenMatch(input: {
     courtId: string;
     city?: string;
@@ -128,38 +123,9 @@ export class RallyDataService {
     };
     this._matches.update(list => [match, ...list]);
 
-    const location = input.courtId
-      ? (this.courtById(input.courtId)?.name ?? '')
-      : `${input.city ?? ''} · ±${input.radiusKm ?? 0}km`;
-    const feedItem: FeedItem = {
-      id: `feed-${Date.now()}`,
-      playerId: this._me().id,
-      kind: 'challenge',
-      text: input.note,
-      detail: `${location} · ${input.date} ${input.time}`,
-      time: 'Agora mesmo'
-    };
-    this._feed.update(list => [feedItem, ...list]);
-
     return match;
   }
 
-  // A player-authored feed post — a highlight, clip or photo from the moment, no match/court attached.
-  createFeedPost(input: { text: string; image?: string; video?: string }): FeedItem {
-    const feedItem: FeedItem = {
-      id: `feed-${Date.now()}`,
-      playerId: this._me().id,
-      kind: 'highlight',
-      text: input.text,
-      time: 'Agora mesmo',
-      image: input.image,
-      video: input.video
-    };
-    this._feed.update(list => [feedItem, ...list]);
-    return feedItem;
-  }
-
-  // Adding a court to the shared registry also drops a "discovered this court" post in the feed.
   createCourt(input: {
     name: string;
     city: string;
@@ -193,21 +159,10 @@ export class RallyDataService {
     };
     this._courts.update(list => [court, ...list]);
 
-    const feedItem: FeedItem = {
-      id: `feed-${Date.now()}`,
-      playerId: this._me().id,
-      kind: 'court',
-      text: `${this._me().name} discovered ${court.name}.`,
-      detail: `${court.flag} ${court.city}, ${court.country}`,
-      time: 'Agora mesmo',
-      image: court.image
-    };
-    this._feed.update(list => [feedItem, ...list]);
-
     return court;
   }
 
-  // Accepting an open match books it for both players and announces the new game in the feed.
+  // Accepting an open match books it for both players.
   acceptOpenMatch(matchId: string): void {
     const match = this.matchById(matchId);
     if (!match || match.status !== 'open') {
@@ -216,16 +171,6 @@ export class RallyDataService {
     this._matches.update(list =>
       list.map(m => (m.id === matchId ? { ...m, status: 'upcoming', playerB: this._me().id } : m))
     );
-
-    const feedItem: FeedItem = {
-      id: `feed-${Date.now()}`,
-      playerId: this._me().id,
-      kind: 'match',
-      text: `${this._me().name} accepted ${this.playerById(match.playerA)?.name ?? ''}'s open match.`,
-      detail: `${this.courtById(match.courtId)?.name ?? ''} · ${match.date} ${match.time}`,
-      time: 'Agora mesmo'
-    };
-    this._feed.update(list => [feedItem, ...list]);
   }
 
   markNotificationRead(id: string): void {

@@ -1,35 +1,67 @@
-<article class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-  <div class="flex items-center gap-3 p-4">
-    <ui-avatar
-      [initials]="player()?.initials ?? ''"
-      [accent]="player()?.accent ?? 'ink'"
-      [seed]="player()?.avatarSeed"
-      [avatarStyle]="player()?.avatarStyle"
-      size="sm"
-    />
+<article class="animate-slide-in overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+  <div class="flex items-start gap-3 p-4">
+    <a [routerLink]="profileLink()" class="shrink-0 cursor-pointer">
+      <ui-avatar
+        [initials]="player()?.initials ?? ''"
+        [accent]="player()?.accent ?? 'ink'"
+        [seed]="player()?.avatarSeed"
+        [avatarStyle]="player()?.avatarStyle"
+        size="sm"
+      />
+    </a>
     <div class="min-w-0 flex-1">
-      <p class="text-sm font-semibold">{{ item().text }}</p>
-      <p class="text-eyebrow mt-0.5 text-muted-foreground">{{ item().time }}</p>
-    </div>
-  </div>
-  @if (item().video) {
-    <video [src]="item().video" controls playsinline class="aspect-16/8 w-full bg-ink object-contain"></video>
-  } @else if (item().image) {
-    <img [src]="item().image" alt="" loading="lazy" class="aspect-16/8 w-full object-cover" />
-  }
-  @if (item().detail) {
-    <p class="px-4 pt-3 text-sm text-muted-foreground">{{ item().detail }}</p>
-  }
-  @if (item().stat) {
-    <div class="grid grid-cols-3 gap-2 p-4">
-      @for (s of item().stat; track s.label) {
-        <div class="rounded-xl bg-muted p-3">
-          <p class="text-stat text-xl">{{ s.value }}</p>
-          <p class="text-eyebrow mt-1 text-muted-foreground">{{ s.label }}</p>
-        </div>
+      <div class="flex items-center justify-between gap-2">
+        <a [routerLink]="profileLink()" class="min-w-0 cursor-pointer">
+          <p class="truncate text-sm font-bold hover:underline">{{ player()?.name }}</p>
+        </a>
+        @if (canDelete()) {
+          <button
+            type="button"
+            (click)="deleted.emit()"
+            [disabled]="deleting()"
+            [attr.aria-label]="'feed.deletePost' | translate"
+            class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-loss disabled:pointer-events-none disabled:opacity-40"
+          >
+            <ui-icon name="trash" className="size-3.5" />
+          </button>
+        }
+      </div>
+      <p class="text-eyebrow text-muted-foreground">{{ post().createdAt | date: 'd MMM · HH:mm' }}</p>
+      @if (post().type; as type) {
+        <ui-chip [subtle]="true" class="mt-1.5 inline-flex">{{ 'feed.type.' + type | translate }}</ui-chip>
+      }
+      @if (post().text) {
+        <p class="mt-2 text-sm whitespace-pre-wrap">{{ post().text }}</p>
       }
     </div>
-  } @else {
-    <div class="h-4"></div>
+  </div>
+
+  @if (post().mediaType === 'video') {
+    <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in">
+      <video [src]="post().mediaUrl" playsinline muted class="aspect-16/9 w-full bg-ink object-contain"></video>
+    </button>
+  } @else if (post().mediaType === 'image') {
+    <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in">
+      <img [src]="post().mediaUrl" alt="" loading="lazy" class="aspect-16/9 w-full object-cover" />
+    </button>
   }
+
+  <div class="flex items-center gap-4 p-4 pt-3">
+    <!-- canDelete() is only true for the post's own author — reused here to block liking your own post. -->
+    @if (!auth.isObserver() && !canDelete()) {
+      <button
+        type="button"
+        (click)="liked.emit()"
+        class="flex cursor-pointer items-center gap-1.5 text-xs font-extrabold tracking-wide uppercase"
+        [class]="post().likedByMe ? 'text-clay' : 'text-muted-foreground hover:text-foreground'"
+      >
+        <ui-icon name="tennis-ball" className="size-4" />
+        {{ post().likeCount || '' }}
+      </button>
+    } @else if (post().likeCount) {
+      <span class="flex items-center gap-1.5 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">
+        <ui-icon name="tennis-ball" className="size-4" /> {{ post().likeCount }}
+      </span>
+    }
+  </div>
 </article>

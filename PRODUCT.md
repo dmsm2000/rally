@@ -113,6 +113,19 @@ The public detail page is deliberately honest about data that has not been built
 - Passport and courts-discovered areas use empty/zero states until real per-player data exists.
 - Never fill a real player's page with unrelated mock matches, courts, passport countries, or achievements.
 
+## Feed: Current Product Rules
+
+The Feed is user-authored posts, kept deliberately simple — Twitter-like, not a full social network.
+
+- A post is text and/or a single photo or video. No multi-image galleries and no mixed photo+video in one post.
+- Three scope filters, and nothing else: **In my city**, **In my country**, **In the world**. There is no "Following" tab — geography is the only lens.
+- Reacting is a single like toggle, not a set of emoji reactions.
+- Replying never creates a visible public comment. It opens a real direct message to the post's author, pre-filled with a short quote of the post, and does nothing else — there is no comment thread anywhere in the product.
+- Images and videos open full-size in a lightbox on tap.
+- A player can delete their own post at any time; nobody else can.
+- Observers can browse every scope read-only (including the lightbox) but never see the like button or "Reply" — same restriction as messaging and inviting elsewhere in the product.
+- Courts, matches, and automatic notifications are expected to post into the feed automatically once those features are themselves real — not built yet, and deliberately so.
+
 ## Current Data Reality
 
 ### Real today
@@ -123,11 +136,11 @@ The public detail page is deliberately honest about data that has not been built
 - Public player discovery and public player detail data.
 - Country/city options in profile forms.
 - Direct messaging between two registered players, delivered live (Supabase Realtime), with a real typing indicator and per-participant read state.
-- Trip intents ("show me around"): publishing a trip, browsing host requests for your own city, volunteering (which sends a real message to the traveller, without hiding the post), and managing your own trips from your profile. Not yet posted to the feed or community map — deliberately deferred until the feed itself is real.
+- Trip intents ("show me around"): publishing a trip, browsing host requests for your own country, volunteering (which sends a real message to the traveller, without hiding the post), and managing your own trips from your profile.
+- The Feed: user-authored posts (text and/or one photo/video), scoped to your city, your country, or the world; a single like reaction; and a "Reply" that opens a real DM to the author rather than a public comment. Not yet auto-posted to by courts/matches/notifications — deliberately deferred until those are themselves real.
 
 ### Still mock today
 
-- Feed and social activity.
 - Courts and court activity.
 - Match scheduling/results/history.
 - Notifications.

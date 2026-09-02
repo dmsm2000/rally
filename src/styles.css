@@ -168,6 +168,23 @@ img.emoji {
   animation: rally-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+/* Used for content that replaces a previous set in place (e.g. switching a filter tab) — reads as
+   a continuation rather than a reload, since each new card slides/fades in as it mounts. */
+@keyframes rally-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-slide-in {
+  animation: rally-slide-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
 /* Toast entrance — drops in from above, where the stack is docked (top-center). */
 @keyframes toast-in {
   from {
