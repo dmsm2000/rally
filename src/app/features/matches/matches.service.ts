@@ -220,6 +220,11 @@ export class MatchesService {
     return this.repository.getById(id);
   }
 
+  /** For a public player-detail page's match-history tabs — see MatchesRepository.matchesForPlayer(). */
+  matchesForPlayer(playerId: string): Promise<Match[]> {
+    return this.repository.matchesForPlayer(playerId);
+  }
+
   playerById(id: string | undefined) {
     return this.repository.playerById(id);
   }

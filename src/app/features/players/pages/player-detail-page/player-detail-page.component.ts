@@ -1,11 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { Match } from '../../../../core/models';
 import { MessagesWidgetService } from '../../../../core/services/messages-widget.service';
 import { MatchesService } from '../../../matches/matches.service';
+import { MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import {
   AutocompleteComponent,
@@ -72,6 +74,7 @@ const GENDER_ICONS: Record<string, 'gender-male' | 'gender-female' | 'gender-non
     AutocompleteComponent,
     IconComponent,
     EmptyStateComponent,
+    MatchCardComponent,
     MatchScoreComponent,
     StatComponent,
     SectionHeaderComponent,
@@ -93,6 +96,33 @@ export class PlayerDetailPageComponent {
 
   protected readonly player = computed(() => this.players.getById(this.playerId()));
   protected readonly matchTab = signal<PlayerMatchTab>('upcoming');
+
+  private readonly playerMatchesRaw = signal<Match[]>([]);
+  protected readonly playerMatchesLoading = signal(true);
+
+  protected readonly playerUpcoming = computed(() => this.playerMatchesRaw().filter(m => m.status === 'upcoming'));
+  protected readonly playerComplete = computed(() => this.playerMatchesRaw().filter(m => m.status === 'complete'));
+  protected readonly playerOpen = computed(() => this.playerMatchesRaw().filter(m => m.status === 'open'));
+
+  constructor() {
+    // Reloads whenever the route's playerId changes (e.g. navigating from one profile to another
+    // without leaving the page) — mirrors MatchesService's own uid-driven reload effect.
+    effect(() => {
+      const id = this.playerId();
+      untracked(() => {
+        if (!id) {
+          this.playerMatchesRaw.set([]);
+          this.playerMatchesLoading.set(false);
+          return;
+        }
+        this.playerMatchesLoading.set(true);
+        void this.matches.matchesForPlayer(id).then(list => {
+          this.playerMatchesRaw.set(list);
+          this.playerMatchesLoading.set(false);
+        });
+      });
+    });
+  }
 
   protected preferenceKey(value: string): string {
     return PREFERENCE_KEYS[value] ?? value;

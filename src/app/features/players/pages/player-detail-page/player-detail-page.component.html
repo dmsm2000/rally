@@ -90,10 +90,39 @@
             {{ 'players.matchesOpen' | translate }}
           </button>
         </div>
-        <ui-empty-state
-          [title]="'players.matchesEmptyTitle' | translate"
-          [body]="'players.matchesEmptyBody' | translate"
-        />
+        @if (playerMatchesLoading()) {
+          <div class="space-y-3">
+            @for (i of [0, 1]; track i) {
+              <div class="animate-pulse rounded-2xl border border-border bg-card p-4">
+                <div class="flex items-center justify-between">
+                  <div class="h-4 w-20 rounded-full bg-muted"></div>
+                  <div class="h-4 w-16 rounded-full bg-muted"></div>
+                </div>
+                <div class="mt-3 h-3.5 w-2/3 rounded-full bg-muted"></div>
+                <div class="mt-2 h-3.5 w-1/2 rounded-full bg-muted"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          @let tabMatches = matchTab() === 'upcoming' ? playerUpcoming() : matchTab() === 'complete' ? playerComplete() : playerOpen();
+          @if (tabMatches.length) {
+            <div class="space-y-3">
+              @for (m of tabMatches; track m.id) {
+                <rally-match-card
+                  [match]="m"
+                  [playerA]="matches.playerById(m.playerA)"
+                  [playerB]="matches.playerById(m.playerB)"
+                  [participants]="matches.participantsFor(m)"
+                />
+              }
+            </div>
+          } @else {
+            <ui-empty-state
+              [title]="'players.matchesEmptyTitle' | translate"
+              [body]="'players.matchesEmptyBody' | translate"
+            />
+          }
+        }
       </section>
 
       <section>

@@ -145,7 +145,7 @@ Note: migration filenames on disk don't currently match this list's numbering 1:
 
 - Courts, passport countries/courts/achievements and community stats (including the matches hero's "matches this week" stat) still originate in `RallyDataService` / `rally-dataset.ts`. `RallyDataService.playersMetBy()` — Passport's "players met" connections graph — is now backed by a small standalone `MOCK_MATCH_PAIRINGS` list (`rally-dataset.ts`), not by real match rows, since Passport itself is still mock; do not wire it to `MatchesRepository` without also making Passport real.
 - Real discovery profiles map into the older rich `Player` UI contract with neutral placeholder activity values: no distance, zero stats/match score.
-- The player detail deliberately shows empty states for real player match tabs (`matchTab` on `PlayerDetailPageComponent` is not yet wired to `MatchesService`, even though matches themselves are real — an explicit, deferred follow-up) and discovered courts, and a zeroed passport block. Do not reintroduce unrelated mock courts/achievements into a real player's profile.
+- The player detail page's match-history tabs (`matchTab` on `PlayerDetailPageComponent`) are wired to `MatchesService.matchesForPlayer()` (`MatchesRepository.matchesForPlayer()`), rendering real `rally-match-card`s per tab (upcoming/complete/open) with a loading skeleton and the existing `players.matchesEmptyTitle/Body` empty state. Since `matches` select RLS (`0018_matches.sql`) only grants a signed-in viewer rows where they're also a participant, plus that player's public open-match posts, another player's tabs will typically only surface matches shared with the viewer, not that player's full private history — this is intended, not a bug. Discovered courts and the passport block are still deliberately empty. Do not reintroduce unrelated mock courts/achievements into a real player's profile.
 
 ### Discovery Behaviour
 
@@ -216,8 +216,9 @@ The user has just made matches real (direct invites, open matches published to t
 
 1. Team assignment for doubles once there's a real need for it (pairing the 4 roster slots into two sides) — deliberately deferred, see the Matches/Doubles entry above.
 2. Wire the doubles roster + join button into the Feed's `rally-feed-card` itself, instead of the current read-mostly roster-count-plus-link treatment.
-3. Wire the public player detail page's real match-history tabs to `MatchesService` (currently a static empty state for all three tabs — explicitly deferred when matches went real, see the Matches entry above).
-4. Build rich score/stats entry (per-set scores, `MatchStat` rows) — `matches.sets jsonb` already supports it schema-wise, only the completion UI is a minimal winner-picker today (singles only; doubles has no completion UI yet at all).
-5. Replace empty player passports and discovered courts with actual per-user activity.
-6. Calculate genuine compatibility/match score and distance only after real location and matching logic exist.
-7. Continue replacing mock feature data carefully, feature by feature, without exposing private profile fields.
+3. Build rich score/stats entry (per-set scores, `MatchStat` rows) — `matches.sets jsonb` already supports it schema-wise, only the completion UI is a minimal winner-picker today (singles only; doubles has no completion UI yet at all).
+4. Replace empty player passports and discovered courts with actual per-user activity.
+5. Calculate genuine compatibility/match score and distance only after real location and matching logic exist.
+6. Continue replacing mock feature data carefully, feature by feature, without exposing private profile fields.
+
+(Player detail match-history tabs are now wired to `MatchesService` — see the "Mock today" entry above.)

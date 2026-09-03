@@ -146,6 +146,29 @@ export class MatchesRepository {
     return (data as MatchRow[]).map(row => this.toMatch(row));
   }
 
+  /** Every match this player is (or was) part of, that RLS lets the caller see — see
+   * 0018_matches.sql's select policy: a signed-in viewer only sees matches shared with `playerId`
+   * (both are player_a/player_b, or a doubles roster they're both on) plus that player's public
+   * open-match posts, not their full private history. */
+  async matchesForPlayer(playerId: string): Promise<Match[]> {
+    const { data: participantRows } = await supabase.from('match_participants').select('match_id').eq('player_id', playerId);
+    const orParts = [`player_a.eq.${playerId}`, `player_b.eq.${playerId}`];
+    const participantMatchIds = (participantRows ?? []).map(r => r.match_id as string);
+    if (participantMatchIds.length > 0) {
+      orParts.push(`id.in.(${participantMatchIds.join(',')})`);
+    }
+    const { data, error } = await supabase
+      .from('matches')
+      .select(SELECT_COLUMNS_WITH_PARTICIPANTS)
+      .or(orParts.join(','))
+      .order('match_date', { ascending: false });
+    if (error || !data) {
+      console.error('Failed to load matches for player:', error?.message);
+      return [];
+    }
+    return (data as MatchRow[]).map(row => this.toMatch(row));
+  }
+
   /** Open matches still waiting for a taker, near this location. */
   async openMatchesNear(country: string, city?: string): Promise<Match[]> {
     let query = supabase
