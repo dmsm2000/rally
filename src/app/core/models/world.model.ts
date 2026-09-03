@@ -1,10 +1,3 @@
-export interface CommunityStats {
-  courtsCaptured: number;
-  countriesUnlocked: number;
-  activePlayers: number;
-  matchesThisWeek: number;
-}
-
 export type WorldActivityKind = 'capture' | 'challenge' | 'match' | 'trip';
 
 export interface WorldActivityItem {

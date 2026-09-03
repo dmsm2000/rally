@@ -5,7 +5,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { POST_TYPES, PostType } from '../../../../core/models';
 import { FeedCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { AvatarComponent, ChipComponent, EmptyStateComponent, IconComponent, StatComponent } from '../../../../shared/ui';
+import { AvatarComponent, ChipComponent, EmptyStateComponent, IconComponent } from '../../../../shared/ui';
 import { FeedScope } from '../../data/posts.repository';
 import { FeedService } from '../../feed.service';
 
@@ -28,7 +28,6 @@ const NEAR_TOP_THRESHOLD_PX = 24;
   imports: [
     RouterLink,
     FormsModule,
-    StatComponent,
     AvatarComponent,
     IconComponent,
     ChipComponent,

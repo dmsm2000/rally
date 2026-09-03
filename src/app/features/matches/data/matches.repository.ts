@@ -3,7 +3,8 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { AuthService } from '../../../core/auth/auth.service';
 import { supabase } from '../../../core/auth/supabase.client';
 import { RallyDataService } from '../../../core/data/rally-data.service';
-import { CommunityStats, Court, Match, MatchFormat, MatchKind, MatchStatus, SessionType } from '../../../core/models';
+import { Court, Match, MatchFormat, MatchKind, MatchStatus, SessionType } from '../../../core/models';
+import { CourtsRepository } from '../../courts/data/courts.repository';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { PlayersRepository } from '../../players/data/players.repository';
 
@@ -57,6 +58,7 @@ const SELECT_COLUMNS_WITH_PARTICIPANTS = `${SELECT_COLUMNS},match_participants(p
 export class MatchesRepository {
   private readonly auth = inject(AuthService);
   private readonly data = inject(RallyDataService);
+  private readonly courts = inject(CourtsRepository);
   private readonly notifications = inject(NotificationsService);
   private readonly players = inject(PlayersRepository);
 
@@ -94,16 +96,29 @@ export class MatchesRepository {
     }
   }
 
-  courts(): Court[] {
-    return this.data.courts();
+  /** The real court catalogue, loaded lazily — see CourtsRepository. */
+  courtCatalogue(): Court[] {
+    return this.courts.catalogue();
   }
 
+  ensureCourts(): Promise<void> {
+    return this.courts.ensureCatalogue();
+  }
+
+  // Returns undefined for a court that isn't public yet (an unconfirmed draft) or simply isn't
+  // loaded — callers fall back to the match's own denormalized city/country.
   courtById(id: string | undefined): Court | undefined {
-    return id ? this.data.courtById(id) : undefined;
+    return this.courts.courtById(id);
   }
 
-  communityStats(): CommunityStats {
-    return this.data.communityStats;
+  /** Community-wide, so it goes through an RPC — RLS would otherwise only count my own matches. */
+  async countMatchesThisWeek(): Promise<number> {
+    const { data, error } = await supabase.rpc('count_matches_this_week');
+    if (error || data === null) {
+      console.error('Failed to count matches this week:', error?.message);
+      return 0;
+    }
+    return data as number;
   }
 
   // Discovery excludes the signed-in player (see PlayersRepository), so a match where I'm

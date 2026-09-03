@@ -2,9 +2,10 @@ import { Injectable, computed, effect, inject, signal, untracked } from '@angula
 import { AuthService } from '../../core/auth/auth.service';
 import { CountryDataService } from '../../core/data/country-data.service';
 import { TranslationService } from '../../core/i18n/translation.service';
-import { Match, MatchFormat, SessionType } from '../../core/models';
+import { Match, MatchFormat, SessionType, courtLabel } from '../../core/models';
 import { ToastService } from '../../core/services/toast.service';
 import { PostsRepository } from '../feed/data/posts.repository';
+import { CourtsService } from '../courts/courts.service';
 import { CreateMatchInput, MatchesRepository } from './data/matches.repository';
 
 export const SESSION_TYPES: SessionType[] = ['FullMatch', 'Training', 'HittingSession', 'PracticeMatch'];
@@ -20,6 +21,7 @@ export class MatchesService {
   private readonly toast = inject(ToastService);
   private readonly translation = inject(TranslationService);
   private readonly countryData = inject(CountryDataService);
+  private readonly courtsService = inject(CourtsService);
 
   readonly myId = this.auth.currentUserId;
 
@@ -58,8 +60,14 @@ export class MatchesService {
     void this.reload();
   }
 
-  readonly courts = computed(() => this.repository.courts());
-  readonly communityStats = computed(() => this.repository.communityStats());
+  // Courts the player can pick from when scheduling: real, public, and — since captures are what
+  // make a place worth knowing — their own captured ones first.
+  readonly courts = computed(() => this.repository.courtCatalogue());
+  readonly courtOptions = computed(() =>
+    [...this.courts()].sort((a, b) => Number(!!b.capturedByMe) - Number(!!a.capturedByMe))
+  );
+  readonly courtOptionLabels = computed(() => this.courtOptions().map(c => courtLabel(c)));
+  readonly matchesThisWeek = signal(0);
   readonly openPlayersCount = computed(() => new Set(this.open().map(m => m.playerA)).size);
 
   readonly sessionTypes = SESSION_TYPES;
@@ -68,8 +76,9 @@ export class MatchesService {
   readonly doublesCapacity = DOUBLES_CAPACITY;
 
   readonly composerSessionType = signal<SessionType>('FullMatch');
-  // Court selection isn't wired up yet (courts are still mock) — radius mode is the only real
-  // option for now, see the disabled "Pick a court" chip in the composer templates.
+  // Both modes are real now that courts are: 'court' pins an actual registered court (which also
+  // means completing the match captures it — see 0028_matches_court_fk.sql), 'radius' stays the
+  // "somewhere around this city" option for a place that isn't registered yet.
   readonly composerLocationMode = signal<'court' | 'radius'>('radius');
   readonly composerCourtId = signal<string>('');
   readonly composerCity = signal('');
@@ -130,6 +139,20 @@ export class MatchesService {
 
   constructor() {
     this.countryData.loadCountries();
+    // The composer's court picker reads from the shared catalogue signal, so it has to be warm.
+    void this.repository.ensureCourts();
+    void this.repository.countMatchesThisWeek().then(count => this.matchesThisWeek.set(count));
+
+    // Registering a court from inside the composer should leave it selected — otherwise the player
+    // is dropped back into a list to hunt for the thing they just created.
+    effect(() => {
+      const courtId = this.courtsService.lastRegisteredCourtId();
+      untracked(() => {
+        if (courtId && this.composerOpen() && this.composerLocationMode() === 'court') {
+          this.composerCourtId.set(courtId);
+        }
+      });
+    });
 
     // Tracks both signals (not just isAuthenticated()) so switching between two real accounts
     // without an intervening logged-out tick still re-fires this effect and reloads. Observers
@@ -214,7 +237,11 @@ export class MatchesService {
   private handleRealtimeMatch(match: Match): void {
     this.lastRealtimeMatch.set(match);
     const me = this.auth.currentPlayer();
-    const isMine = match.playerA === this.myId() || match.playerB === this.myId() || !!match.participantIds?.includes(this.myId() ?? '');
+    // Needs a real uid before comparing: playerB is undefined on every doubles/open match, and an
+    // observer's myId() is undefined too, so a bare === made every such event look like "mine" and
+    // triggered a reload on every match change anywhere in the world.
+    const uid = this.myId();
+    const isMine = !!uid && (match.playerA === uid || match.playerB === uid || !!match.participantIds?.includes(uid));
     const isRelevantOpen = match.kind === 'open' && (this.openScope() === 'world' || match.country === me.country);
     if (isMine || isRelevantOpen) {
       void this.reload();
@@ -238,22 +265,41 @@ export class MatchesService {
     return this.repository.courtById(id);
   }
 
+  /** Resolves the court picked in the composer's autocomplete, which works off labels. */
+  setComposerCourtLabel(label: string): void {
+    const court = this.courtOptions().find(c => courtLabel(c) === label);
+    this.composerCourtId.set(court?.id ?? '');
+  }
+
+  composerCourtLabel(): string {
+    const court = this.courtById(this.composerCourtId());
+    return court ? courtLabel(court) : '';
+  }
+
   isMine(playerId: string | undefined): boolean {
     return !!playerId && playerId === this.myId();
   }
 
-  // Either a specific court, or "somewhere within X km of this city" when no court was picked.
+  /**
+   * Either a specific court, or "somewhere within X km of this city" when no court was picked.
+   * Returns plain text with no leading icon: every caller already renders its own 📍 span, so a
+   * pin here would double up.
+   */
   openMatchLocation(match: Match): string {
     if (match.courtId) {
       const court = this.courtById(match.courtId);
-      return court ? `${court.flag} ${court.name}` : '';
+      // A court that isn't in the public catalogue (an unconfirmed draft) still has a location —
+      // fall through to the match's own city rather than rendering an empty line.
+      if (court) {
+        return courtLabel(court);
+      }
     }
     // A direct invite's city is a concrete arrangement, not "anyone within X km" — only open
     // matches published in radius mode actually carry a radiusKm.
     if (match.radiusKm) {
-      return `📍 ${match.city} · ±${match.radiusKm}km`;
+      return `${match.city} · ±${match.radiusKm}km`;
     }
-    return `📍 ${match.city}`;
+    return match.city;
   }
 
   formatMatchDateTime(match: Match): string {
@@ -408,8 +454,10 @@ export class MatchesService {
       if (!court) {
         return null;
       }
-      city = court.city;
-      country = court.country;
+      // Still denormalized off the court, exactly as it was off the mock one — feed scoping and the
+      // match_open_nearby fan-out need city/country populated whichever mode was used.
+      city = court.venue.city;
+      country = court.venue.country;
       courtId = court.id;
     } else {
       city = this.composerCity().trim();

@@ -58,10 +58,10 @@
     </div>
 
     <div class="mt-8 grid grid-cols-2 gap-6 border-t border-bone/15 pt-6 sm:grid-cols-4">
-      <ui-stat [value]="profile.me().stats.wins" [label]="'stats.wins' | translate" />
-      <ui-stat [value]="profile.me().stats.matches" [label]="'stats.matches' | translate" />
-      <ui-stat [value]="profile.me().stats.courts" [label]="'stats.courts' | translate" />
-      <ui-stat [value]="profile.me().stats.countries" [label]="'stats.countries' | translate" />
+      <ui-stat [value]="winCount()" [label]="'stats.wins' | translate" />
+      <ui-stat [value]="completedCount()" [label]="'stats.matches' | translate" />
+      <ui-stat [value]="courts.myCaptureCount()" [label]="'stats.courts' | translate" />
+      <ui-stat [value]="courts.myCountryCount()" [label]="'stats.countries' | translate" />
     </div>
   </div>
 </section>

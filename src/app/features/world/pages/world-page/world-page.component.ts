@@ -14,6 +14,7 @@ import {
   SectionHeaderComponent,
   StatComponent
 } from '../../../../shared/ui';
+import { CourtsService } from '../../../courts/courts.service';
 import { PlayersService } from '../../../players/players.service';
 import { WorldService } from '../../world.service';
 
@@ -39,6 +40,7 @@ import { WorldService } from '../../world.service';
 export class WorldPageComponent {
   protected readonly world = inject(WorldService);
   protected readonly players = inject(PlayersService);
+  protected readonly courts = inject(CourtsService);
   protected readonly auth = inject(AuthService);
 
   // Mirrors FeedPageComponent.onBackdropClick — only closes when the backdrop itself (not the

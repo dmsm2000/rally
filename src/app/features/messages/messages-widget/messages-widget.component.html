@@ -86,7 +86,7 @@
     type="button"
     (click)="widget.toggle()"
     [attr.aria-label]="'messages.title' | translate"
-    class="relative flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5"
+    class="rally-fab relative flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl"
   >
     <span [class.animate-tennis-bounce]="messages.unreadTotal() > 0 && !widget.isOpen()">💬</span>
     @if (messages.unreadTotal() > 0) {

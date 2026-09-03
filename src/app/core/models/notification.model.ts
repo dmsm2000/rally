@@ -6,7 +6,11 @@ export type NotificationKind =
   | 'match_invite_declined'
   | 'match_joined'
   | 'match_cancelled'
-  | 'match_open_nearby';
+  | 'match_open_nearby'
+  // Emitted when a second player's on-site check-in promotes a draft venue to live: the discoverer
+  // gets the personal one, everyone in that city gets the ambient one.
+  | 'court_verified'
+  | 'court_added_nearby';
 
 export interface AppNotification {
   id: string;

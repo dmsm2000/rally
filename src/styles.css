@@ -148,6 +148,20 @@ img.emoji {
   vertical-align: -0.1em;
 }
 
+/* A FAB's emoji sits on the lime accent, where 🎾 — itself yellow-green — all but disappears.
+   Twemoji swaps the character for an <img> only after render, so component styles never reach it
+   (same reason as the ui-icon rule below). The first shadow hugs the artwork as a near-outline, the
+   second lifts it off the disc; together they separate the emoji from lime without tinting it.
+   Descendant selector on purpose: the messages FAB nests its emoji inside a <span> that carries the
+   unread bounce animation. Applied by adding `rally-fab` to the button — all five FABs have it. */
+.rally-fab img.emoji {
+  height: 1.2em;
+  width: 1.2em;
+  margin: 0;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 1px oklch(0.19 0.017 252 / 0.55)) drop-shadow(0 1px 2px oklch(0.19 0.017 252 / 0.35));
+}
+
 /* IconComponent inlines real .svg files via [innerHTML] — that content skips Angular's
    emulated style encapsulation, so this sizing rule has to live in the global stylesheet. */
 .ui-icon-svg svg {

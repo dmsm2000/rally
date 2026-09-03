@@ -22,6 +22,14 @@ export type IconName =
   | 'gender-nonbinary'
   | 'trash'
   | 'tennis-ball'
+  | 'map-pin'
+  | 'crosshair'
+  | 'shield-check'
+  | 'camera'
+  | 'flag'
+  | 'plus'
+  | 'check'
+  | 'lightbulb'
   | 'close';
 
 // Maps each name to its dedicated file under public/assets/icons/.
@@ -45,6 +53,14 @@ const ICON_URLS: Record<IconName, string> = {
   'gender-nonbinary': 'assets/icons/gender-nonbinary.svg',
   trash: 'assets/icons/trash.svg',
   'tennis-ball': 'assets/icons/tennis-ball.svg',
+  'map-pin': 'assets/icons/map-pin.svg',
+  crosshair: 'assets/icons/crosshair.svg',
+  'shield-check': 'assets/icons/shield-check.svg',
+  camera: 'assets/icons/camera.svg',
+  flag: 'assets/icons/flag.svg',
+  plus: 'assets/icons/plus.svg',
+  check: 'assets/icons/check.svg',
+  lightbulb: 'assets/icons/lightbulb.svg',
   close: 'assets/icons/close.svg'
 };
 

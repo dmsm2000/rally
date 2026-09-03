@@ -3,6 +3,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { AuthService } from '../../../core/auth/auth.service';
 import { supabase } from '../../../core/auth/supabase.client';
 import { Post, PostType } from '../../../core/models';
+import { CourtsRepository } from '../../courts/data/courts.repository';
 import { MatchesRepository } from '../../matches/data/matches.repository';
 import { PlayersRepository } from '../../players/data/players.repository';
 import { TripsRepository } from '../../world/data/trips.repository';
@@ -21,6 +22,7 @@ interface PostRow {
   type: PostType | null;
   trip_intent_id: string | null;
   match_id: string | null;
+  venue_id: string | null;
   created_at: string;
 }
 
@@ -44,6 +46,7 @@ export class PostsRepository {
   private readonly players = inject(PlayersRepository);
   private readonly trips = inject(TripsRepository);
   private readonly matches = inject(MatchesRepository);
+  private readonly courts = inject(CourtsRepository);
 
   private realtimeChannel?: RealtimeChannel;
 
@@ -95,7 +98,7 @@ export class PostsRepository {
     const uid = this.auth.currentUserId();
     let query = supabase
       .from('posts')
-      .select('id,author_id,text,media_url,media_type,type,trip_intent_id,match_id,created_at')
+      .select('id,author_id,text,media_url,media_type,type,trip_intent_id,match_id,venue_id,created_at')
       .order('created_at', { ascending: false });
 
     if (scope !== 'world') {
@@ -106,7 +109,10 @@ export class PostsRepository {
       // actually happening" (potential hosts, potential opponents).
       const tripIds = me.country ? await this.trips.idsForDestination(me.country, scope === 'city' ? me.city : undefined) : [];
       const matchIds = me.country ? await this.matches.idsForLocation(me.country, scope === 'city' ? me.city : undefined) : [];
-      if (authorIds.length === 0 && tripIds.length === 0 && matchIds.length === 0) {
+      // A verified court is news where the court is, not where its discoverer lives — same
+      // reasoning as trips and open matches above.
+      const venueIds = me.country ? await this.courts.venueIdsForLocation(me.country, scope === 'city' ? me.city : undefined) : [];
+      if (authorIds.length === 0 && tripIds.length === 0 && matchIds.length === 0 && venueIds.length === 0) {
         return { posts: [], hasMore: false };
       }
       const filters: string[] = [];
@@ -118,6 +124,9 @@ export class PostsRepository {
       }
       if (matchIds.length > 0) {
         filters.push(`match_id.in.(${matchIds.join(',')})`);
+      }
+      if (venueIds.length > 0) {
+        filters.push(`venue_id.in.(${venueIds.join(',')})`);
       }
       query = query.or(filters.join(','));
     }
@@ -263,6 +272,12 @@ export class PostsRepository {
         return true;
       }
     }
+    if (row.venue_id) {
+      const venueIds = await this.courts.venueIdsForLocation(me.country, scope === 'city' ? me.city : undefined);
+      if (venueIds.includes(row.venue_id)) {
+        return true;
+      }
+    }
     return false;
   }
 
@@ -284,12 +299,14 @@ export class PostsRepository {
     const ids = rows.map(r => r.id);
     const tripIds = [...new Set(rows.map(r => r.trip_intent_id).filter((id): id is string => !!id))];
     const matchIds = [...new Set(rows.map(r => r.match_id).filter((id): id is string => !!id))];
+    const venueIds = [...new Set(rows.map(r => r.venue_id).filter((id): id is string => !!id))];
 
-    const [likesResult, trips, volunteeredTripIds, matches] = await Promise.all([
+    const [likesResult, trips, volunteeredTripIds, matches, venues] = await Promise.all([
       supabase.from('post_likes').select('post_id,user_id').in('post_id', ids),
       this.trips.getByIds(tripIds),
       this.trips.myVolunteeredTripIds(tripIds),
-      this.matches.getByIds(matchIds)
+      this.matches.getByIds(matchIds),
+      this.courts.venueSummaries(venueIds)
     ]);
 
     const { data: likeRows, error } = likesResult;
@@ -306,10 +323,12 @@ export class PostsRepository {
     }
     const tripById = new Map(trips.map(t => [t.id, t]));
     const matchById = new Map(matches.map(m => [m.id, m]));
+    const venueById = new Map(venues.map(v => [v.venueId, v]));
 
     return rows.map(row => {
       const trip = row.trip_intent_id ? tripById.get(row.trip_intent_id) : undefined;
       const match = row.match_id ? matchById.get(row.match_id) : undefined;
+      const venue = row.venue_id ? venueById.get(row.venue_id) : undefined;
       return {
         id: row.id,
         authorId: row.author_id,
@@ -350,6 +369,7 @@ export class PostsRepository {
               participantIds: match.format === 'Doubles' ? match.participantIds : undefined
             }
           : null,
+        venue: venue ?? null,
         createdAt: row.created_at,
         likeCount: countByPost.get(row.id) ?? 0,
         likedByMe: likedByMe.has(row.id)

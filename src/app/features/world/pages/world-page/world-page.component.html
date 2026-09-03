@@ -8,16 +8,8 @@
     <h1 class="text-display mt-3 max-w-2xl text-4xl sm:text-6xl">{{ 'world.title' | translate }}</h1>
     <p class="mt-4 max-w-md text-sm text-bone/80">{{ 'world.lead' | translate }}</p>
     <div class="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-bone/15 pt-6">
-      <ui-stat
-        size="sm"
-        [value]="world.communityStats.courtsCaptured"
-        [label]="'world.statCourtsCaptured' | translate"
-      />
-      <ui-stat
-        size="sm"
-        [value]="world.communityStats.countriesUnlocked"
-        [label]="'world.statCountriesUnlocked' | translate"
-      />
+      <ui-stat size="sm" [value]="courts.communityCourts()" [label]="'world.statCourtsCaptured' | translate" />
+      <ui-stat size="sm" [value]="courts.communityCountries()" [label]="'world.statCountriesUnlocked' | translate" />
       <ui-stat size="sm" [value]="players.activeCount()" [label]="'world.statActivePlayers' | translate" />
     </div>
   </div>
@@ -240,7 +232,7 @@
     type="button"
     (click)="world.openTripComposer()"
     [attr.aria-label]="'world.tripComposerFabLabel' | translate"
-    class="fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 lg:right-6 lg:bottom-[6.25rem]"
+    class="rally-fab fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl lg:right-6 lg:bottom-[6.25rem]"
   >
     🗺️
   </button>

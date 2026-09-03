@@ -1,5 +1,6 @@
 export * from './player-card/player-card.component';
 export * from './court-card/court-card.component';
+export * from './court-composer-dialog/court-composer-dialog.component';
 export * from './match-card/match-card.component';
 export * from './feed-card/feed-card.component';
 export * from './achievement-card/achievement-card.component';

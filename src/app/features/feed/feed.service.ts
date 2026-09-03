@@ -1,8 +1,10 @@
 import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { RealtimeChannel } from '@supabase/supabase-js';
 import { AuthService } from '../../core/auth/auth.service';
+import { supabase } from '../../core/auth/supabase.client';
 import { RallyDataService } from '../../core/data/rally-data.service';
 import { TranslationService } from '../../core/i18n/translation.service';
-import { Player, Post, PostType } from '../../core/models';
+import { Match, Player, Post, PostType } from '../../core/models';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { ToastService } from '../../core/services/toast.service';
 import { MatchesRepository } from '../matches/data/matches.repository';
@@ -18,8 +20,8 @@ export class FeedService {
   private readonly auth = inject(AuthService);
   private readonly repository = inject(PostsRepository);
   private readonly players = inject(PlayersService);
-  private readonly trips = inject(TripsRepository);
   private readonly matches = inject(MatchesRepository);
+  private readonly trips = inject(TripsRepository);
   private readonly toast = inject(ToastService);
   private readonly translation = inject(TranslationService);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -63,7 +65,37 @@ export class FeedService {
     return `${me.country ?? ''}::${me.city ?? ''}`;
   });
 
+  // Every open match anywhere (they're globally visible — see 0022), held as a list rather than a
+  // count so switching the feed's scope re-counts without another round trip.
+  private readonly openMatches = signal<Match[]>([]);
+  private openMatchesChannel?: RealtimeChannel;
+
+  /**
+   * Open matches the viewer could actually take, in the scope they're browsing. Excludes their own
+   * postings: your own open match isn't waiting for *you*.
+   */
+  readonly openMatchCount = computed(() => {
+    const uid = this.auth.currentUserId();
+    const me = this.auth.currentPlayer();
+    const scope = this.scope();
+    return this.openMatches().filter(match => {
+      if (uid && match.playerA === uid) {
+        return false;
+      }
+      if (scope === 'city') {
+        return !!me.city && match.city === me.city && match.country === me.country;
+      }
+      if (scope === 'country') {
+        return !!me.country && match.country === me.country;
+      }
+      return true;
+    }).length;
+  });
+
   constructor() {
+    void this.refreshOpenMatches();
+    this.subscribeToOpenMatches();
+
     effect(() => {
       const scope = this.scope();
       this.myLocationKey();
@@ -355,6 +387,27 @@ export class FeedService {
     if (freshOnes.length > 0) {
       this._posts.update(list => [...freshOnes, ...list]);
     }
+  }
+
+  private async refreshOpenMatches(): Promise<void> {
+    this.openMatches.set(await this.matches.allOpenMatches());
+  }
+
+  /**
+   * Keeps the headline count live. Deliberately its own channel rather than reusing
+   * `MatchesRepository.subscribeToMatchEvents()`, which holds a single channel handle and would be
+   * torn down and replaced by whichever caller subscribed last — that would silently kill the
+   * matches page's own realtime. Any event just refetches: open matches are rare enough that
+   * patching the list by hand would be more code than it saves, and a refetch can't drift.
+   */
+  private subscribeToOpenMatches(): void {
+    this.openMatchesChannel?.unsubscribe();
+    this.openMatchesChannel = supabase
+      .channel('feed-open-matches')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
+        void this.refreshOpenMatches();
+      })
+      .subscribe();
   }
 
   private async reload(): Promise<void> {

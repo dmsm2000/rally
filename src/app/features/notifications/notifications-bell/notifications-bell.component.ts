@@ -49,6 +49,16 @@ const RENDERERS: Record<NotificationKind, NotificationRenderer> = {
     icon: '📍',
     textKey: 'notifications.kinds.matchOpenNearby.text',
     detailKey: 'notifications.kinds.matchOpenNearby.detail'
+  },
+  court_verified: {
+    icon: '🛡️',
+    textKey: 'notifications.kinds.courtVerified.text',
+    detailKey: 'notifications.kinds.courtVerified.detail'
+  },
+  court_added_nearby: {
+    icon: '🎾',
+    textKey: 'notifications.kinds.courtAddedNearby.text',
+    detailKey: 'notifications.kinds.courtAddedNearby.detail'
   }
 };
 
@@ -112,6 +122,13 @@ export class NotificationsBellComponent {
       const matchId = notification.data['matchId'];
       if (matchId) {
         void this.router.navigate(['/matches', matchId]);
+      }
+      return;
+    }
+    if (notification.kind.startsWith('court_')) {
+      const courtId = notification.data['courtId'];
+      if (courtId) {
+        void this.router.navigate(['/courts', courtId]);
       }
       return;
     }

@@ -159,17 +159,35 @@
         [action]="'passport.allCourts' | translate"
         to="/courts"
       />
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        @for (c of passport.visitedCourts(); track c.id) {
-          <div class="overflow-hidden rounded-2xl border border-border bg-card">
-            <img [src]="c.image" [alt]="c.name" loading="lazy" class="aspect-16/8 w-full object-cover" />
-            <div class="p-4">
-              <p class="font-display text-sm font-extrabold tracking-tight uppercase">{{ c.name }}</p>
-              <p class="mt-1 text-xs text-muted-foreground">{{ c.flag }} {{ c.city }} · {{ c.surface }}</p>
-            </div>
-          </div>
-        }
-      </div>
+      @if (passport.loadingCourts()) {
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          @for (i of [0, 1, 2]; track i) {
+            <div class="h-24 animate-pulse rounded-2xl border border-border bg-muted"></div>
+          }
+        </div>
+      } @else if (passport.visitedCourts().length) {
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          @for (c of passport.visitedCourts(); track c.courtId) {
+            <a
+              [routerLink]="['/courts', c.courtId]"
+              class="block overflow-hidden rounded-2xl border border-border bg-card p-4 hover:border-foreground"
+            >
+              <p class="font-display text-sm font-extrabold tracking-tight uppercase">{{ c.venueName }}</p>
+              <p class="mt-1 text-xs text-muted-foreground">
+                {{ c.flag }} {{ c.city }} · {{ 'enums.surface.' + c.surface | translate }}
+                @if (c.number) {
+                  · {{ c.number }}
+                }
+              </p>
+            </a>
+          }
+        </div>
+      } @else {
+        <ui-empty-state
+          [title]="'passport.courtsEmptyTitle' | translate"
+          [body]="'passport.courtsEmptyBody' | translate"
+        />
+      }
     </section>
   }
 

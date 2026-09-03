@@ -3,7 +3,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { MatchCardComponent } from '../../../../shared/components';
+import { CourtComposerDialogComponent, MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import {
   AutocompleteComponent,
@@ -16,6 +16,7 @@ import {
   StatComponent,
   TimePickerComponent
 } from '../../../../shared/ui';
+import { CourtsService } from '../../../courts/courts.service';
 import { MatchesService } from '../../matches.service';
 
 @Component({
@@ -34,6 +35,7 @@ import { MatchesService } from '../../matches.service';
     AvatarComponent,
     IconComponent,
     MatchCardComponent,
+    CourtComposerDialogComponent,
     TranslatePipe
   ],
   templateUrl: './matches-list-page.component.html',
@@ -41,6 +43,7 @@ import { MatchesService } from '../../matches.service';
 })
 export class MatchesListPageComponent {
   protected readonly matches = inject(MatchesService);
+  protected readonly courts = inject(CourtsService);
   protected readonly auth = inject(AuthService);
   // Placeholder rows shown in place of each list while the first load is in flight.
   protected readonly skeletonRows = [0, 1, 2];

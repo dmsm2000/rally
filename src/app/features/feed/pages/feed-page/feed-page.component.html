@@ -56,8 +56,15 @@
             {{ feed.me().city }}
           </p>
           <h2 class="text-display mt-3 max-w-lg text-2xl text-bone sm:text-4xl">
-            {{ 'feed.heroTitleLine1' | translate }} {{ 'feed.heroTitleLine2.' + feed.scope() | translate }}
-            <span class="text-lime">{{ 'feed.heroTitleLine3' | translate }}</span>
+            @if (feed.openMatchCount(); as count) {
+              <!-- A real number when there is one to show; "Há 0 partidas" would be a sad headline,
+                   so an empty scope falls back to the generic invitation below. -->
+              {{ (count === 1 ? 'feed.heroMatchesOne' : 'feed.heroMatchesMany') | translate: { count } }}
+              <span class="text-lime">{{ 'feed.heroMatchesScope.' + feed.scope() | translate }}</span>
+            } @else {
+              {{ 'feed.heroTitleLine1' | translate }} {{ 'feed.heroTitleLine2.' + feed.scope() | translate }}
+              <span class="text-lime">{{ 'feed.heroTitleLine3' | translate }}</span>
+            }
           </h2>
           <p class="mt-3 max-w-md text-sm text-bone/80">{{ 'feed.heroCopy.' + feed.scope() | translate }}</p>
           <div class="mt-5 flex flex-wrap gap-3">
@@ -74,11 +81,6 @@
               {{ 'feed.exploreWorld' | translate }}
             </a>
           </div>
-          <div class="mt-6 grid max-w-xl grid-cols-3 gap-4 border-t border-bone/15 pt-5 text-bone">
-            <ui-stat size="sm" [value]="feed.me().stats.matches" [label]="'stats.matches' | translate" />
-            <ui-stat size="sm" [value]="feed.me().stats.courts" [label]="'stats.courts' | translate" />
-            <ui-stat size="sm" [value]="feed.me().stats.countries" [label]="'stats.countries' | translate" />
-          </div>
         </div>
       </article>
     }
@@ -87,7 +89,7 @@
         [post]="f"
         [player]="feed.playerById(f.authorId)"
         [participants]="feed.doublesParticipantsFor(f)"
-        [canDelete]="f.authorId === feed.meId() && !f.trip && !f.match"
+        [canDelete]="f.authorId === feed.meId() && !f.trip && !f.match && !f.venue"
         [deleting]="feed.isDeleting(f.id)"
         [volunteering]="feed.isVolunteering(f.id)"
         [joining]="feed.isJoining(f.id)"
@@ -140,7 +142,7 @@
     type="button"
     (click)="feed.openComposer()"
     [attr.aria-label]="'feed.composerFabLabel' | translate"
-    class="fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 lg:right-6 lg:bottom-[6.25rem]"
+    class="rally-fab fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl lg:right-6 lg:bottom-[6.25rem]"
   >
     ➕
   </button>

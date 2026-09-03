@@ -8,7 +8,7 @@
     <div class="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-bone/15 pt-6">
       <ui-stat
         size="sm"
-        [value]="matches.communityStats().matchesThisWeek"
+        [value]="matches.matchesThisWeek()"
         [label]="'matches.statThisWeek' | translate"
       />
       <ui-stat size="sm" [value]="matches.open().length" [label]="'matches.statOpenCount' | translate" />
@@ -226,7 +226,7 @@
     type="button"
     (click)="matches.openComposer()"
     [attr.aria-label]="'matches.composerFabLabel' | translate"
-    class="fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 lg:right-6 lg:bottom-[6.25rem]"
+    class="rally-fab fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl lg:right-6 lg:bottom-[6.25rem]"
   >
     🎾
   </button>
@@ -290,38 +290,70 @@
             (toggled)="matches.composerLocationMode.set('radius')"
             >{{ 'matches.composerLocationArea' | translate }}</ui-chip
           >
-          <ui-chip [clickable]="true" [disabled]="true">{{ 'matches.composerLocationCourt' | translate }}</ui-chip>
+          <ui-chip
+            [clickable]="true"
+            [active]="matches.composerLocationMode() === 'court'"
+            (toggled)="matches.composerLocationMode.set('court')"
+            >{{ 'matches.composerLocationCourt' | translate }}</ui-chip
+          >
         </div>
 
-        <div class="mb-3 grid gap-3 sm:grid-cols-2">
-          <ui-autocomplete
-            [value]="matches.composerCountry()"
-            (valueChange)="matches.setComposerCountry($event)"
-            name="matchCountry"
-            [options]="matches.countryNames()"
-            [optionIcons]="matches.countryFlags()"
-            [placeholder]="'matches.composerSelectCountry' | translate"
-          />
-          <ui-autocomplete
-            [value]="matches.composerCity()"
-            (valueChange)="matches.composerCity.set($event)"
-            name="matchCity"
-            [options]="matches.composerCityOptions()"
-            [disabled]="!matches.composerCountry()"
-            [placeholder]="(matches.composerCountry() ? 'matches.composerCityPlaceholder' : 'matches.composerSelectCountryFirst') | translate"
-          />
-        </div>
-        <div class="mb-4 flex flex-wrap gap-2">
-          @for (r of matches.radiusOptions; track r) {
-            <ui-chip
-              [clickable]="true"
-              [active]="matches.composerRadiusKm() === r"
-              tone="cobalt"
-              (toggled)="matches.composerRadiusKm.set(r)"
-              >±{{ r }} km</ui-chip
+        @if (matches.composerLocationMode() === 'court') {
+          <div class="mb-3">
+            <ui-autocomplete
+              [value]="matches.composerCourtLabel()"
+              (valueChange)="matches.setComposerCourtLabel($event)"
+              name="matchCourt"
+              [options]="matches.courtOptionLabels()"
+              [placeholder]="'matches.composerCourt' | translate"
+            />
+            <!-- The registration dialog is the same one the courts catalogue uses, so a court added
+                 here is a real, GPS-verified registration rather than a throwaway label. -->
+            <button
+              type="button"
+              (click)="courts.openComposer()"
+              class="mt-2 flex cursor-pointer items-center gap-1.5 text-xs font-bold text-lime-deep uppercase hover:underline"
             >
-          }
-        </div>
+              <ui-icon name="plus" className="size-3.5" />
+              {{ 'matches.composerRegisterCourt' | translate }}
+            </button>
+            <p class="text-eyebrow mt-2 text-muted-foreground">{{ 'matches.composerCourtHint' | translate }}</p>
+            <p class="mt-2 flex items-start gap-2 rounded-xl border border-clay/40 bg-clay/10 px-3 py-2.5 text-xs">
+              <ui-icon name="error-circle" className="mt-px size-4 shrink-0 text-clay" />
+              <span>{{ 'matches.courtNotBooked' | translate }}</span>
+            </p>
+          </div>
+        } @else {
+          <div class="mb-3 grid gap-3 sm:grid-cols-2">
+            <ui-autocomplete
+              [value]="matches.composerCountry()"
+              (valueChange)="matches.setComposerCountry($event)"
+              name="matchCountry"
+              [options]="matches.countryNames()"
+              [optionIcons]="matches.countryFlags()"
+              [placeholder]="'matches.composerSelectCountry' | translate"
+            />
+            <ui-autocomplete
+              [value]="matches.composerCity()"
+              (valueChange)="matches.composerCity.set($event)"
+              name="matchCity"
+              [options]="matches.composerCityOptions()"
+              [disabled]="!matches.composerCountry()"
+              [placeholder]="(matches.composerCountry() ? 'matches.composerCityPlaceholder' : 'matches.composerSelectCountryFirst') | translate"
+            />
+          </div>
+          <div class="mb-4 flex flex-wrap gap-2">
+            @for (r of matches.radiusOptions; track r) {
+              <ui-chip
+                [clickable]="true"
+                [active]="matches.composerRadiusKm() === r"
+                tone="cobalt"
+                (toggled)="matches.composerRadiusKm.set(r)"
+                >±{{ r }} km</ui-chip
+              >
+            }
+          </div>
+        }
 
         <ui-date-picker
           [value]="matches.composerDate()"
@@ -429,3 +461,5 @@
     <ui-empty-state [title]="'matches.playedEmptyTitle' | translate" [body]="'matches.playedEmptyBody' | translate" />
   }
 </section>
+
+<rally-court-composer-dialog />

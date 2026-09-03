@@ -5,7 +5,7 @@ import { map } from 'rxjs';
 import { MatchesService } from '../../matches.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { Match } from '../../../../core/models';
-import { AvatarComponent } from '../../../../shared/ui';
+import { AvatarComponent, IconComponent } from '../../../../shared/ui';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 // Same gender-badge mapping as the public player detail page — the tennis ball stays the fallback
@@ -23,7 +23,7 @@ const GENDER_ICONS: Record<string, 'gender-male' | 'gender-female' | 'gender-non
 
 @Component({
   selector: 'rally-match-detail-page',
-  imports: [RouterLink, AvatarComponent, TranslatePipe],
+  imports: [RouterLink, AvatarComponent, IconComponent, TranslatePipe],
   templateUrl: './match-detail-page.component.html',
   styleUrl: './match-detail-page.component.scss',
 })
@@ -44,13 +44,10 @@ export class MatchDetailPageComponent {
   // Doubles roster — see MatchesService.participantsFor(). Empty for Singles matches.
   protected readonly participants = computed(() => (this.match() ? this.matches.participantsFor(this.match()!) : []));
   protected readonly emptyDoublesSlots = computed(() => (this.match() ? this.matches.emptyDoublesSlots(this.match()!) : []));
-  // Own profile has no /players/:id entry — route there instead when a slot is me.
-  protected readonly playerALink = computed(() =>
-    this.match()?.playerA === this.myId() ? '/profile' : `/players/${this.match()?.playerA}`
-  );
-  protected readonly playerBLink = computed(() =>
-    this.match()?.playerB === this.myId() ? '/profile' : `/players/${this.match()?.playerB}`
-  );
+  // Own profile has no /players/:id entry — route there instead when a slot is me. Each guards on a
+  // real uid first: an observer's myId() is undefined, and so is playerB on an open/doubles match.
+  protected readonly playerALink = computed(() => this.linkFor(this.match()?.playerA));
+  protected readonly playerBLink = computed(() => this.linkFor(this.match()?.playerB));
   protected readonly court = computed(() => this.match() && this.matches.courtById(this.match()!.courtId));
   protected readonly done = computed(() => this.match()?.status === 'complete');
   protected readonly aWon = computed(() => this.match()?.winner === this.match()?.playerA);
@@ -88,14 +85,16 @@ export class MatchDetailPageComponent {
     return !!m && m.format === 'Doubles' && m.status === 'open' && m.playerA !== this.myId() && this.isParticipant();
   });
 
-  // Doubles has no completion flow yet — no team assignment means there's nothing to declare a
-  // winner between (see CLAUDE.md's Matches/Doubles entry). A winner is optional either way (see
-  // submitResult()) since not every match is competitive — a Training/HittingSession/PracticeMatch
-  // session may have nothing to log at all.
+  // Any participant can mark a match finished — for doubles that includes the roster, not just the
+  // creator (see 0029_complete_doubles_match.sql). A winner is optional for singles, since not every
+  // match is competitive (a Training/HittingSession/PracticeMatch may have nothing to log), and
+  // impossible for doubles, where there are still no teams to declare one between.
   protected readonly canComplete = computed(() => {
     const m = this.match();
-    return !!m && m.format !== 'Doubles' && m.status === 'upcoming' && this.isParticipant();
+    return !!m && m.status === 'upcoming' && this.isParticipant();
   });
+  /** Doubles skips the winner picker entirely and goes straight to "it's done". */
+  protected readonly completeWithoutWinner = computed(() => this.match()?.format === 'Doubles');
   protected readonly completing = signal(false);
   protected readonly completingBusy = signal(false);
 
@@ -175,10 +174,21 @@ export class MatchDetailPageComponent {
     void this.load(id);
   }
 
-  // Own profile has no /players/:id entry — route there instead when a roster slot is me (mirrors
-  // playerALink/playerBLink above).
-  protected participantLink(id: string | undefined): string {
-    return id === this.myId() ? '/profile' : `/players/${id}`;
+  protected participantLink(id: string | undefined): string | null {
+    return this.linkFor(id);
+  }
+
+  /**
+   * Null for a slot with no resolvable player, so the anchor stays inert instead of pointing at
+   * `/players/undefined` — `participantsFor()` maps through `playerById()`, which returns undefined
+   * for anyone outside the discovery set.
+   */
+  private linkFor(id: string | undefined): string | null {
+    if (!id) {
+      return null;
+    }
+    const uid = this.myId();
+    return uid && id === uid ? '/profile' : `/players/${id}`;
   }
 
   protected genderClass(gender: string | undefined): string {

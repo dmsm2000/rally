@@ -130,13 +130,39 @@
             </button>
           }
         }
+      } @else if (post().venue; as venue) {
+        <!-- Written by check_in_court() the moment a second player confirms the place on site, and
+             credited to whoever discovered it — registering alone never produces this card. -->
+        <p class="mt-2 text-sm font-bold">
+          🛡️ {{ (isOwnPost() ? 'feed.venue.ownHeadline' : 'feed.venue.otherHeadline') | translate: { name: venue.name } }}
+        </p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          {{ venue.flag }} {{ venue.city }}, {{ venue.country }} · {{ venue.courtCount }}
+          {{ 'courts.courtsSuffix' | translate }}
+        </p>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          @if (venue.courtId) {
+            <a
+              [routerLink]="['/courts', venue.courtId]"
+              class="rounded-full border border-lime px-4 py-2 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
+            >
+              {{ 'feed.venue.seeCourt' | translate }}
+            </a>
+          }
+          @if (venue.capturedByMe) {
+            <span class="flex items-center gap-1 text-xs font-extrabold tracking-wide text-lime-deep uppercase">
+              <ui-icon name="check" className="size-3.5" />
+              {{ 'courts.captured' | translate }}
+            </span>
+          }
+        </div>
       } @else if (post().text) {
         <p class="mt-2 text-sm whitespace-pre-wrap">{{ post().text }}</p>
       }
     </div>
   </div>
 
-  @if (!post().trip && !post().match && post().mediaType === 'video') {
+  @if (!post().trip && !post().match && !post().venue && post().mediaType === 'video') {
     <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in bg-ink">
       <video
         [src]="post().mediaUrl"
@@ -146,7 +172,7 @@
         class="max-h-[32rem] w-full object-contain"
       ></video>
     </button>
-  } @else if (!post().trip && !post().match && post().mediaType === 'image') {
+  } @else if (!post().trip && !post().match && !post().venue && post().mediaType === 'image') {
     <button type="button" (click)="openMedia()" class="block w-full cursor-zoom-in bg-muted">
       <img [src]="post().mediaUrl" alt="" loading="lazy" class="max-h-[32rem] w-full object-contain" />
     </button>

@@ -5,25 +5,48 @@
   [class.shrink-0]="compact()"
 >
   <div class="relative aspect-16/10 overflow-hidden">
-    <img [src]="court().image" [alt]="court().name + ', ' + court().city" loading="lazy" class="size-full object-cover transition-transform duration-500 group-hover:scale-105" />
+    @if (photo(); as url) {
+      <img
+        [src]="url"
+        [alt]="title() + ', ' + court().venue.city"
+        loading="lazy"
+        class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+    } @else {
+      <div class="court-grid-ink flex size-full items-center justify-center" [class]="tone()">
+        <ui-icon name="courts" className="size-10 text-foreground/25" />
+      </div>
+    }
     <span class="text-eyebrow absolute top-3 left-3 rounded-full bg-background/90 px-2.5 py-1">
-      {{ court().surface }} · {{ (court().indoor ? 'enums.indoor' : 'enums.outdoor') | translate }}
+      {{ 'enums.surface.' + court().surface | translate }} · {{ (court().indoor ? 'enums.indoor' : 'enums.outdoor') | translate }}
     </span>
-    @if (court().visited) {
-      <span class="text-eyebrow absolute top-3 right-3 rounded-full bg-lime px-2.5 py-1 text-ink">{{ 'courts.collected' | translate }}</span>
+    @if (court().capturedByMe) {
+      <span class="text-eyebrow absolute top-3 right-3 rounded-full bg-lime px-2.5 py-1 text-ink">{{
+        'courts.captured' | translate
+      }}</span>
+    } @else if (court().venue.status === 'draft') {
+      <span class="text-eyebrow absolute top-3 right-3 rounded-full border border-dashed border-clay/60 bg-background/90 px-2.5 py-1 text-clay">{{
+        'courts.draftBadge' | translate
+      }}</span>
     }
   </div>
   <div class="p-4">
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
-        <p class="truncate font-display text-base font-extrabold tracking-tight">{{ court().name }}</p>
-        <p class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">{{ court().flag }} {{ court().city }}</p>
+        <p class="truncate font-display text-base font-extrabold tracking-tight">{{ title() }}</p>
+        <p class="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
+          {{ court().venue.flag }} {{ subtitle() }}
+        </p>
       </div>
-      <span class="flex shrink-0 items-center gap-1 text-sm font-bold">★ {{ court().rating }}</span>
+      @if (court().venue.status === 'live') {
+        <ui-icon name="shield-check" className="size-4 shrink-0 text-lime-deep" />
+      }
     </div>
     <div class="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-      <span>{{ court().courts }} courts</span>
-      <span class="font-semibold text-foreground">{{ court().price }}</span>
+      <span>{{ 'courts.venueKinds.' + court().venue.kind | translate }}</span>
+      <span class="font-semibold text-foreground">
+        {{ court().captureCount }} {{ 'courts.capturesSuffix' | translate }}
+      </span>
     </div>
   </div>
 </a>

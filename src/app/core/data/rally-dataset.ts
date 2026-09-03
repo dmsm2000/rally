@@ -1,8 +1,6 @@
 import {
   Achievement,
-  CommunityStats,
   CountryEntry,
-  Court,
   Destination,
   Player,
   PlayerIntent,
@@ -218,128 +216,6 @@ export const PLAYERS: Player[] = [
   }
 ];
 
-export const COURTS: Court[] = [
-  {
-    id: 'ctp',
-    name: 'Clube de Ténis do Porto',
-    city: 'Porto',
-    country: 'Portugal',
-    flag: '🇵🇹',
-    surface: 'Clay',
-    indoor: false,
-    courts: 8,
-    rating: 4.8,
-    reviews: 214,
-    price: '€12 / hour',
-    hours: '07:00 – 23:00',
-    image: `${IMG}/court-clay.jpg`,
-    distanceKm: 2.1,
-    facilities: ['Floodlights', 'Showers', 'Café', 'Racket hire', 'Coaching'],
-    playAgain: 96,
-    coords: { x: 44, y: 39 },
-    visited: true
-  },
-  {
-    id: 'marina',
-    name: 'Marina Bay Courts',
-    city: 'Barcelona',
-    country: 'Spain',
-    flag: '🇪🇸',
-    surface: 'Hard',
-    indoor: false,
-    courts: 4,
-    rating: 4.6,
-    reviews: 98,
-    price: '€18 / hour',
-    hours: '08:00 – 22:00',
-    image: `${IMG}/court-hard.jpg`,
-    distanceKm: 1_118,
-    facilities: ['Sea view', 'Floodlights', 'Bar', 'Lockers'],
-    playAgain: 91,
-    coords: { x: 52, y: 41 },
-    visited: true
-  },
-  {
-    id: 'hangar',
-    name: 'Hangar Indoor Club',
-    city: 'Paris',
-    country: 'France',
-    flag: '🇫🇷',
-    surface: 'Hard',
-    indoor: true,
-    courts: 6,
-    rating: 4.4,
-    reviews: 63,
-    price: '€26 / hour',
-    hours: '06:00 – 00:00',
-    image: `${IMG}/court-indoor.jpg`,
-    distanceKm: 1_482,
-    facilities: ['Indoor', 'Gym', 'Physio', 'Parking'],
-    playAgain: 82,
-    coords: { x: 50, y: 33 },
-    visited: true
-  },
-  {
-    id: 'hedge',
-    name: 'Hedgerow Lawn Club',
-    city: 'Surrey',
-    country: 'UK',
-    flag: '🇬🇧',
-    surface: 'Grass',
-    indoor: false,
-    courts: 3,
-    rating: 4.9,
-    reviews: 41,
-    price: '£24 / hour',
-    hours: '09:00 – 20:00',
-    image: `${IMG}/court-grass.jpg`,
-    distanceKm: 1_301,
-    facilities: ['Grass', 'Clubhouse', 'Tea room'],
-    playAgain: 99,
-    coords: { x: 47, y: 28 },
-    visited: true
-  },
-  {
-    id: 'shin',
-    name: 'Shinjuku Night Courts',
-    city: 'Tokyo',
-    country: 'Japan',
-    flag: '🇯🇵',
-    surface: 'Hard',
-    indoor: false,
-    courts: 5,
-    rating: 4.7,
-    reviews: 156,
-    price: '¥2,400 / hour',
-    hours: '10:00 – 02:00',
-    image: `${IMG}/court-urban.jpg`,
-    distanceKm: 11_112,
-    facilities: ['Floodlights', 'Late hours', 'Vending', 'Racket hire'],
-    playAgain: 94,
-    coords: { x: 84, y: 39 }
-  },
-  {
-    id: 'foz',
-    name: 'Foz Seaside Courts',
-    city: 'Porto',
-    country: 'Portugal',
-    flag: '🇵🇹',
-    surface: 'Hard',
-    indoor: false,
-    courts: 2,
-    rating: 4.3,
-    reviews: 77,
-    price: '€9 / hour',
-    hours: '08:00 – 21:00',
-    image: `${IMG}/court-hard.jpg`,
-    distanceKm: 5.4,
-    facilities: ['Sea view', 'Public', 'Free parking'],
-    playAgain: 88,
-    coords: { x: 43, y: 40 },
-    visited: true
-  }
-];
-
 // Mock "who has João shared a court with" pairing data — matches themselves are real now (see
 // MatchesRepository), but Passport's connections graph is still mock, and only ever needs pairs of
 // player ids, not the full Match shape. See RallyDataService.playersMetBy().
@@ -488,13 +364,6 @@ export const DESTINATIONS: Destination[] = [
 export const LEVELS = ['Beginner', 'Improver', 'Intermediate', 'Advanced', 'Competitive'] as const;
 export const SURFACES = ['Clay', 'Hard', 'Grass', 'Carpet'] as const;
 export const HERO_IMAGE = `${IMG}/hero-rally.jpg`;
-
-export const COMMUNITY_STATS: CommunityStats = {
-  courtsCaptured: 0,
-  countriesUnlocked: 0,
-  activePlayers: 0,
-  matchesThisWeek: 0
-};
 
 export const WORLD_ACTIVITY: WorldActivityItem[] = [
   {

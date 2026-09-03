@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { RallyDataService } from '../../core/data/rally-data.service';
 import { Player } from '../../core/models';
+import { CourtsService } from '../courts/courts.service';
 
 export const PASSPORT_TABS = [
   'passport.tabOverview',
@@ -13,15 +14,24 @@ export const PASSPORT_TABS = [
 @Injectable({ providedIn: 'root' })
 export class PassportService {
   private readonly data = inject(RallyDataService);
+  private readonly courts = inject(CourtsService);
 
   readonly tabs = PASSPORT_TABS;
   readonly activeTab = signal<string>(PASSPORT_TABS[0]);
+  readonly loadingCourts = this.courts.loadingCaptures;
 
   readonly me = this.data.me;
   readonly countries = this.data.countries;
-  readonly visitedCountries = computed(() => this.countries().filter(c => c.visited));
-  readonly lockedCountries = computed(() => this.countries().filter(c => !c.visited));
-  readonly visitedCourts = computed(() => this.data.courts().filter(c => c.visited));
+  // Real, and unfakeable: a country is stamped once you've captured a court in it, and a court is
+  // captured when a check-in row exists in a corroborated venue — see my_captured_courts() in
+  // 0024_venues_and_courts.sql. Both come from CourtsService so every count in the app agrees.
+  readonly visitedCourts = this.courts.myCaptures;
+  readonly visitedCountries = this.courts.myCountries;
+  // The "still to play" list stays an aspirational mock roster, minus whatever is genuinely stamped.
+  readonly lockedCountries = computed(() => {
+    const visited = new Set(this.visitedCountries().map(c => c.name));
+    return this.countries().filter(c => !visited.has(c.name));
+  });
 
   readonly achievements = this.data.achievements;
   readonly unlockedAchievements = computed(() => this.achievements().filter(a => a.unlocked));

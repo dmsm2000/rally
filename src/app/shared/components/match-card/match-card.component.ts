@@ -1,8 +1,8 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RallyDataService } from '../../../core/data/rally-data.service';
-import { Match, Player } from '../../../core/models';
+import { Match, Player, courtLabel } from '../../../core/models';
+import { CourtsRepository } from '../../../features/courts/data/courts.repository';
 import { AvatarComponent } from '../../ui';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 
@@ -13,7 +13,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
   styleUrl: './match-card.component.scss',
 })
 export class MatchCardComponent {
-  private readonly data = inject(RallyDataService);
+  private readonly courts = inject(CourtsRepository);
 
   readonly match = input.required<Match>();
   readonly playerA = input<Player | undefined>();
@@ -22,10 +22,13 @@ export class MatchCardComponent {
   readonly participants = input<(Player | undefined)[]>([]);
   readonly compact = input(false);
 
-  protected readonly court = computed(() => this.data.courtById(this.match().courtId ?? ''));
+  protected readonly court = computed(() => this.courts.courtById(this.match().courtId ?? undefined));
+  // Plain text: the template renders the 📍 itself, so this must not carry one.
   protected readonly locationLabel = computed(() => {
     const court = this.court();
-    return court ? `${court.flag} ${court.name}` : `📍 ${this.match().city}`;
+    // Falls back to the match's own city whenever the court isn't public (an unconfirmed draft)
+    // or the catalogue simply hasn't loaded yet.
+    return court ? courtLabel(court) : this.match().city;
   });
 
   private readonly done = computed(() => this.match().status === 'complete');

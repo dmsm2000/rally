@@ -1,0 +1,356 @@
+@if (courts.composerOpen()) {
+  <div
+    class="fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 sm:items-center sm:p-4"
+    role="presentation"
+    (click)="onBackdropClick($event)"
+  >
+    <div
+      class="animate-tennis-pop no-scrollbar max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-border bg-card p-5 shadow-xl sm:rounded-3xl sm:p-6"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-eyebrow text-muted-foreground">{{ 'courts.registerEyebrow' | translate }}</p>
+        <button
+          type="button"
+          (click)="courts.closeComposer()"
+          [attr.aria-label]="'courts.cancel' | translate"
+          class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <ui-icon name="close" className="size-4" />
+        </button>
+      </div>
+
+      <!-- Step 1: the fix. There is no path past this screen without one. -->
+      @if (courts.step() === 'locate') {
+        <div class="py-10 text-center">
+          @if (courts.locating()) {
+            <div class="mx-auto flex size-14 items-center justify-center rounded-full border border-border bg-muted">
+              <ui-icon name="crosshair" className="size-6 animate-pulse text-lime-deep" />
+            </div>
+            <h2 class="text-display mt-5 text-xl">{{ 'courts.locating' | translate }}</h2>
+            <p class="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">{{ 'courts.locatingBody' | translate }}</p>
+          } @else if (courts.geoError()) {
+            <div class="mx-auto flex size-14 items-center justify-center rounded-full border border-clay/40 bg-clay/12">
+              <ui-icon name="error-circle" className="size-6 text-clay" />
+            </div>
+            <h2 class="text-display mt-5 text-xl">{{ 'courts.geoFailedTitle' | translate }}</h2>
+            <p class="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">{{ courts.geoError() }}</p>
+            <button
+              type="button"
+              (click)="courts.locate()"
+              class="mt-6 cursor-pointer rounded-full border border-border px-6 py-2.5 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
+            >
+              {{ 'courts.retryLocate' | translate }}
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Step 2: what is already here. Doubles as the duplicate check and, because drafts show up
+           only in this list, as the only route by which one ever gets confirmed. -->
+      @if (courts.step() === 'nearby') {
+        <div class="mt-4 flex items-center gap-2 rounded-xl border border-border bg-muted px-3 py-2.5">
+          <ui-icon name="map-pin" className="size-4 shrink-0 text-lime-deep" />
+          <p class="text-xs text-muted-foreground">
+            {{ 'courts.fixAccuracy' | translate }}
+            <span class="font-bold text-foreground">{{ courts.accuracyLabel() }}</span>
+          </p>
+        </div>
+        @if (courts.lowAccuracy()) {
+          <p class="mt-2 rounded-xl border border-clay/40 bg-clay/10 px-3 py-2.5 text-xs text-foreground">
+            {{ 'courts.lowAccuracyWarning' | translate }}
+          </p>
+        }
+
+        <h2 class="text-display mt-5 text-lg">{{ 'courts.nearbyTitle' | translate }}</h2>
+        <p class="mt-1 text-sm text-muted-foreground">{{ 'courts.nearbyBody' | translate }}</p>
+
+        <div class="mt-4 flex flex-col gap-2">
+          @for (venue of courts.nearby(); track venue.id) {
+            <div class="overflow-hidden rounded-xl border border-border">
+              <button
+                type="button"
+                (click)="toggleVenue(venue)"
+                class="flex w-full cursor-pointer items-start gap-3 p-3 text-left hover:bg-muted"
+              >
+                <span class="mt-0.5 text-lg">{{ venue.flag }}</span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex flex-wrap items-center gap-2">
+                    <span class="truncate text-sm font-bold">{{ venue.name }}</span>
+                    @if (venue.status === 'draft') {
+                      <span class="rounded-full border border-dashed border-clay/60 px-2 py-0.5 text-[0.6rem] font-extrabold tracking-wide text-clay uppercase">
+                        {{ 'courts.draftBadge' | translate }}
+                      </span>
+                    } @else {
+                      <ui-icon name="shield-check" className="size-3.5 shrink-0 text-lime-deep" />
+                    }
+                  </span>
+                  <span class="mt-0.5 block text-xs text-muted-foreground">
+                    {{ distanceLabel(venue.distanceM) }} · {{ venue.courtCount }} {{ 'courts.courtsSuffix' | translate }}
+                    @if (venue.capturedCount > 0) {
+                      · {{ venue.capturedCount }} {{ 'courts.capturedSuffix' | translate }}
+                    }
+                  </span>
+                </span>
+                <ui-icon
+                  name="chevron-down"
+                  [className]="expandedVenueId() === venue.id ? 'size-4 shrink-0 rotate-180 text-muted-foreground' : 'size-4 shrink-0 text-muted-foreground'"
+                />
+              </button>
+
+              @if (expandedVenueId() === venue.id) {
+                <div class="border-t border-border bg-background p-3">
+                  @if (venue.status === 'draft') {
+                    <p class="mb-3 text-xs text-muted-foreground">
+                      {{ 'courts.draftExplain' | translate }}
+                      <span class="font-bold text-foreground">{{ venue.confirmations }}/2</span>
+                    </p>
+                  }
+
+                  @if (loadingVenueId() === venue.id) {
+                    <p class="text-xs text-muted-foreground">{{ 'courts.loadingCourts' | translate }}</p>
+                  } @else {
+                    <div class="flex flex-col gap-2">
+                      @for (court of courtsFor(venue.id); track court.id) {
+                        <div class="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2">
+                          <span class="min-w-0 flex-1">
+                            <span class="block text-sm font-semibold">{{ courtName(court) }}</span>
+                            <span class="text-eyebrow text-muted-foreground">
+                              {{ 'enums.surface.' + court.surface | translate }} ·
+                              {{ (court.indoor ? 'enums.indoor' : 'enums.outdoor') | translate }}
+                            </span>
+                          </span>
+                          @if (court.capturedByMe) {
+                            <span class="flex items-center gap-1 text-xs font-bold text-lime-deep">
+                              <ui-icon name="check" className="size-3.5" />
+                              {{ 'courts.captured' | translate }}
+                            </span>
+                          } @else {
+                            <button
+                              type="button"
+                              [disabled]="!!courts.capturing()"
+                              (click)="capture(court)"
+                              class="shrink-0 cursor-pointer rounded-full bg-lime px-3 py-1.5 text-[0.65rem] font-extrabold tracking-wide text-ink uppercase disabled:opacity-40"
+                            >
+                              {{ (courts.capturing() === court.id ? 'courts.capturing' : 'courts.capture') | translate }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <button
+                    type="button"
+                    (click)="courts.chooseVenue(venue)"
+                    class="mt-3 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
+                  >
+                    <ui-icon name="plus" className="size-3.5" />
+                    {{ 'courts.addCourtHere' | translate }}
+                  </button>
+                </div>
+              }
+            </div>
+          } @empty {
+            <p class="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+              {{ 'courts.nothingNearby' | translate }}
+            </p>
+          }
+        </div>
+
+        <button
+          type="button"
+          (click)="courts.startNewVenue()"
+          class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5"
+        >
+          {{ 'courts.registerNewPlace' | translate }}
+        </button>
+      }
+
+      <!-- Step 3: the details. Five required fields, everything else fills in later. -->
+      @if (courts.step() === 'form') {
+        @if (courts.selectedVenue(); as venue) {
+          <div class="mt-4 flex items-center gap-2 rounded-xl border border-lime-deep/40 bg-lime/15 px-3 py-2.5">
+            <ui-icon name="map-pin" className="size-4 shrink-0 text-lime-deep" />
+            <p class="min-w-0 flex-1 truncate text-sm font-bold">{{ venue.name }}</p>
+            <button
+              type="button"
+              (click)="courts.backToNearby()"
+              class="shrink-0 cursor-pointer text-xs font-bold text-muted-foreground uppercase hover:text-foreground"
+            >
+              {{ 'courts.change' | translate }}
+            </button>
+          </div>
+        } @else {
+          <h2 class="text-display mt-5 text-lg">{{ 'courts.newPlaceTitle' | translate }}</h2>
+
+          <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'courts.venueKind' | translate }}</p>
+          <div class="mb-4 flex flex-wrap gap-2">
+            @for (kind of kinds; track kind) {
+              <ui-chip [clickable]="true" [active]="courts.formVenueKind() === kind" (toggled)="courts.formVenueKind.set(kind)">{{
+                'courts.venueKinds.' + kind | translate
+              }}</ui-chip>
+            }
+          </div>
+
+          <input
+            [ngModel]="courts.formVenueName()"
+            (ngModelChange)="courts.formVenueName.set($event)"
+            [placeholder]="'courts.venueNamePlaceholder' | translate"
+            class="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+          />
+
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            <ui-autocomplete
+              [value]="courts.formCountry()"
+              (valueChange)="courts.setFormCountry($event)"
+              name="venueCountry"
+              [options]="courts.countryNames()"
+              [optionIcons]="courts.countryFlags()"
+              [placeholder]="'courts.selectCountry' | translate"
+            />
+            <ui-autocomplete
+              [value]="courts.formCity()"
+              (valueChange)="courts.formCity.set($event)"
+              name="venueCity"
+              [options]="courts.cityOptions()"
+              [disabled]="!courts.formCountry()"
+              [placeholder]="(courts.formCountry() ? 'courts.cityPlaceholder' : 'courts.selectCountryFirst') | translate"
+            />
+          </div>
+
+          <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'courts.access' | translate }}</p>
+          <div class="mb-4 flex flex-wrap gap-2">
+            @for (option of accessOptions; track option) {
+              <ui-chip
+                [clickable]="true"
+                tone="cobalt"
+                [active]="courts.formAccess() === option"
+                (toggled)="courts.formAccess.set(courts.formAccess() === option ? null : option)"
+                >{{ 'courts.accessOptions.' + option | translate }}</ui-chip
+              >
+            }
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <input
+              [ngModel]="courts.formHours()"
+              (ngModelChange)="courts.formHours.set($event)"
+              [placeholder]="'courts.hoursPlaceholder' | translate"
+              class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+            />
+            <input
+              [ngModel]="courts.formPrice()"
+              (ngModelChange)="courts.formPrice.set($event)"
+              [placeholder]="'courts.pricePlaceholder' | translate"
+              class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+
+          <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'courts.facilities' | translate }}</p>
+          <div class="flex flex-wrap gap-2">
+            @for (facility of facilities; track facility) {
+              <ui-chip
+                [clickable]="true"
+                [active]="courts.formFacilities().includes(facility)"
+                (toggled)="courts.toggleFacility(facility)"
+                >{{ 'courts.facilityNames.' + facility | translate }}</ui-chip
+              >
+            }
+          </div>
+        }
+
+        <div class="mt-6 border-t border-border pt-5">
+          <p class="text-eyebrow text-muted-foreground">{{ 'courts.theCourtEyebrow' | translate }}</p>
+
+          <input
+            [ngModel]="courts.formNumber()"
+            (ngModelChange)="courts.formNumber.set($event)"
+            [placeholder]="'courts.numberPlaceholder' | translate"
+            class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+          />
+          <p class="text-eyebrow mt-2 text-muted-foreground">{{ 'courts.numberHint' | translate }}</p>
+
+          <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'courts.surface' | translate }}</p>
+          <div class="mb-4 flex flex-wrap gap-2">
+            @for (s of surfaces; track s) {
+              <ui-chip [clickable]="true" [active]="courts.formSurface() === s" (toggled)="courts.formSurface.set(s)">{{
+                'enums.surface.' + s | translate
+              }}</ui-chip>
+            }
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <ui-chip [clickable]="true" [active]="!courts.formIndoor()" (toggled)="courts.formIndoor.set(false)">{{
+              'enums.outdoor' | translate
+            }}</ui-chip>
+            <ui-chip [clickable]="true" [active]="courts.formIndoor()" (toggled)="courts.formIndoor.set(true)">{{
+              'enums.indoor' | translate
+            }}</ui-chip>
+            <ui-chip [clickable]="true" [active]="courts.formLights()" (toggled)="courts.formLights.set(!courts.formLights())">
+              <ui-icon name="lightbulb" className="size-3.5" />
+              {{ 'courts.hasLights' | translate }}
+            </ui-chip>
+          </div>
+        </div>
+
+        @if (courts.lowAccuracy()) {
+          <p class="mt-5 rounded-xl border border-clay/40 bg-clay/10 px-3 py-2.5 text-xs text-foreground">
+            {{ 'courts.willBeDraft' | translate }}
+          </p>
+        }
+
+        <button
+          type="button"
+          [disabled]="!courts.canSubmit()"
+          (click)="courts.submit()"
+          class="mt-5 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+        >
+          {{ (courts.submitting() ? 'courts.registering' : 'courts.registerAction') | translate }}
+        </button>
+        <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'courts.registerHint' | translate }}</p>
+      }
+
+      <!-- Step 4: the soft block. Server-side, so searching first holds for any future client. -->
+      @if (courts.step() === 'candidates') {
+        <div class="mt-5">
+          <div class="flex size-11 items-center justify-center rounded-full border border-clay/40 bg-clay/12">
+            <ui-icon name="help-circle" className="size-5 text-clay" />
+          </div>
+          <h2 class="text-display mt-4 text-lg">{{ 'courts.duplicateTitle' | translate }}</h2>
+          <p class="mt-1.5 text-sm text-muted-foreground">{{ 'courts.duplicateBody' | translate }}</p>
+
+          <div class="mt-4 flex flex-col gap-2">
+            @for (candidate of courts.candidates(); track candidate.id) {
+              <button
+                type="button"
+                (click)="courts.useCandidate(candidate)"
+                class="flex cursor-pointer items-center gap-3 rounded-xl border border-border p-3 text-left hover:border-foreground"
+              >
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-bold">{{ candidate.name }}</span>
+                  <span class="text-eyebrow text-muted-foreground">
+                    {{ candidate.city }} · {{ distanceLabel(candidate.distanceM) }}
+                  </span>
+                </span>
+                <span class="shrink-0 text-xs font-extrabold tracking-wide text-lime-deep uppercase">
+                  {{ 'courts.useThis' | translate }}
+                </span>
+              </button>
+            }
+          </div>
+
+          <button
+            type="button"
+            [disabled]="courts.submitting()"
+            (click)="courts.submit(true)"
+            class="mt-4 w-full cursor-pointer rounded-full border border-border px-6 py-3 text-xs font-extrabold tracking-wide uppercase hover:bg-muted disabled:opacity-40"
+          >
+            {{ 'courts.noneOfThese' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}

@@ -44,6 +44,7 @@ import {
   SectionHeaderComponent,
   StatComponent
 } from '../../../../shared/ui';
+import { CourtsService } from '../../../courts/courts.service';
 import { MatchesService } from '../../../matches/matches.service';
 import { PassportService } from '../../../passport/passport.service';
 import { TripsRepository } from '../../../world/data/trips.repository';
@@ -75,6 +76,7 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly profile = inject(ProfileService);
   protected readonly auth = inject(AuthService);
   protected readonly matchesService = inject(MatchesService);
+  protected readonly courts = inject(CourtsService);
   protected readonly passportService = inject(PassportService);
   private readonly trips = inject(TripsRepository);
   private readonly translation = inject(TranslationService);

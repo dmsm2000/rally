@@ -39,6 +39,24 @@ export interface MatchPost {
   participantIds?: string[];
 }
 
+/**
+ * Present only on the announcement a venue gets when it is verified — written by check_in_court()
+ * itself (see 0025_posts_venue_link.sql), never by a client, because the person who triggers it is
+ * the confirmer while the author is the discoverer.
+ */
+export interface VenuePost {
+  venueId: string;
+  /** A court inside the venue, so the card has somewhere real to link to. */
+  courtId?: string;
+  name: string;
+  kind: string;
+  city: string;
+  country: string;
+  flag: string;
+  courtCount: number;
+  capturedByMe: boolean;
+}
+
 export interface Post {
   id: string;
   authorId: string;
@@ -48,6 +66,7 @@ export interface Post {
   type: PostType | null;
   trip: TripPost | null;
   match: MatchPost | null;
+  venue: VenuePost | null;
   /** ISO timestamp. */
   createdAt: string;
   likeCount: number;

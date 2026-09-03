@@ -19,6 +19,55 @@ npm run lint
 - `ng lint` currently has numerous pre-existing warnings but should have no errors.
 - Do not commit unless explicitly asked.
 
+## Testing Location-Gated Flows
+
+Court registration is the hardest thing in the app to exercise by hand: it needs a GPS fix, a
+*second* distinct player standing in the same place, and a 12 h cooldown between captures at one
+venue. Do not try to test it by walking somewhere. Fake the fix instead.
+
+**Stub the fix, don't use the DevTools Sensors panel.** The Sensors override reports an accuracy
+value you don't control, and if it lands above 100 m every venue you create is born as an
+unconfirmable draft — which looks exactly like a bug. Paste this in the console instead, before
+opening the register dialog:
+
+```js
+// Porto, 12 m accuracy — a "good" fix. Raise accuracy above 100 to test the draft path,
+// and above 2000 to test outright refusal.
+navigator.geolocation.getCurrentPosition = ok =>
+  ok({ coords: { latitude: 41.1500, longitude: -8.6100, accuracy: 12 } });
+```
+
+**The second player needs a second browser profile** (or an incognito window) signed into a
+different account, with the same stub. Two tabs of the same session will not do: confirmation counts
+*distinct* players, which is the whole point.
+
+**Useful SQL while testing.** Where a venue actually stands:
+
+```sql
+select v.name, v.status, v.confirmations, v.registered_accuracy_m,
+       (select count(*) from public.courts c where c.venue_id = v.id) as courts,
+       (select count(*) from public.court_checkins ci where ci.venue_id = v.id) as checkins
+from public.venues v order by v.created_at desc;
+```
+
+Reset a test venue completely — courts, check-ins, photos and its feed post all cascade:
+
+```sql
+delete from public.venues where name = 'Clube de Teste';
+```
+
+Skip the 12 h cooldown without waiting for it:
+
+```sql
+update public.court_checkins set created_at = now() - interval '13 hours'
+where player_id = '<uid>';
+```
+
+The migrations themselves are testable offline against any local Postgres by stubbing the four
+Supabase-provided pieces (`auth.uid()`, `public.profiles`, `storage.buckets`/`objects`,
+`storage.foldername`) — this is how `0024`-`0030` were verified before they were ever applied, and
+it is far faster than clicking through the UI for rules that live entirely in SQL.
+
 ## Project Map
 
 ```text
@@ -123,6 +172,13 @@ Apply in order on a new project:
 19. `0021_doubles_matches.sql` adds `match_participants` (a plain `match_id`/`player_id` roster, mirroring `trip_hosts`) and the `join_doubles_match()` RPC that capacity-checks and locks the parent match row the same way `accept_open_match()` does, flipping the match to `'upcoming'` once the 4th player joins. Re-declares `cancel_match()` so any joined doubles participant — not just `player_a`/`player_b` — can cancel a confirmed doubles match. See the Matches entry above.
 20. `0022_matches_public_select.sql` re-declares `matches`' select policy to add the `anon` role (was `to authenticated` only), so open matches are visible to observers the same way `trip_intents`/`discover_profiles()` already are — fixes match-linked feed posts rendering blank for observers. Direct invites stay private (`auth.uid()` is null for `anon`, so only the `kind = 'open'` branch can ever pass). `match_participants`' own select policy needs no change — it re-checks visibility via a correlated `exists` against `public.matches`, so it inherits this automatically.
 21. `0023_complete_match_optional_winner.sql` re-declares `complete_match` with `p_winner` now optional (was required), so a match can be marked complete with no winner — see the Matches entry above for why (non-competitive sessions).
+22. `0024_venues_and_courts.sql` makes courts real: `venues` (a club/park/hotel/condo — where the geography lives) → `courts` (a specific playing surface, with its number — where the characteristics live), plus `court_checkins`. Two levels because the 250 m duplicate check only works that way: a club with 8 courts is 8 rows ~20 m apart, so a proximity check run at court level would flag every legitimate second court. Six `security definer` RPCs (`nearby_venues`, `register_court`, `check_in_court`, `promote_venue_if_confirmed`, `update_venue`/`update_court`, `my_captured_courts`) own every write — there are deliberately **no** insert/update/delete policies on any of the three tables. Distances use a b-tree bounding box plus a haversine SQL function; no PostGIS. See the Courts entry below for the rules these enforce.
+23. `0025_posts_venue_link.sql` adds `posts.venue_id` (mirrors `0016`/`0019`) and re-declares `promote_venue_if_confirmed()` to insert the announcement post. Unlike trip/match announcements, this post is **not** client-inserted: it's triggered by whoever confirms the venue while its author is the discoverer, which no client could write. Putting it in the one function both confirmation paths delegate to also makes it impossible to forget on one of them.
+24. `0026_court_photos.sql` adds `court_photos` (max 3 per court, enforced by a trigger counting siblings) plus the public `court-photos` Storage bucket, whose policies are a straight copy of `feed-media`'s including the `{userId}/{uuid}.{ext}` key convention.
+25. `0027_court_reports.sql` adds `court_reports`. Deliberately a mute table until a backoffice exists; it ships now because `no_longer_exists` is a signal that can't be reconstructed after the fact (nobody edits a listing to say a place shut down). Reports are visible only to their own reporter — a visible pile of reports is itself a way to discredit a court.
+26. `0028_matches_court_fk.sql` turns `matches.court_id` from descriptive `text` into a real `uuid references courts(id) on delete set null`, and re-declares `complete_match` so finishing a match at a registered court inserts `source = 'match'` check-ins for everyone who played. Those capture without confirming (`accuracy_m` stays null, which never satisfies the `<= 100` corroboration test) — accepting a completed match as a second confirmation is the escape valve held in reserve for thinly populated areas, not v1. The capture is tied to completion specifically, so a cancelled match captures nothing: `complete_match` only acts on `status = 'upcoming'`, and `cancel_match` puts the row out of its reach.
+27. `0029_complete_doubles_match.sql` re-declares `complete_match` so any player on the `match_participants` roster can finish a match, not just `player_a`/`player_b` — mirroring how `cancel_match` was widened in `0021`. Without it a doubles match could only be completed by its creator (`player_b` is permanently null for doubles), so four people could play at a registered court and none of them would capture it. Still **not** team assignment: `p_winner` is forced null for `format = 'Doubles'` inside the RPC, so a nonsensical "player_a won a doubles match" can't be written even by a caller that tries. Singles behaviour is unchanged.
+28. `0030_matches_this_week.sql` adds `count_matches_this_week()`, a `security definer` aggregate for the matches hero. It has to be an RPC: `matches`' select policy only shows a viewer their own matches plus open ones, so counting client-side would report a number that shrinks the fewer matches you personally have. It returns a count and never a row, so granting it to `anon` leaks nothing about who is playing whom.
 
 Note: migration filenames on disk don't currently match this list's numbering 1:1 (e.g. an early renumbering shifted 0009-0011) — trust the filenames in `supabase/migrations/` over the ordinal prefix here if they ever disagree.
 
@@ -141,13 +197,20 @@ Note: migration filenames on disk don't currently match this list's numbering 1:
 - Trip intents ("show me around") at `/world` and "My trips" on the profile page: real `trip_intents`/`trip_hosts` tables. Volunteering to host doesn't hide the trip (others may also host) — it just sends the traveller a real automatic message via `MessagesService`. See `TripsRepository` (`features/world/data/trips.repository.ts`). Publishing a trip also inserts a real, linked feed post (`posts.trip_intent_id`, see `WorldService.publishTripIntent()`), so it surfaces in the Feed too — see the Feed entry below for how that post is scoped and rendered per viewer.
 - The Feed: user-authored posts (text and/or one photo/video, uploaded to the `feed-media` Storage bucket) scoped by "In my city" / "In my country" / "In the world", and a single like toggle. There is currently no reply/comment affordance on posts (removed after initial ship — DM-from-a-post may return later). See `PostsRepository` (`features/feed/data/posts.repository.ts`). The old synthetic `kind`-tagged activity (match/court/milestone auto-posts) was retired with it — deliberately deferred until courts/matches/notifications are themselves real, at which point they can post into `posts` the same way. Trip-announcement posts (`post.trip` populated, `trip_intent_id` not null) are the first case of this pattern actually landing: they carry no text/media of their own, render from the linked trip intent instead, are visible to everyone in "In the world" plus to viewers whose own city/country matches the trip's *destination* (not the traveller's home — the useful audience is potential hosts), can be liked but never deleted from the feed card (only by deleting the trip itself, which cascades), and show a "Ser anfitrião" volunteer action (reusing `TripsRepository.volunteer()`) only to viewers in the destination country who aren't the traveller and haven't already volunteered.
 - Notifications: the bell in the topbar (`features/notifications/notifications-bell/`) is backed by a real, generic `notifications` table delivered live via Supabase Realtime — see `NotificationsRepository` (`features/notifications/data/notifications.repository.ts`) and its `NotificationsService` facade. `AppNotification.kind` plus a `data` rendering-payload snapshot keep it reusable; a `NotificationKind → { icon, textKey, detailKey }` map in the bell component is the single place to wire up a new kind's copy (translation keys live under `notifications.kinds.<camelCaseKind>`). `NotificationsRepository.notifyMany()` fans one notification out to many recipients in a single batched insert (used by the match-nearby kind below); `notify()` stays for the single-recipient case. Clicking a notification routes by kind in `NotificationsBellComponent.select()`: `match_*` kinds go to `/matches/:id`, everything else opens a DM thread with the notification's `actorId`. Do not add a `message` kind here: the messages widget already has its own live unread badge.
-- Matches: real `matches` table with two creation flows — a direct invite from a player's profile ("Convidar para uma partida") that the invitee must accept/decline, and an open match published from `/matches` that also gets a linked feed post (mirrors trip-announcement posts) and can be joined by anyone. Every state transition (accept, decline, cancel, complete) goes through a `security definer` RPC (`accept_open_match`, `respond_to_match_invite`, `cancel_match`, `complete_match`) rather than a client `UPDATE` policy — there is deliberately no such policy on `matches`, the same way `conversations` has none — so a participant can never rewrite `status`/`winner`/`player_b` outside a legitimate transition. See `MatchesRepository` (`features/matches/data/matches.repository.ts`) and `MatchesService` (`features/matches/matches.service.ts`). `city`/`country` are always populated on every match row (denormalized from the chosen mock court, or entered directly), the same way `trip_intents.destination_city/country` has no real "courts" table backing it — this keeps feed scoping and the `match_open_nearby` notification fan-out (see above) uniform regardless of composer mode. Six notification kinds cover the whole flow: `match_invite_received`, `match_invite_accepted`, `match_invite_declined`, `match_joined`, `match_cancelled`, `match_open_nearby`. Courts themselves are still mock (`court_id` on a match row is a plain descriptive reference, not a foreign key). The match detail page (`MatchDetailPageComponent`) has a "Registar resultado" flow for `'upcoming'` Singles matches (gated behind `isParticipant()`, which requires a real signed-in uid — see below): pick a winner, or "Sem resultado" to complete the match with `winner: null` for a non-competitive session. `complete_match`'s `p_winner` is optional as of `0023_complete_match_optional_winner.sql` for exactly this reason (`null in (...)` is never true in SQL, so the RPC explicitly allows a null winner). `MatchCardComponent`'s status pill accounts for this third state (`enums.matchStatus.played`, neutral) alongside win/loss. `isParticipant()` requires a truthy uid before comparing — `playerB` is `undefined` for every Doubles match (and for a Singles match not yet accepted), which would otherwise spuriously equal an observer's own `undefined` uid and leak participant-only actions (cancel/leave) to them. `MatchesService`'s own load effect gates on "signed in OR observer" (`uid || isObserver()`), not a real uid alone — observers have no uid but, since `0022_matches_public_select.sql`, can see open matches, so the old uid-only gate left `/matches` stuck showing its loading skeleton forever for them (`reload()` never ran at all). Doubles (v1): an open match with `format: 'Doubles'` is joinable by up to 4 players tracked in `match_participants` (`Match.participantIds`, populated only for Doubles) — deliberately **no team assignment yet**, so there's no winner/score UI for doubles and they never reach `'complete'`. `player_a` stays the creator/reference column; `player_b` stays permanently null for doubles. Doubles only applies to open/join matches, not direct invites (`sendInvite()` still forces `'Singles'`). The Feed's match-announcement post supports doubles directly: `rally-feed-card` renders the roster's avatars plus empty slots and a join/leave button (`MatchPost.participantIds`, populated in `PostsRepository.hydrate()`; `FeedService.doublesParticipantsFor()`/`joinMatch()`/`leaveDoublesMatch()` call `MatchesRepository.joinDoublesMatch()`/`leaveDoublesMatch()` directly, mirroring how `FeedService.joinMatch()` already called `acceptOpenMatch()` for Singles). The join/leave buttons are hidden for the post's own author (creator) — they're auto-added to the roster by `createOpenMatch()`, but "leaving" only drops a participant's own roster row, not the match itself, so the creator manages their own post via `/matches` (`cancelMatch`/withdraw) instead (see `0021_doubles_matches.sql`).
+- Matches: real `matches` table with two creation flows — a direct invite from a player's profile ("Convidar para uma partida") that the invitee must accept/decline, and an open match published from `/matches` that also gets a linked feed post (mirrors trip-announcement posts) and can be joined by anyone. Every state transition (accept, decline, cancel, complete) goes through a `security definer` RPC (`accept_open_match`, `respond_to_match_invite`, `cancel_match`, `complete_match`) rather than a client `UPDATE` policy — there is deliberately no such policy on `matches`, the same way `conversations` has none — so a participant can never rewrite `status`/`winner`/`player_b` outside a legitimate transition. See `MatchesRepository` (`features/matches/data/matches.repository.ts`) and `MatchesService` (`features/matches/matches.service.ts`). `city`/`country` are always populated on every match row (denormalized from the chosen mock court, or entered directly), the same way `trip_intents.destination_city/country` has no real "courts" table backing it — this keeps feed scoping and the `match_open_nearby` notification fan-out (see above) uniform regardless of composer mode. Six notification kinds cover the whole flow: `match_invite_received`, `match_invite_accepted`, `match_invite_declined`, `match_joined`, `match_cancelled`, `match_open_nearby`. Courts themselves are still mock (`court_id` on a match row is a plain descriptive reference, not a foreign key). The match detail page (`MatchDetailPageComponent`) has a "Registar resultado" flow for `'upcoming'` Singles matches (gated behind `isParticipant()`, which requires a real signed-in uid — see below): pick a winner, or "Sem resultado" to complete the match with `winner: null` for a non-competitive session. `complete_match`'s `p_winner` is optional as of `0023_complete_match_optional_winner.sql` for exactly this reason (`null in (...)` is never true in SQL, so the RPC explicitly allows a null winner). `MatchCardComponent`'s status pill accounts for this third state (`enums.matchStatus.played`, neutral) alongside win/loss. `isParticipant()` requires a truthy uid before comparing — `playerB` is `undefined` for every Doubles match (and for a Singles match not yet accepted), which would otherwise spuriously equal an observer's own `undefined` uid and leak participant-only actions (cancel/leave) to them. `MatchesService`'s own load effect gates on "signed in OR observer" (`uid || isObserver()`), not a real uid alone — observers have no uid but, since `0022_matches_public_select.sql`, can see open matches, so the old uid-only gate left `/matches` stuck showing its loading skeleton forever for them (`reload()` never ran at all). Doubles (v1): an open match with `format: 'Doubles'` is joinable by up to 4 players tracked in `match_participants` (`Match.participantIds`, populated only for Doubles) — deliberately **no team assignment yet**, so there's no winner/score UI for doubles. They *can* now be marked finished, though (`0029_complete_doubles_match.sql`): any roster player can complete one, with no winner, which is what makes the four of them capture the court they played on. The detail page shows a "Dar por terminada" confirmation instead of the singles winner picker (`completeWithoutWinner()`). `player_a` stays the creator/reference column; `player_b` stays permanently null for doubles. Doubles only applies to open/join matches, not direct invites (`sendInvite()` still forces `'Singles'`). The Feed's match-announcement post supports doubles directly: `rally-feed-card` renders the roster's avatars plus empty slots and a join/leave button (`MatchPost.participantIds`, populated in `PostsRepository.hydrate()`; `FeedService.doublesParticipantsFor()`/`joinMatch()`/`leaveDoublesMatch()` call `MatchesRepository.joinDoublesMatch()`/`leaveDoublesMatch()` directly, mirroring how `FeedService.joinMatch()` already called `acceptOpenMatch()` for Singles). The join/leave buttons are hidden for the post's own author (creator) — they're auto-added to the roster by `createOpenMatch()`, but "leaving" only drops a participant's own roster row, not the match itself, so the creator manages their own post via `/matches` (`cancelMatch`/withdraw) instead (see `0021_doubles_matches.sql`).
+
+- Courts: a player-maintained database of real courts, at `/courts` and inside the match composer. Two levels — `venues` (club/park/hotel/condo, carrying lat/lng, access, hours, facilities) and `courts` (number, surface, indoor, floodlights) — because the duplicate check only makes sense at venue level. Four rules, all enforced in `security definer` RPCs rather than the client, each for a specific reason:
+  1. **Registering requires being there.** A GPS fix is mandatory and its reported `accuracy` is stored and checked. This matters more than it looks: a phone outdoors reports 5-50 m, but a laptop without GPS reports the ISP centroid — 1-5 km out while looking like a perfectly valid fix. Reading `coords` without `coords.accuracy` is what turns the rule into one that filters nothing. Above 100 m a fix can't corroborate; above 2000 m registration is refused outright. See `GeolocationService` (`core/services/`), the only new piece in core. Observer mode: the register FAB, the capture card, the report card, the "captured by me" filter and photo upload are all hidden, and `nearby_venues()`/`my_captured_courts()` are `authenticated`-only so an observer can't reach the flow at all. `CourtDetailPageComponent`'s `isMine()`/`canRemovePhoto()` require a truthy uid before comparing, for the same reason `MatchDetailPageComponent.isParticipant()` does: `venues.created_by`/`court_photos.uploaded_by` are `ON DELETE SET NULL`, so an orphaned row's `undefined` would otherwise equal an observer's `undefined` uid and hand them owner-only controls.
+  2. **Existing requires corroboration.** A venue is created `status = 'draft'` and goes `'live'` only once 2 distinct players have checked in with an accurate fix. A draft is invisible in the catalogue, the feed and search — its *only* route to visibility is `nearby_venues()`, which surfaces it to someone standing within 250 m. That is deliberate and load-bearing: if drafts were invisible there too, no draft could ever be confirmed and the state would be a dead end. It also self-cleans, since a draft registered from a sofa has coordinates kilometres from the real court and never surfaces to anyone.
+  3. **Captures and the feed post only happen after verification.** This is what keeps the competition honest: registering earns nothing, so a fabricated court is never corroborated, therefore never scores, therefore isn't worth fabricating. The GPS is a *filter*, never a proof — it's spoofable in three clicks — and this rule, not the fix, is what secures the data.
+  4. **One visit captures one court.** GPS distinguishes venues, not court 3 from court 4, so a 12 h per-venue cooldown stops someone standing at a club's gate and collecting all 8 at once. Completing a Rally match at a court is the exception and captures it for free (see `0028`).
+  `CourtsRepository` (`features/courts/data/`) is the only data-access boundary and holds a lazily-loaded catalogue signal — plus the viewer's collection from `my_captured_courts()`, which is what `capturedByMe`, the "captured by me" filter, the profile/feed stats and the whole passport all read, so no two of them can drift. Note this means a court in a still-unconfirmed venue never counts as captured, even by the player who registered it — its card shows "Por confirmar" rather than "Capturado". `CourtsRepository`, so `courtById()` stays a synchronous lookup for match cards, the world map and the profile page — it returns undefined for an unconfirmed draft, and every caller falls back to the match's own denormalized `city`/`country`. `rally-court-composer-dialog` (`shared/components/`) is the single registration UI, used by both `/courts` and the match composer. `mapCoordsFor()` projects real lat/lng onto `rally-map`'s stylised 0-100 grid, so the abstract map stops inventing positions. Two notification kinds (`court_verified` to the discoverer, `court_added_nearby` to the city) are sent client-side on the confirming check-in, while the feed post is written by the RPC — the split exists because notifying is something a client may do as itself, and authoring a post as somebody else is not.
 
 ### Mock today
 
-- Courts, passport countries/courts/achievements and community stats (including the matches hero's "matches this week" stat) still originate in `RallyDataService` / `rally-dataset.ts`. `RallyDataService.playersMetBy()` — Passport's "players met" connections graph — is now backed by a small standalone `MOCK_MATCH_PAIRINGS` list (`rally-dataset.ts`), not by real match rows, since Passport itself is still mock; do not wire it to `MatchesRepository` without also making Passport real.
-- Real discovery profiles map into the older rich `Player` UI contract with neutral placeholder activity values: no distance, zero stats/match score.
-- The player detail page's match-history tabs (`matchTab` on `PlayerDetailPageComponent`) are wired to `MatchesService.matchesForPlayer()` (`MatchesRepository.matchesForPlayer()`), rendering real `rally-match-card`s per tab (upcoming/complete/open) with a loading skeleton and the existing `players.matchesEmptyTitle/Body` empty state. Since `matches` select RLS (`0018_matches.sql`) only grants a signed-in viewer rows where they're also a participant, plus that player's public open-match posts, another player's tabs will typically only surface matches shared with the viewer, not that player's full private history — this is intended, not a bug. Discovered courts and the passport block are still deliberately empty. Do not reintroduce unrelated mock courts/achievements into a real player's profile.
+- Passport achievements and the aspirational "still to play" country roster still originate in `RallyDataService` / `rally-dataset.ts`. `CommunityStats` and its mock `COMMUNITY_STATS` are **gone**: the matches hero's "matches this week" now comes from `count_matches_this_week()` (`0030`), and the world hero's courts/countries from the real catalogue (`CourtsService.communityCourts()/communityCountries()`). The mock `COURTS` dataset and `RallyDataService.createCourt()`/`courts()`/`courtById()` are **gone** — courts started green field, with no seeding, because fake courts in a real table would poison the passport. `RallyDataService.playersMetBy()` — Passport's "players met" connections graph — is now backed by a small standalone `MOCK_MATCH_PAIRINGS` list (`rally-dataset.ts`), not by real match rows; do not wire it to `MatchesRepository` without also making that part of Passport real. The passport's **courts tab is now real**: `PassportService.visitedCourts` comes from the `my_captured_courts()` RPC — check-ins in verified venues, with no visits table to write and therefore nothing to fake. Countries, achievements and "players met" around it are still mock, so the tab is real inside a page that isn't yet.
+- Real discovery profiles map into the older rich `Player` UI contract with neutral placeholder activity values: no distance, zero stats/match score. `Player.stats` is therefore still mock **for other players**, and the signed-in player's own numbers are no longer read from it anywhere: the feed's welcome card, the profile header and the passport all derive matches from `MatchesService.completed()` and courts/countries from `CourtsService` (`myCaptureCount()`, `myCountryCount()`). One source, so those counts can never disagree between pages.
+- The player detail page's match-history tabs (`matchTab` on `PlayerDetailPageComponent`) are wired to `MatchesService.matchesForPlayer()` (`MatchesRepository.matchesForPlayer()`), rendering real `rally-match-card`s per tab (upcoming/complete/open) with a loading skeleton and the existing `players.matchesEmptyTitle/Body` empty state. Since `matches` select RLS (`0018_matches.sql`) only grants a signed-in viewer rows where they're also a participant, plus that player's public open-match posts, another player's tabs will typically only surface matches shared with the viewer, not that player's full private history — this is intended, not a bug. The player's own discovered courts and the passport block on their profile are still deliberately empty (courts are real, but per-player court activity isn't surfaced there yet). Do not reintroduce unrelated mock courts/achievements into a real player's profile.
 
 ### Discovery Behaviour
 
@@ -205,6 +268,7 @@ Own profile page:
 
 ## High-Value Gotchas
 
+- **The `undefined === undefined` trap.** `AuthService.currentUserId()` is `undefined` for an observer *and* for a logged-out session, while several nullable columns (`matches.player_b` on any open/doubles match, `matches.winner`, `venues.created_by` and `court_photos.uploaded_by` after their author deletes the account, an unresolved player in a doubles roster) map to `undefined` too. A bare `x === currentUserId()` therefore silently reports "this is mine" to observers. Always require a truthy uid first — `const uid = ...; return !!uid && x === uid`. Known instances, all fixed: `MatchDetailPageComponent.isParticipant()`, `CourtDetailPageComponent.isMine()`/`canRemovePhoto()`, `MatchesService.handleRealtimeMatch()`, and the `playerALink`/`playerBLink`/`participantLink` helpers (which additionally return `null` rather than `/players/undefined` for an unresolvable slot). Check this whenever comparing an id against the signed-in user.
 - `RallyDataService.me()` still provides the shared displayed player object. `AuthService.refreshProfile()` overlays the real own profile into it after login/session restore. Do not mistake this bridge for fully migrated feature data. Notably `RallyDataService.me().id` is never overlaid and stays a mock id forever — code that needs the real signed-in user's id (e.g. messaging) must use `AuthService.currentUserId()` instead.
 - `ProfileRepositoryService.update()` persists first, then updates the mock bridge. Keep this order so UI never claims a failed save succeeded.
 - A `ui-avatar` badge is shown only for generated avatar imagery and sizes md+. It has inputs `badge`, `badgeClass`, `badgeIcon`, and `showBadge`.
@@ -212,14 +276,160 @@ Own profile page:
 - When a header needs to hide on scroll, use the existing numeric `hideOffset`, not a boolean threshold with CSS transform transitions.
 - The browser Playwright click action can occasionally stall on animated app buttons. Dispatching a bubbling `MouseEvent` through page evaluation has worked as a fallback.
 
+## Courts: Decision Log
+
+Written down because most of these were close calls with a real alternative, and the reasoning is
+not recoverable from the code. Do not re-open one of these without a new reason.
+
+- **Two levels (`venues` → `courts`), not one.** The argument is not naming, it's the dedupe radius:
+  a club with 8 courts is 8 rows ~20 m apart, so a proximity duplicate check at court level would
+  fire on every legitimate second court in the same club. Geography belongs to the venue,
+  characteristics to the court.
+- **The collectible unit is the individual court, but verification happens at venue level.** These
+  were deliberately split. Verification is a geographic fact ("this place exists") that corroborates
+  in days; requiring 2 distinct players per *court* would leave an 8-court club half-verified for
+  months and the reward would never arrive. The cost is that a fabricated "court 9" inside a real
+  club isn't caught by corroboration — accepted, because the return is low, the
+  `unique (venue_id, number)` index bounds it, and it is exactly what reports are for.
+- **Points and the feed post fire on verification, never on registration.** This is the single rule
+  that keeps the collection competition from rewarding invention: an imaginary court is never
+  corroborated, so it never scores and never gets announced. Everything else (GPS, rate limits) is a
+  filter; this is the actual defence.
+- **One visit captures one court**, with a 12 h per-venue cooldown. Without it someone stands at a
+  club's gate and collects all 8 courts in a minute. Playing a Rally match at a court is the
+  exception and captures it for free.
+- **A poor fix creates a draft rather than being refused** (up to 2000 m, above which it is refused).
+  Drafts are invisible everywhere except to someone standing within 250 m — which is what makes them
+  confirmable at all, and also what makes a sofa-registered draft self-cleaning, since its
+  coordinates are kilometres from anywhere anyone will stand.
+- **The creator edits, everyone reports.** Expressed as RPCs rather than an UPDATE policy, because a
+  policy's `WITH CHECK` cannot stop the same statement from also rewriting `status`/`confirmations`.
+  A wiki model was considered and rejected: it needs change history to be recoverable, which is much
+  more work and vandalisable without moderation.
+- **Green field, no seeding.** The 6 mock courts were deleted rather than inserted. Fake courts in a
+  real table poison the passport, and an honest empty state is better than a populated lie.
+- **`created_by` is `on delete set null`, not `cascade`** — the only place in the schema that
+  diverges. A venue is not its author's row: if the discoverer deletes their account, the club must
+  not vanish from the passport of everyone who played there.
+- **No PostGIS.** A b-tree bounding box plus a haversine SQL function is plenty at this scale, and
+  keeps the extension surface as small as the text-instead-of-enums choice made in `0001`.
+- **No real map tiles.** `rally-map` stays an abstract silhouette; real coordinates are projected
+  onto it via `mapCoordsFor()`. A Leaflet/OSM layer was considered and rejected as a dependency that
+  breaks the visual language.
+
+Considered and deliberately cut from v1: the "would you play again?" signal, a capture leaderboard,
+photo galleries beyond 3, a moderation backoffice, and wiki-style editing.
+
+## Planned Cleanup
+
+Agreed with the user: **once the app is stable enough**, do a general cleanup pass before adding
+more features. Not now — none of this is urgent, and doing it mid-feature risks working code. This
+is the running list, so nothing has to be rediscovered.
+
+**Code duplication**
+
+- **A `ui-fab` primitive.** Five FABs (matches 🎾, courts 📍, feed ➕, world 🗺️, messages 💬) repeat
+  the same ~200-character class string, plus the shared `rally-fab` class. They differ only in
+  emoji, `aria-label` and click handler — an obvious `shared/ui` component. Note the messages one is
+  positioned by its wrapper rather than `fixed`, so the primitive needs a positioning opt-out.
+- **`MatchesRepository.subscribeToMatchEvents()` holds a single channel handle**, so a second caller
+  silently steals it from the first. `FeedService` therefore opens its own `feed-open-matches`
+  channel to keep its headline count live. Converting the repository to a multi-listener registry
+  would let the feed drop that duplicate subscription. Deliberately deferred: it means touching
+  working realtime code.
+
+**Lint** — `npm run lint` currently reports 6 errors and ~705 warnings. The breakdown is much less
+alarming than the number:
+
+- 572 `member-ordering` — cosmetic, and many are auto-fixable with `--fix`.
+- 31 `promise-function-async`, 9 `no-non-null-assertion` — worth a look, mostly harmless.
+- **6 errors, all `label-has-associated-control`**, in `register-page.component.html` (3) and
+  `profile-page.component.html` (3). These are pre-existing and predate the courts work; they are
+  real accessibility issues (a `<label>` wrapping a file input or a custom control). Fixing these
+  six is the only lint work that actually matters.
+
+**Bundle** — the initial bundle is ~1.77 MB against a 1 MB budget, so every build warns. The obvious
+suspect is the country dataset; worth measuring before assuming. Either trim it or raise the budget
+deliberately rather than leaving a warning everyone learns to ignore.
+
+**Remaining mock data** — `rally-dataset.ts` is down to ~420 lines. What's left, and what it feeds:
+
+- `ME` / `PLAYERS` — the `RallyDataService.me()` bridge (see High-Value Gotchas). The biggest and
+  most entangled piece; `Player.stats` is still mock for *other* players even though the signed-in
+  player's own numbers are now all real.
+- `ACHIEVEMENTS` — passport achievements. The easiest win: they're thresholds over
+  `my_captured_courts()` and `MatchesService`, so most could become real with no schema change.
+- `COUNTRIES` — only the passport's aspirational "still to play" roster now. **Known wart:** it uses
+  `'UK'`/`'USA'` while the real country dataset says "United Kingdom"/"United States", so a court
+  captured there shows as stamped *and* still-to-play. Fix by deriving this list from the real
+  dataset instead of hardcoding names.
+- `DESTINATIONS`, `WORLD_ACTIVITY`, `PLAYER_INTENTS` — the world page's showcase content.
+- `MOCK_MATCH_PAIRINGS` — passport's "players met" graph.
+
 ## Current Product Priorities
 
-The user has just made matches real (direct invites, open matches published to the feed, a generic real-time notifications system now covering trip hosting and matches, and — v1 — doubles open matches with a 4-player roster and no team assignment yet). Likely next work:
+Courts are now real, which was the big one. A player-maintained database where registering requires
+standing at the court (GPS accuracy checked server-side), existing requires a second player's
+on-site confirmation, and captures/feed posts only count once a place is confirmed — the rule that
+stops the collection competition from rewarding invention. Migrations `0024`-`0030`; see the
+Decision Log above for why each choice was made, and Testing Location-Gated Flows for how to
+exercise any of it without leaving the house.
 
-1. Team assignment for doubles once there's a real need for it (pairing the 4 roster slots into two sides) — deliberately deferred, see the Matches/Doubles entry above.
-2. Build rich score/stats entry (per-set scores, `MatchStat` rows) — `matches.sets jsonb` already supports it schema-wise. The match detail page's "Registar resultado" flow (Singles only; Doubles has no completion UI yet, see the Matches entry above) currently only captures a winner, and even that's optional (a "Sem resultado" choice completes the match with `winner: null`, for non-competitive sessions) — per-set score entry is the remaining piece.
-3. Replace empty player passports and discovered courts with actual per-user activity.
-4. Calculate genuine compatibility/match score and distance only after real location and matching logic exist.
-5. Continue replacing mock feature data carefully, feature by feature, without exposing private profile fields.
+**Shipped incomplete — read this before assuming a court feature works end to end:**
 
-(Player detail match-history tabs are now wired to `MatchesService`, and the Feed's `rally-feed-card` now supports doubles join/leave directly — see the "Mock today" and Matches/Doubles entries above.)
+- **There is no edit UI.** `update_venue()`/`update_court()` (0024) and
+  `CourtsRepository.updateVenue()/updateCourt()` exist and are tested, but nothing calls them. So
+  "the creator edits, everyone reports" is currently only half true: a typo in a venue name cannot
+  be fixed by anyone, including its author. This is the most conspicuous hole in v1, and the
+  plumbing for it is already there — it needs a form on the court detail page, gated on `isMine()`.
+- **Drafts never expire.** The design says an unconfirmed venue should drop out of the proximity
+  list after ~60 days so abandoned ones stop being offered; that was never built. Nothing breaks
+  without it (a sofa-registered draft is already invisible to everyone, since its coordinates are
+  nowhere near a real court), but the table accumulates them. A `where created_at > now() -
+  interval '60 days' or status = 'live'` in `nearby_venues()` is the whole fix.
+- **`court_reports.note` is never populated.** The report UI sends a reason only; the column and the
+  repository parameter both accept a note. Add a text field when the backoffice exists to read it.
+- **The catalogue can't filter by access or facilities.** Both are stored on `venues` and rendered
+  on the detail page, but the filter row only offers surface/indoor/captured.
+
+Everything below was discussed and deliberately deferred, not forgotten. Roughly in the order that
+makes sense to build:
+
+1. **The capture leaderboard.** The competition currently has scoring but no scoreboard. Deferred
+   until there is enough real data to be worth ordering — it's the natural next step once a handful
+   of players are actually capturing.
+2. **Finish the passport.** Countries and courts are now derived from real captures; achievements
+   ("Discover 25 courts" and friends) and "players met" are the last mock parts. Achievements are
+   the easy half — they're just thresholds over `my_captured_courts()` and `MatchesService`.
+3. **"Would you play again?"** A one-tap yes/no offered after completing a match at a court, feeding
+   the `playAgain` percentage the old mock UI used to show. Cut from v1 because it served neither
+   registration, verification nor the competition — but it's the natural way to make a court listing
+   say something about quality rather than just existence. Deliberately not 1-5 stars: with three
+   reviews an average means nothing, and one tap gets an order of magnitude more responses.
+4. **A moderation backoffice.** `court_reports` has been collecting signal since day one with
+   nothing reading it — `no_longer_exists` in particular, which is the main way a database like this
+   rots. This is the first thing that becomes urgent as the court count grows.
+5. **Team assignment for doubles.** Pairing the 4 roster slots into two sides. Once that exists,
+   doubles gets a real winner and the "Dar por terminada" confirmation (`0029`) can become a proper
+   result flow.
+6. **Rich score entry.** Per-set scores; `matches.sets jsonb` already supports it schema-wise, and
+   the "Registar resultado" flow currently captures only an optional winner.
+7. **Real compatibility and distance.** Courts now carry real coordinates — the first real geo data
+   in the app — but players still have none. Distance between a player and a court is computable
+   today; player-to-player is not.
+8. **A real map layer**, if the abstract `rally-map` ever stops being enough. Rejected for v1 as a
+   dependency that breaks the visual language, so this is a deliberate reversal, not an oversight.
+
+Known limits worth remembering rather than re-deriving:
+
+- **The GPS fix is spoofable** in devtools and is treated as a filter, not a proof. Rule 3 (nothing
+  counts before corroboration) is what actually secures the data. Don't invest in harder client-side
+  location checks; they only add friction for honest players.
+- **Thin areas verify slowly.** A legitimate court can sit unconfirmed for a long time where few
+  players are. The escape valve is already designed but not built: accept a completed Rally match at
+  the court as a second confirmation. `0028`/`0029` deliberately make match check-ins capture
+  *without* confirming (`accuracy_m` is null, which never satisfies the `<= 100` test), so switching
+  this on is a small, contained change if it's ever needed.
+- **A fabricated court inside a real club** isn't caught by venue-level corroboration. Bounded by
+  the `unique (venue_id, number)` index and left to reports. If it ever becomes a real problem, the
+  answer is to require court-level corroboration *for scoring only* — not to change the model.

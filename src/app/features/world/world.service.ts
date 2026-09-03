@@ -3,9 +3,10 @@ import { AuthService } from '../../core/auth/auth.service';
 import { CountryDataService } from '../../core/data/country-data.service';
 import { RallyDataService } from '../../core/data/rally-data.service';
 import { TranslationService } from '../../core/i18n/translation.service';
-import { Player, TripIntent } from '../../core/models';
+import { Player, TripIntent, mapCoordsFor } from '../../core/models';
 import { ToastService } from '../../core/services/toast.service';
 import { MapMarker } from '../../shared/components';
+import { CourtsRepository } from '../courts/data/courts.repository';
 import { PostsRepository } from '../feed/data/posts.repository';
 import { PlayersService } from '../players/players.service';
 import { TripsRepository } from './data/trips.repository';
@@ -15,6 +16,7 @@ export class WorldService {
   private readonly data = inject(RallyDataService);
   private readonly auth = inject(AuthService);
   private readonly countryData = inject(CountryDataService);
+  private readonly courtsRepository = inject(CourtsRepository);
   private readonly players = inject(PlayersService);
   private readonly trips = inject(TripsRepository);
   private readonly posts = inject(PostsRepository);
@@ -23,16 +25,17 @@ export class WorldService {
 
   readonly destinations = this.data.destinations;
   readonly countries = this.data.countries;
-  readonly courts = this.data.courts;
+  // Real courts, drawn at their real coordinates — warmed here since the map reads the signal.
+  readonly courts = computed(() => this.courtsRepository.catalogue());
   readonly activity = this.data.worldActivity;
-  readonly communityStats = this.data.communityStats;
 
   readonly selectedId = signal(this.destinations()[0]?.id ?? '');
   readonly selectedDestination = computed(() => this.destinations().find((d) => d.id === this.selectedId()) ?? this.destinations()[0]);
 
   readonly markers = computed<MapMarker[]>(() => [
     ...this.destinations().map((d) => ({ id: d.id, x: d.coords.x, y: d.coords.y, kind: 'destination' as const, label: d.city })),
-    ...this.courts().map((c) => ({ id: `court-${c.id}`, x: c.coords.x + 1, y: c.coords.y + 2, kind: 'court' as const, label: c.name })),
+    // Real coordinates, projected onto the stylised grid — the map stops inventing positions.
+    ...this.courts().map((c) => ({ id: `court-${c.id}`, ...mapCoordsFor(c.venue.lat, c.venue.lng), kind: 'court' as const, label: c.venue.name })),
     ...this.activity().map((a) => ({ id: a.id, x: a.coords.x, y: a.coords.y, kind: 'activity' as const, label: a.city })),
     ...this.countries()
       .filter((c) => !c.visited)
@@ -106,6 +109,7 @@ export class WorldService {
   private readonly myCountryKey = computed(() => this.auth.currentPlayer().country ?? '');
 
   constructor() {
+    void this.courtsRepository.ensureCatalogue();
     this.countryData.loadCountries();
 
     effect(() => {
