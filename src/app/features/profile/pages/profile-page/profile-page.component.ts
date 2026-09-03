@@ -150,7 +150,7 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly draftFormat = signal<Format | null>(this.profile.me().format);
   protected readonly draftSurface = signal<Surface | null>(this.profile.me().surface);
   protected readonly draftCourtPref = signal<CourtPref | null>((this.profile.me().courtPref as CourtPref) ?? null);
-  protected readonly draftFrequency = signal<Frequency | null>(this.profile.me().frequency as Frequency);
+  protected readonly draftFrequency = signal<Frequency | null>((this.profile.me().frequency as Frequency) ?? null);
   protected readonly draftCoached = signal<boolean | null>(this.profile.me().coached ?? null);
   protected readonly draftCoachedFrequency = signal<Frequency | null>(
     (this.profile.me().coachedFrequency as Frequency) ?? null
@@ -194,10 +194,7 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly canSaveGame = computed(() => !!this.draftLevel() && this.draftYears() !== null);
 
   protected readonly canSaveSchedule = computed(
-    () =>
-      !!this.draftFrequency() &&
-      this.draftCoached() !== null &&
-      (this.draftCoached() === false || !!this.draftCoachedFrequency())
+    () => this.draftCoached() !== null && (this.draftCoached() === false || !!this.draftCoachedFrequency())
   );
 
   // Feeds the unsaved-changes route guard — compares every draft signal against the persisted profile.
@@ -336,7 +333,10 @@ export class ProfilePageComponent implements CanComponentDeactivate {
       return;
     }
     void this.saveSection('schedule', {
-      frequency: this.draftFrequency() ?? undefined,
+      // Not coalesced to undefined like the other fields here: frequency is now optional, and a
+      // player may deliberately clear a previously-set answer, which must persist as null rather
+      // than being silently skipped by ProfileRepositoryService.update()'s "only defined keys" filter.
+      frequency: this.draftFrequency(),
       coached: this.draftCoached() ?? undefined,
       coachedFrequency: this.draftCoachedFrequency() ?? undefined,
       timesOfDay: this.draftTimesOfDay(),

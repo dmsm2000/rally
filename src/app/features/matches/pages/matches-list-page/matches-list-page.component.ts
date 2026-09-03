@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
@@ -22,6 +23,7 @@ import { MatchesService } from '../../matches.service';
   imports: [
     FormsModule,
     NgTemplateOutlet,
+    RouterLink,
     StatComponent,
     SectionHeaderComponent,
     EmptyStateComponent,

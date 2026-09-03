@@ -340,12 +340,15 @@
           @case (4) {
             <div class="space-y-6">
               <div>
-                <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.frequency' | translate }}</p>
+                <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.frequency' | translate }}</p>
                 <div class="flex flex-wrap gap-2">
                   @for (f of frequencies; track f.value) {
-                    <ui-chip [clickable]="true" [active]="frequency() === f.value" (toggled)="frequency.set(f.value)">{{
-                      f.key | translate
-                    }}</ui-chip>
+                    <ui-chip
+                      [clickable]="true"
+                      [active]="frequency() === f.value"
+                      (toggled)="frequency.set(frequency() === f.value ? null : f.value)"
+                      >{{ f.key | translate }}</ui-chip
+                    >
                   }
                 </div>
               </div>

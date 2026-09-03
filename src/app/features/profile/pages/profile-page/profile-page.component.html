@@ -432,7 +432,7 @@
             <ui-chip
               [clickable]="true"
               [active]="draftFrequency() === f.value"
-              (toggled)="draftFrequency.set(f.value)"
+              (toggled)="draftFrequency.set(draftFrequency() === f.value ? null : f.value)"
               >{{ f.key | translate }}</ui-chip
             >
           }

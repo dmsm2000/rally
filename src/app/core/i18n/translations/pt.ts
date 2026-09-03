@@ -496,7 +496,7 @@ export const pt = {
     yearsPlaying: 'Anos a jogar',
     format: 'Formato preferido',
     surface: 'Piso preferido',
-    frequency: 'Com que frequência jogas?',
+    frequency: 'Com que frequência jogas? (opcional)',
     freqDaily: 'Todos os dias',
     freq3to4: '3–4 vezes por semana',
     freqTwice: 'Duas vezes por semana',

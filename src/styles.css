@@ -75,6 +75,9 @@
     /* The app shell owns all scrolling internally (its own overflow-y-auto pane) — the document itself never scrolls,
        which avoids the browser's own rubber-band overscroll dragging the whole page (fixed/sticky chrome included). */
     overflow: hidden;
+    /* Backs up the viewport meta's user-scalable=no: some mobile browsers still allow double-tap zoom
+       without this, which testers kept triggering by accident. */
+    touch-action: manipulation;
   }
 
   body {

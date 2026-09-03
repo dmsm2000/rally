@@ -495,7 +495,7 @@ export const en = {
     yearsPlaying: 'Years playing',
     format: 'Preferred format',
     surface: 'Preferred surface',
-    frequency: 'How often do you play?',
+    frequency: 'How often do you play? (optional)',
     freqDaily: 'Daily',
     freq3to4: '3–4 times a week',
     freqTwice: 'Twice a week',

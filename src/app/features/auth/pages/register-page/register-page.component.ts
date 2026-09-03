@@ -175,7 +175,7 @@ export class RegisterPageComponent {
       case 3:
         return !!this.level() && this.years() !== null;
       case 4:
-        return !!this.frequency() && this.coached() !== null && (this.coached() === false || !!this.coachedFrequency());
+        return this.coached() !== null && (this.coached() === false || !!this.coachedFrequency());
       default:
         return true;
     }

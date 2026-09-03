@@ -19,7 +19,8 @@ export interface Player {
   flag: string;
   level: Level;
   years: number;
-  frequency: string;
+  /** Empty/absent when the player hasn't answered yet (common for brand-new registrations). */
+  frequency?: string | null;
   format: Format;
   surface: Surface;
   availability: string[];
