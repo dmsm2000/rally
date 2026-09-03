@@ -29,8 +29,15 @@ export class MatchCardComponent {
   });
 
   private readonly done = computed(() => this.match().status === 'complete');
+  // A completed match can have no winner at all — see match-detail-page's "no result" option
+  // (a Training/HittingSession/PracticeMatch has nothing to declare).
+  private readonly hasWinner = computed(() => !!this.match().winner);
   private readonly won = computed(() => this.match().winner === this.match().playerA);
 
-  protected readonly statusLabel = computed(() => (this.done() ? (this.won() ? 'enums.matchStatus.win' : 'enums.matchStatus.loss') : 'enums.matchStatus.upcoming'));
-  protected readonly statusClasses = computed(() => (this.done() ? (this.won() ? 'bg-win/15 text-win' : 'bg-loss/15 text-loss') : 'bg-lime text-ink'));
+  protected readonly statusLabel = computed(() =>
+    !this.done() ? 'enums.matchStatus.upcoming' : !this.hasWinner() ? 'enums.matchStatus.played' : this.won() ? 'enums.matchStatus.win' : 'enums.matchStatus.loss'
+  );
+  protected readonly statusClasses = computed(() =>
+    !this.done() ? 'bg-lime text-ink' : !this.hasWinner() ? 'bg-muted text-muted-foreground' : this.won() ? 'bg-win/15 text-win' : 'bg-loss/15 text-loss'
+  );
 }

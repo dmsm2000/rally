@@ -445,7 +445,8 @@ export class MatchesRepository {
     return this.toMatch(row);
   }
 
-  async completeMatch(matchId: string, winnerId: string, sets?: [number, number][]): Promise<Match | null> {
+  /** winnerId null means "no result" — a training session or drill has nothing to declare. */
+  async completeMatch(matchId: string, winnerId: string | null, sets?: [number, number][]): Promise<Match | null> {
     const { data, error } = await supabase.rpc('complete_match', { p_match_id: matchId, p_winner: winnerId, p_sets: sets ?? null });
     if (error || !data) {
       console.error('Failed to complete match:', error?.message);

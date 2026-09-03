@@ -131,10 +131,15 @@ export class MatchesService {
   constructor() {
     this.countryData.loadCountries();
 
+    // Tracks both signals (not just isAuthenticated()) so switching between two real accounts
+    // without an intervening logged-out tick still re-fires this effect and reloads. Observers
+    // have no uid but must still load open matches — see 0022_matches_public_select.sql, which
+    // makes those visible to anon — so the gate is "signed in OR observer", not "has a real uid".
     effect(() => {
       const uid = this.auth.currentUserId();
+      const isObserver = this.auth.isObserver();
       untracked(() => {
-        if (uid) {
+        if (uid || isObserver) {
           void this.reload().then(() => this.loading.set(false));
           this.repository.subscribeToMatchEvents(match => this.handleRealtimeMatch(match));
         } else {
@@ -373,7 +378,7 @@ export class MatchesService {
     void this.reload();
   }
 
-  async completeMatch(matchId: string, winnerId: string): Promise<void> {
+  async completeMatch(matchId: string, winnerId: string | null): Promise<void> {
     const result = await this.repository.completeMatch(matchId, winnerId);
     if (!result) {
       this.toast.error(this.translation.t('matches.completeFailed'));
