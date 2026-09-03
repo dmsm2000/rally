@@ -8,6 +8,10 @@ import { MediaLightboxService } from '../../../core/services/media-lightbox.serv
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AvatarComponent, ChipComponent, IconComponent } from '../../ui';
 
+// Mirrors MatchesService.DOUBLES_CAPACITY — kept local since this component doesn't otherwise
+// depend on the matches feature (the parent resolves participant Players via the `participants` input).
+const DOUBLES_CAPACITY = 4;
+
 @Component({
   selector: 'rally-feed-card',
   imports: [AvatarComponent, ChipComponent, IconComponent, RouterLink, TranslatePipe, DatePipe],
@@ -21,15 +25,19 @@ export class FeedCardComponent {
 
   readonly post = input.required<Post>();
   readonly player = input<Player | undefined>();
+  /** Doubles roster Players, resolved by the parent — see FeedService.doublesParticipantsFor(). */
+  readonly participants = input<(Player | undefined)[]>([]);
   readonly canDelete = input(false);
   readonly deleting = input(false);
   readonly volunteering = input(false);
   readonly joining = input(false);
+  readonly leaving = input(false);
 
   readonly liked = output<void>();
   readonly deleted = output<void>();
   readonly volunteered = output<void>();
   readonly joined = output<void>();
+  readonly left = output<void>();
 
   // Own posts route to the own-profile page (there's no /players/:id entry for yourself). Compares
   // against post().authorId, not player()?.id — the mock-bridged "me" player keeps a permanent fake
@@ -54,9 +62,7 @@ export class FeedCardComponent {
   );
 
   // Only shown to players who could realistically join — same location-level match as the
-  // Matches page's own "open near me" list, not restricted to the exact same city. Doubles
-  // matches aren't joinable from the feed yet — see the roster count + "view match" link instead,
-  // which sends interested players to /matches/:id to actually join.
+  // Matches page's own "open near me" list, not restricted to the exact same city.
   protected readonly canJoin = computed(
     () =>
       !this.auth.isObserver() &&
@@ -64,6 +70,36 @@ export class FeedCardComponent {
       this.post().match?.status === 'open' &&
       this.post().match?.format !== 'Doubles' &&
       this.auth.currentPlayer().country === this.post().match?.country
+  );
+
+  protected readonly hasJoinedDoubles = computed(() => !!this.post().match?.participantIds?.includes(this.auth.currentUserId() ?? ''));
+
+  // A full roster flips the match to 'upcoming' server-side (see join_doubles_match()), so an
+  // 'open' doubles post is never full — no separate "roster full" state to gate on here.
+  protected readonly canJoinDoubles = computed(
+    () =>
+      !this.auth.isObserver() &&
+      !this.isOwnPost() &&
+      this.post().match?.status === 'open' &&
+      this.post().match?.format === 'Doubles' &&
+      !this.hasJoinedDoubles() &&
+      this.auth.currentPlayer().country === this.post().match?.country
+  );
+
+  // Excludes the creator (auto-added as a roster slot by createOpenMatch()) — leaving only removes
+  // a participant's own roster row, not the whole match, so the creator must withdraw the post
+  // itself (cancelMatch, from /matches) rather than "leave" their own announcement.
+  protected readonly canLeaveDoubles = computed(
+    () =>
+      !this.auth.isObserver() &&
+      !this.isOwnPost() &&
+      this.post().match?.status === 'open' &&
+      this.post().match?.format === 'Doubles' &&
+      this.hasJoinedDoubles()
+  );
+
+  protected readonly doublesEmptySlots = computed(() =>
+    Array.from({ length: Math.max(0, DOUBLES_CAPACITY - this.participants().length) }, (_, i) => i)
   );
 
   constructor() {

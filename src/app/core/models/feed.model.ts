@@ -31,9 +31,12 @@ export interface MatchPost {
   durationMinutes?: number;
   note?: string;
   playerB?: string;
+  /** True if the viewer is player_b (Singles) or already on the roster (Doubles). */
   joinedByMe: boolean;
   /** Roster size out of 4, format 'Doubles' only — see PostsRepository's post-hydration mapping. */
   participantCount?: number;
+  /** Full joined roster, in join order, format 'Doubles' only — powers the feed card's join/leave button and avatar row. */
+  participantIds?: string[];
 }
 
 export interface Post {

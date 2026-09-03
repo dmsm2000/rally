@@ -2,7 +2,7 @@ import { Injectable, computed, effect, inject, signal, untracked } from '@angula
 import { AuthService } from '../../core/auth/auth.service';
 import { RallyDataService } from '../../core/data/rally-data.service';
 import { TranslationService } from '../../core/i18n/translation.service';
-import { Post, PostType } from '../../core/models';
+import { Player, Post, PostType } from '../../core/models';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { ToastService } from '../../core/services/toast.service';
 import { MatchesRepository } from '../matches/data/matches.repository';
@@ -54,6 +54,7 @@ export class FeedService {
   private readonly deletingPostIds = signal<Set<string>>(new Set());
   private readonly volunteeringPostIds = signal<Set<string>>(new Set());
   private readonly joiningPostIds = signal<Set<string>>(new Set());
+  private readonly leavingPostIds = signal<Set<string>>(new Set());
 
   // Re-derives only when city/country actually change value — reloads once real profile data
   // (rather than the mock bridge's defaults) is available, same pattern as WorldService.
@@ -114,6 +115,15 @@ export class FeedService {
 
   isJoining(postId: string): boolean {
     return this.joiningPostIds().has(postId);
+  }
+
+  isLeaving(postId: string): boolean {
+    return this.leavingPostIds().has(postId);
+  }
+
+  /** Resolves a doubles match-linked post's roster to Player objects for the feed card's avatar row. */
+  doublesParticipantsFor(post: Post): (Player | undefined)[] {
+    return (post.match?.participantIds ?? []).map(id => this.playerById(id));
   }
 
   async loadMore(): Promise<void> {
@@ -247,15 +257,17 @@ export class FeedService {
     }
   }
 
-  /** Joins an open match straight from the feed card — reuses MatchesRepository.acceptOpenMatch(),
-   * which also notifies the poster in real time (see NotificationsService). */
+  /** Joins an open match straight from the feed card — reuses MatchesRepository.acceptOpenMatch()
+   * (Singles) or joinDoublesMatch() (Doubles), both of which also notify the poster/creator in
+   * real time (see NotificationsService). */
   async joinMatch(post: Post): Promise<void> {
     const match = post.match;
     if (!match || match.status !== 'open' || this.isJoining(post.id)) {
       return;
     }
     this.joiningPostIds.update(ids => new Set(ids).add(post.id));
-    const result = await this.matches.acceptOpenMatch(match.matchId);
+    const result =
+      match.format === 'Doubles' ? await this.matches.joinDoublesMatch(match.matchId) : await this.matches.acceptOpenMatch(match.matchId);
     this.joiningPostIds.update(ids => {
       const next = new Set(ids);
       next.delete(post.id);
@@ -263,11 +275,50 @@ export class FeedService {
     });
     if (result) {
       this._posts.update(list =>
-        list.map(p => (p.id === post.id && p.match ? { ...p, match: { ...p.match, status: 'upcoming', joinedByMe: true } } : p))
+        list.map(p =>
+          p.id === post.id && p.match
+            ? {
+                ...p,
+                match: {
+                  ...p.match,
+                  status: result.status as 'open' | 'upcoming' | 'cancelled' | 'complete',
+                  joinedByMe: true,
+                  participantIds: result.participantIds,
+                  participantCount: result.participantIds?.length
+                }
+              }
+            : p
+        )
       );
       this.toast.success(this.translation.t('matches.joinSuccess'));
     } else {
       this.toast.error(this.translation.t('matches.joinFailed'));
+    }
+  }
+
+  /** Leaves a doubles roster straight from the feed card — reuses MatchesRepository.leaveDoublesMatch(). */
+  async leaveDoublesMatch(post: Post): Promise<void> {
+    const match = post.match;
+    if (!match || match.format !== 'Doubles' || match.status !== 'open' || this.isLeaving(post.id)) {
+      return;
+    }
+    this.leavingPostIds.update(ids => new Set(ids).add(post.id));
+    const result = await this.matches.leaveDoublesMatch(match.matchId);
+    this.leavingPostIds.update(ids => {
+      const next = new Set(ids);
+      next.delete(post.id);
+      return next;
+    });
+    if (result) {
+      this._posts.update(list =>
+        list.map(p =>
+          p.id === post.id && p.match
+            ? { ...p, match: { ...p.match, joinedByMe: false, participantIds: result.participantIds, participantCount: result.participantIds?.length } }
+            : p
+        )
+      );
+    } else {
+      this.toast.error(this.translation.t('matches.leaveFailed'));
     }
   }
 
