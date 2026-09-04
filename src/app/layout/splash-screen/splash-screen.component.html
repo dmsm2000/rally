@@ -1,4 +1,4 @@
-@if (visible()) {
+@if (visible() || onAuthCallback()) {
   <div class="splash pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center gap-4" [class.splash--fading]="fading()">
     <div class="splash-photos absolute inset-0 overflow-hidden bg-ink">
       <!-- One random court per load, so repeat visits (login/register, refreshes) don't always show the same one. -->
