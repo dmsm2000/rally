@@ -1,94 +1,111 @@
-# Repor a password
+# Reset password
 
-**Rota:** `/reset-password` (pública, fora da app shell)
-**Guards:** nenhum — nem sequer verifica se existe uma sessão de recuperação ativa antes de mostrar o formulário (ver Fluxo 6 e 7)
-**Componentes:** `ResetPasswordPageComponent`
-**Depende de:** `AuthService.updatePassword()`, `AuthService.logout()`, `ToastService`
-**Ponto de entrada real:** **não é um clique dentro da app.** O Supabase envia um email com um link
-para `reset-password` (`AuthService.requestPasswordReset()`, ver [`forgot-password.md`](forgot-password.md))
-que, ao ser aberto, estabelece uma sessão de recuperação antes de o Angular sequer carregar. Não há
-nenhum botão nem link em nenhum ecrã da app que traga o utilizador diretamente para aqui.
+**Route:** `/reset-password` (public, outside the app shell)
+**Guards:** none — it doesn't even check whether an active recovery session exists before showing
+the form (see Flow 6 and 7)
+**Components:** `ResetPasswordPageComponent`
+**Depends on:** `AuthService.updatePassword()`, `AuthService.logout()`, `ToastService`
+**Real entry point:** **not a click inside the app.** Supabase sends an email with a link to
+`reset-password` (`AuthService.requestPasswordReset()`, see
+[`forgot-password.md`](forgot-password.md)) that, when opened, establishes a recovery session
+before Angular even loads. There's no button or link on any screen of the app that brings the user
+directly here.
 
-Por isso o "ponto de entrada é sempre pelo login" aplica-se à narrativa completa (login → esqueci-me
-da password → email → aqui), não a um percurso clicável dentro de uma única sessão de browser — ver
-a nota para o `rally-e2e-test` no fim sobre como simular o passo do email.
+So the "entry point is always via login" rule applies to the full narrative (login → forgot
+password → email → here), not to a clickable path within a single browser session — see the note
+for `rally-e2e-test` at the end on how to simulate the email step.
 
 ```mermaid
 stateDiagram-v2
-  [*] --> RecoverySession: chega pelo link do email (sessão de recuperação já ativa)
-  [*] --> NoSession: chega ao URL sem ter clicado num link (direto/copiado)
-  [*] --> ExistingSession: chega ao URL com uma sessão normal já autenticada
+  [*] --> RecoverySession: arrives via the email link (recovery session already active)
+  [*] --> NoSession: arrives at the URL without having clicked a link (direct/pasted)
+  [*] --> ExistingSession: arrives at the URL with a normal session already authenticated
 
   RecoverySession --> Form
-  Form --> Submitting: submete com passwords válidas e iguais
-  Submitting --> Form_Error: updatePassword falha
-  Submitting --> Done: sucesso — sessão de recuperação termina (logout)
-  Done --> Login: clica "Iniciar sessão"
+  Form --> Submitting: submits with valid, matching passwords
+  Submitting --> Form_Error: updatePassword fails
+  Submitting --> Done: success — recovery session ends (logout)
+  Done --> Login: clicks "Iniciar sessão"
 
   NoSession --> Form
-  Form --> NoSession_Error: submete sem sessão nenhuma — updatePassword falha por falta de sessão
+  Form --> NoSession_Error: submits with no session at all — updatePassword fails for lack of a session
 ```
 
-## Fluxos de utilizador
+## User flows
 
-### Fluxo 1 — Repor a password com sucesso (jornada completa desde o login)
-**Perfil:** anónimo no início; ganha uma sessão de recuperação a meio
-1. Abre `/login`.
-2. Clica "Esqueceste-te da password?" → `/forgot-password`.
-3. Escreve o email da conta e envia o pedido.
-4. **(fora da app)** Abre o email recebido e clica no link de reset.
-5. **Resultado:** chega a `/reset-password` já com uma sessão de recuperação ativa — o formulário está pronto a usar, sem passo de login extra.
-6. Escreve a password nova no campo "Nova password".
-7. Escreve exatamente a mesma no campo "Confirmar password".
-8. Clica "Guardar password".
-9. **Resultado:** botão muda para "A guardar…"; ao terminar, a sessão de recuperação é fechada (`AuthService.logout()`) e o ecrã troca para o estado de sucesso ("password atualizada").
-10. Clica "Iniciar sessão".
-11. **Resultado:** navega para `/login`, sem sessão ativa — tem de voltar a autenticar-se, agora com a password nova.
+### Flow 1 — Successfully reset the password (full journey from login)
+**Profile:** anonymous at first; gains a recovery session partway through
+1. Opens `/login`.
+2. Clicks "Esqueceste-te da password?" → `/forgot-password`.
+3. Types the account's email and sends the request.
+4. **(outside the app)** Opens the received email and clicks the reset link.
+5. **Result:** arrives at `/reset-password` already with an active recovery session — the form is
+   ready to use, no extra login step.
+6. Types the new password into the "Nova password" field.
+7. Types exactly the same into the "Confirmar password" field.
+8. Clicks "Guardar password".
+9. **Result:** the button changes to "A guardar…"; once done, the recovery session is closed
+   (`AuthService.logout()`) and the screen switches to the success state ("password atualizada").
+10. Clicks "Iniciar sessão".
+11. **Result:** navigates to `/login`, with no active session — has to authenticate again, now
+    with the new password.
 
-### Fluxo 2 — Passwords não coincidem
-**Perfil:** sessão de recuperação ativa (chegou pelo Fluxo 1, passos 1–5)
-1. Escreve uma password no campo "Nova password".
-2. Escreve algo diferente em "Confirmar password".
-3. **Resultado:** aparece a mensagem inline "as passwords não coincidem" por baixo do segundo campo; botão "Guardar password" continua desativado.
+### Flow 2 — Passwords don't match
+**Profile:** active recovery session (arrived via Flow 1, steps 1-5)
+1. Types a password into "Nova password".
+2. Types something different into "Confirmar password".
+3. **Result:** the inline message "as passwords não coincidem" appears below the second field; the
+   "Guardar password" button stays disabled.
 
-### Fluxo 3 — Password demasiado curta
-**Perfil:** sessão de recuperação ativa
-1. Escreve uma password com menos de 6 caracteres no campo "Nova password".
-2. **Resultado:** aparece a mensagem inline "password demasiado curta"; campo com contorno vermelho; botão desativado mesmo que "Confirmar password" tenha o mesmo valor.
+### Flow 3 — Password too short
+**Profile:** active recovery session
+1. Types a password with fewer than 6 characters into "Nova password".
+2. **Result:** the inline message "password demasiado curta" appears; field has a red outline;
+   button stays disabled even if "Confirmar password" has the same value.
 
-### Fluxo 4 — Mostrar/ocultar cada campo de password independentemente
-**Perfil:** sessão de recuperação ativa
-1. Escreve em "Nova password" e clica o respetivo ícone de olho.
-2. **Resultado:** só esse campo fica em claro; "Confirmar password" continua oculto.
-3. Repete no campo "Confirmar password".
-4. **Resultado:** os dois toggles não interferem um com o outro.
+### Flow 4 — Show/hide each password field independently
+**Profile:** active recovery session
+1. Types into "Nova password" and clicks its eye icon.
+2. **Result:** only that field becomes visible in the clear; "Confirmar password" stays hidden.
+3. Repeats on the "Confirmar password" field.
+4. **Result:** the two toggles don't interfere with each other.
 
-### Fluxo 5 — Falha ao guardar (erro de rede/servidor)
-**Perfil:** sessão de recuperação ativa
-1. Preenche as duas passwords corretamente, com o backend a devolver erro.
-2. Clica "Guardar password".
-3. **Resultado:** permanece no formulário (não avança para o estado de sucesso); campos marcados a vermelho; toast de erro com o texto em bruto do Supabase.
+### Flow 5 — Fails to save (network/server error)
+**Profile:** active recovery session
+1. Fills in both passwords correctly, with the backend returning an error.
+2. Clicks "Guardar password".
+3. **Result:** stays on the form (doesn't advance to the success state); fields marked red; error
+   toast with Supabase's raw text.
 
-### Fluxo 6 — Acesso direto sem sessão de recuperação
-**Perfil:** anónimo, sem ter passado pelo Fluxo 1 (não clicou em nenhum link de email)
-1. Navega diretamente para `/reset-password` (URL escrito à mão, ou um link de email antigo/expirado).
-2. **Resultado:** o formulário aparece na mesma — não há nenhuma verificação client-side de que existe uma sessão de recuperação válida.
-3. Preenche as duas passwords e submete.
-4. **Resultado esperado:** `updatePassword()` falha (sem sessão para atualizar) — toast de erro, permanece no formulário. **Isto é o comportamento esperado, mas depende inteiramente do Supabase recusar a chamada; vale a pena confirmar experimentalmente que falha mesmo, e não apenas assumir.**
+### Flow 6 — Direct access without a recovery session
+**Profile:** anonymous, hasn't gone through Flow 1 (didn't click any email link)
+1. Navigates directly to `/reset-password` (URL typed by hand, or an old/expired email link).
+2. **Result:** the form shows up anyway — there's no client-side check that a valid recovery
+   session exists.
+3. Fills in both passwords and submits.
+4. **Expected result:** `updatePassword()` fails (no session to update) — error toast, stays on the
+   form. **This is the expected behavior, but it depends entirely on Supabase refusing the call;
+   it's worth confirming experimentally that it actually fails, rather than just assuming it.**
 
-### Fluxo 7 — Sessão normal (não de recuperação) visita `/reset-password` diretamente
-**Perfil:** conta real, sessão de login normal já ativa (não veio de nenhum link de reset)
-1. Com sessão normal ativa, navega diretamente para `/reset-password`.
-2. Preenche as duas passwords e submete.
-3. **Resultado a confirmar:** `AuthService.updatePassword()` chama `supabase.auth.updateUser({ password })`, que atua sobre **qualquer** sessão ativa — não parece distinguir uma sessão "de recuperação" de uma sessão normal de login. Se assim for, isto muda a password da conta autenticada **sem pedir a password atual**, ao contrário do fluxo equivalente dentro do perfil (`ProfilePageComponent` → mudar password, que exige a password atual via `AuthService.changePassword()` antes de chamar `updatePassword()`). Vale a pena verificar isto deliberadamente — se confirmado, é o achado mais importante deste ecrã.
+### Flow 7 — A normal (non-recovery) session visits `/reset-password` directly
+**Profile:** real account, normal login session already active (didn't come from a reset link)
+1. With a normal session active, navigates directly to `/reset-password`.
+2. Fills in both passwords and submits.
+3. **Result to confirm:** `AuthService.updatePassword()` calls
+   `supabase.auth.updateUser({ password })`, which acts on **any** active session — it doesn't
+   appear to distinguish a "recovery" session from a normal login session. If that's the case, this
+   changes the authenticated account's password **without asking for the current password**,
+   unlike the equivalent flow inside the profile (`ProfilePageComponent` → change password, which
+   requires the current password via `AuthService.changePassword()` before calling
+   `updatePassword()`). This is worth checking deliberately — if confirmed, it's the most important
+   finding on this screen.
 
 ---
 
-**Notas para o `rally-e2e-test`:** o Fluxo 1 completo não é automatizável só com Playwright a clicar
-na app — o passo 4 (abrir o email e clicar no link) precisa de uma caixa de correio de teste que o
-Playwright consiga consultar (Mailhog/Mailosaur), ou de simular a chegada à página com uma sessão de
-recuperação já estabelecida (chamar a API do Supabase diretamente para gerar o link/token de
-recuperação e navegar para ele, sem depender de email real). Os Fluxos 2–5 não precisam disto —
-correm inteiramente a partir do estado "já chegou com sessão de recuperação", que pode ser montado
-diretamente no teste. O Fluxo 7 é o mais importante de confirmar cedo, porque é sobre segurança, não
-sobre UX.
+**Notes for `rally-e2e-test`:** the full Flow 1 can't be automated with just Playwright clicking
+through the app — step 4 (opening the email and clicking the link) needs a test mailbox that
+Playwright can query (Mailhog/Mailosaur), or simulating arrival at the page with a recovery session
+already established (calling the Supabase API directly to generate the recovery link/token and
+navigating to it, without depending on a real email). Flows 2-5 don't need this — they run entirely
+from the "already arrived with a recovery session" state, which can be set up directly in the test.
+Flow 7 is the most important to confirm early, because it's about security, not UX.

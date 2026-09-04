@@ -3,8 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CountryDataService } from '../../../../core/data/country-data.service';
+import { GeolocationService } from '../../../../core/services/geolocation.service';
 import {
-  AVAILABILITY_OPTIONS,
   AvailabilityOption,
   Backhand,
   BACKHANDS,
@@ -69,12 +69,12 @@ export class RegisterPageComponent {
   private readonly i18n = inject(TranslationService);
   protected readonly theme = inject(ThemeService);
   private readonly countryData = inject(CountryDataService);
+  private readonly geolocation = inject(GeolocationService);
 
   protected readonly levels = LEVELS;
   protected readonly formats = FORMATS;
   protected readonly surfaces = SURFACES;
   protected readonly frequencies = FREQUENCIES;
-  protected readonly availabilityOptions = AVAILABILITY_OPTIONS;
   protected readonly maxDistanceOptions = MAX_DISTANCE_OPTIONS;
   protected readonly countries = this.countryData.countries;
   protected readonly countryNames = computed(() => this.countries().map(c => c.name));
@@ -97,14 +97,15 @@ export class RegisterPageComponent {
   ];
 
   // Set when we're routed here by AuthCallbackPageComponent after a first Google sign-in: a real
-  // session already exists with no `profiles` row yet, so the account step (email/password) is
-  // skipped — Google already supplied the email, and there's no password to set.
+  // session already exists with no `profiles` row yet, so the account step still asks for the
+  // (editable, pre-filled) name but skips email/password — Google already supplied the email, and
+  // there's no password to set.
   protected readonly googleMode = signal(
     !!(this.router.getCurrentNavigation()?.extras.state as { completeGoogleProfile?: boolean } | undefined)
       ?.completeGoogleProfile
   );
 
-  protected readonly step = signal(this.googleMode() ? 1 : 0);
+  protected readonly step = signal(0);
   protected readonly submitting = signal(false);
   protected readonly confirmationPending = signal(false);
   protected readonly emailFieldError = signal(false);
@@ -124,9 +125,11 @@ export class RegisterPageComponent {
   protected readonly backhand = signal<Backhand | null>(null);
   protected readonly city = signal('');
   protected readonly country = signal('');
-  protected readonly maxDistanceKm = signal<number | null>(null);
+  protected readonly locationConsent = signal<boolean | null>(null);
+  protected readonly locatingConsent = signal(false);
+  protected readonly maxDistanceKm = signal<number | null>(MAX_DISTANCE_OPTIONS[2]);
   protected readonly level = signal<Level | null>(null);
-  protected readonly years = signal<number | null>(null);
+  protected readonly years = signal<number | null>(0);
   protected readonly playStyle = signal<PlayStyle | null>(null);
   protected readonly format = signal<Format | null>('Both');
   protected readonly surface = signal<Surface | null>(null);
@@ -141,7 +144,8 @@ export class RegisterPageComponent {
   protected readonly avatarStyle = signal<AvatarStyleId>(AVATAR_STYLES[0]);
 
   private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  protected readonly maxBirthDate = new Date().toISOString().slice(0, 10);
+  // Players must be at least 6 years old — blocks the whole last 6 years in the date picker.
+  protected readonly maxBirthDate = new Date(new Date().setFullYear(new Date().getFullYear() - 6)).toISOString().slice(0, 10);
 
   protected readonly passwordsMismatch = computed(
     () => this.confirmPassword().length > 0 && this.password() !== this.confirmPassword()
@@ -151,9 +155,14 @@ export class RegisterPageComponent {
 
   protected readonly fullName = computed(() => `${this.firstName().trim()} ${this.lastName().trim()}`.trim());
 
+  protected readonly maxDistanceIndex = computed(() => Math.max(0, this.maxDistanceOptions.indexOf(this.maxDistanceKm() ?? -1)));
+
   protected readonly canContinue = computed(() => {
     switch (this.step()) {
       case 0:
+        if (this.googleMode()) {
+          return this.firstName().trim().length > 1 && this.lastName().trim().length > 1;
+        }
         return (
           this.firstName().trim().length > 1 &&
           this.lastName().trim().length > 1 &&
@@ -168,7 +177,7 @@ export class RegisterPageComponent {
       case 2:
         return this.country().length > 0 && this.city().length > 0 && this.maxDistanceKm() !== null;
       case 3:
-        return !!this.level() && this.years() !== null;
+        return this.years() !== null && (this.years() === 0 || !!this.level());
       case 4:
         return this.coached() !== null && (this.coached() === false || !!this.coachedFrequency());
       default:
@@ -232,9 +241,16 @@ export class RegisterPageComponent {
     this.years.set(Math.max(0, (this.years() ?? 1) - 1));
   }
 
-  protected toggleAvailability(option: AvailabilityOption): void {
-    const current = this.availability();
-    this.availability.set(current.includes(option) ? current.filter(a => a !== option) : [...current, option]);
+  protected async requestLocation(): Promise<void> {
+    this.locatingConsent.set(true);
+    try {
+      await this.geolocation.locate();
+      this.locationConsent.set(true);
+    } catch {
+      this.locationConsent.set(false);
+    } finally {
+      this.locatingConsent.set(false);
+    }
   }
 
   protected toggleTimeOfDay(option: TimeOfDay): void {
@@ -260,9 +276,13 @@ export class RegisterPageComponent {
   }
 
   protected back(): void {
-    // In Google mode there's no account step to go back to — email/password were never asked.
-    const floor = this.googleMode() ? 1 : 0;
-    this.step.update(s => Math.max(floor, s - 1));
+    this.step.update(s => Math.max(0, s - 1));
+  }
+
+  protected surfaceLabelKey(surface: Surface): string {
+    // "Carpet" reads as "Outro" for a player's own preference — real court listings still show
+    // the honest "Alcatifa"/"Carpet" label via enums.surface, this is this question's copy only.
+    return surface === 'Carpet' ? 'auth.surfaceOther' : `enums.surface.${surface}`;
   }
 
   protected async onSubmit(): Promise<void> {

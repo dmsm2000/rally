@@ -81,79 +81,81 @@
                   />
                 </label>
               </div>
-              <label class="block">
-                <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
-                  >* {{ 'auth.email' | translate }}</span
-                >
-                <input
-                  [ngModel]="email()"
-                  (ngModelChange)="setEmail($event)"
-                  (blur)="onEmailBlur()"
-                  name="email"
-                  type="email"
-                  autocomplete="email"
-                  [placeholder]="'auth.emailPlaceholder' | translate"
-                  [class]="
-                    'w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground ' +
-                    (emailFieldError() || emailTaken() ? 'border-loss' : 'border-border')
-                  "
-                />
-                @if (emailTaken()) {
-                  <span class="mt-1.5 block text-xs font-semibold text-loss">{{
-                    'auth.emailAlreadyRegistered' | translate
-                  }}</span>
-                }
-              </label>
-              <label class="block">
-                <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
-                  >* {{ 'auth.password' | translate }}</span
-                >
-                <div class="relative">
+              @if (!googleMode()) {
+                <label class="block">
+                  <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                    >* {{ 'auth.email' | translate }}</span
+                  >
                   <input
-                    [ngModel]="password()"
-                    (ngModelChange)="password.set($event)"
-                    name="password"
-                    [type]="showPassword() ? 'text' : 'password'"
-                    autocomplete="new-password"
-                    [placeholder]="'auth.passwordPlaceholder' | translate"
+                    [ngModel]="email()"
+                    (ngModelChange)="setEmail($event)"
+                    (blur)="onEmailBlur()"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    [placeholder]="'auth.emailPlaceholder' | translate"
                     [class]="
-                      'w-full rounded-xl border bg-background px-4 py-3 pr-11 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground ' +
-                      (passwordTooShort() ? 'border-loss' : 'border-border')
+                      'w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground ' +
+                      (emailFieldError() || emailTaken() ? 'border-loss' : 'border-border')
                     "
                   />
-                  <ui-password-toggle [visible]="showPassword()" (toggled)="showPassword.set(!showPassword())" />
-                </div>
-                @if (passwordTooShort()) {
-                  <span class="mt-1.5 block text-xs font-semibold text-loss">{{
-                    'auth.passwordTooShort' | translate
-                  }}</span>
-                }
-              </label>
-              <label class="block">
-                <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
-                  >* {{ 'auth.confirmPassword' | translate }}</span
-                >
-                <div class="relative">
-                  <input
-                    [ngModel]="confirmPassword()"
-                    (ngModelChange)="confirmPassword.set($event)"
-                    name="confirmPassword"
-                    [type]="showConfirmPassword() ? 'text' : 'password'"
-                    autocomplete="new-password"
-                    [placeholder]="'auth.confirmPasswordPlaceholder' | translate"
-                    class="w-full rounded-xl border border-border bg-background px-4 py-3 pr-11 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
-                  />
-                  <ui-password-toggle
-                    [visible]="showConfirmPassword()"
-                    (toggled)="showConfirmPassword.set(!showConfirmPassword())"
-                  />
-                </div>
-                @if (passwordsMismatch()) {
-                  <span class="mt-1.5 block text-xs font-semibold text-loss">{{
-                    'auth.passwordMismatch' | translate
-                  }}</span>
-                }
-              </label>
+                  @if (emailTaken()) {
+                    <span class="mt-1.5 block text-xs font-semibold text-loss">{{
+                      'auth.emailAlreadyRegistered' | translate
+                    }}</span>
+                  }
+                </label>
+                <label class="block">
+                  <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                    >* {{ 'auth.password' | translate }}</span
+                  >
+                  <div class="relative">
+                    <input
+                      [ngModel]="password()"
+                      (ngModelChange)="password.set($event)"
+                      name="password"
+                      [type]="showPassword() ? 'text' : 'password'"
+                      autocomplete="new-password"
+                      [placeholder]="'auth.passwordPlaceholder' | translate"
+                      [class]="
+                        'w-full rounded-xl border bg-background px-4 py-3 pr-11 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground ' +
+                        (passwordTooShort() ? 'border-loss' : 'border-border')
+                      "
+                    />
+                    <ui-password-toggle [visible]="showPassword()" (toggled)="showPassword.set(!showPassword())" />
+                  </div>
+                  @if (passwordTooShort()) {
+                    <span class="mt-1.5 block text-xs font-semibold text-loss">{{
+                      'auth.passwordTooShort' | translate
+                    }}</span>
+                  }
+                </label>
+                <label class="block">
+                  <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+                    >* {{ 'auth.confirmPassword' | translate }}</span
+                  >
+                  <div class="relative">
+                    <input
+                      [ngModel]="confirmPassword()"
+                      (ngModelChange)="confirmPassword.set($event)"
+                      name="confirmPassword"
+                      [type]="showConfirmPassword() ? 'text' : 'password'"
+                      autocomplete="new-password"
+                      [placeholder]="'auth.confirmPasswordPlaceholder' | translate"
+                      class="w-full rounded-xl border border-border bg-background px-4 py-3 pr-11 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
+                    />
+                    <ui-password-toggle
+                      [visible]="showConfirmPassword()"
+                      (toggled)="showConfirmPassword.set(!showConfirmPassword())"
+                    />
+                  </div>
+                  @if (passwordsMismatch()) {
+                    <span class="mt-1.5 block text-xs font-semibold text-loss">{{
+                      'auth.passwordMismatch' | translate
+                    }}</span>
+                  }
+                </label>
+              }
             </div>
           }
           @case (1) {
@@ -195,6 +197,7 @@
                   }
                 </div>
               </div>
+
               <div>
                 <p class="mb-2 text-xs font-semibold text-muted-foreground">
                   {{ 'auth.backhandQuestion' | translate }}
@@ -211,6 +214,23 @@
           }
           @case (2) {
             <div class="space-y-5">
+              <div>
+                <p class="mb-1 text-xs font-semibold text-muted-foreground">
+                  {{ 'auth.locationPermissionQuestion' | translate }}
+                </p>
+                <p class="mb-2 text-xs text-muted-foreground">{{ 'auth.locationPermissionHint' | translate }}</p>
+                <div class="flex flex-wrap gap-2">
+                  <ui-chip
+                    [clickable]="true"
+                    [active]="locationConsent() === true"
+                    (toggled)="requestLocation()"
+                    >📍 {{ (locatingConsent() ? 'auth.locationLocating' : 'auth.locationAllow') | translate }}</ui-chip
+                  >
+                  <ui-chip [clickable]="true" [active]="locationConsent() === false" (toggled)="locationConsent.set(false)"
+                    >🙅 {{ 'auth.locationDeny' | translate }}</ui-chip
+                  >
+                </div>
+              </div>
               <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label class="block">
                   <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
@@ -241,31 +261,34 @@
               </div>
               <div>
                 <p class="mb-2 text-xs font-semibold text-muted-foreground">
-                  * {{ 'auth.maxDistanceQuestion' | translate }}
+                  * {{ 'auth.maxDistanceSliderQuestion' | translate }}
                 </p>
-                <div class="flex flex-wrap gap-2">
-                  @for (d of maxDistanceOptions; track d) {
-                    <ui-chip [clickable]="true" [active]="maxDistanceKm() === d" (toggled)="maxDistanceKm.set(d)"
-                      >{{ d }}{{ d === 100 ? '+' : '' }} km</ui-chip
+                <div class="rounded-xl border border-border bg-background px-4 py-3">
+                  <div class="mb-2 text-center">
+                    <span class="text-stat text-xl"
+                      >{{ maxDistanceKm() }}{{ maxDistanceKm() === 100 ? '+' : '' }} km</span
                     >
-                  }
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    [max]="maxDistanceOptions.length - 1"
+                    step="1"
+                    [value]="maxDistanceIndex()"
+                    (input)="maxDistanceKm.set(maxDistanceOptions[$any($event.target).valueAsNumber])"
+                    class="w-full cursor-pointer accent-lime-deep"
+                  />
+                  <div class="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                    @for (d of maxDistanceOptions; track d) {
+                      <span>{{ d }}{{ d === 100 ? '+' : '' }} km</span>
+                    }
+                  </div>
                 </div>
               </div>
             </div>
           }
           @case (3) {
             <div class="space-y-6">
-              <div>
-                <p class="mb-1 text-xs font-semibold text-muted-foreground">* {{ 'auth.level' | translate }}</p>
-                <p class="mb-2 text-xs text-muted-foreground">{{ 'auth.levelHint' | translate }}</p>
-                <div class="flex flex-wrap gap-2">
-                  @for (l of levels; track l) {
-                    <ui-chip [clickable]="true" [active]="level() === l" (toggled)="level.set(l)">{{
-                      'enums.level.' + l | translate
-                    }}</ui-chip>
-                  }
-                </div>
-              </div>
               <div>
                 <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
                   >* {{ 'auth.yearsPlaying' | translate }}</span
@@ -280,9 +303,7 @@
                   >
                     −
                   </button>
-                  <span class="text-stat w-16 text-center text-xl">{{
-                    years() === null ? '—' : years() === 40 ? '40+' : years()
-                  }}</span>
+                  <span class="text-stat w-16 text-center text-xl">{{ years() === 40 ? '40+' : years() }}</span>
                   <button
                     type="button"
                     (click)="incrementYears()"
@@ -294,17 +315,33 @@
                   </button>
                 </div>
               </div>
-              <div>
-                <p class="mb-1 text-xs font-semibold text-muted-foreground">{{ 'auth.styleQuestion' | translate }}</p>
-                <p class="mb-2 text-xs text-muted-foreground">{{ 'auth.styleHint' | translate }}</p>
-                <div class="flex flex-wrap gap-2">
-                  @for (st of playStyles; track st.value) {
-                    <ui-chip [clickable]="true" [active]="playStyle() === st.value" (toggled)="playStyle.set(st.value)"
-                      >{{ st.emoji }} {{ st.key | translate }}</ui-chip
-                    >
-                  }
+              @if ((years() ?? 0) > 0) {
+                <div>
+                  <p class="mb-1 text-xs font-semibold text-muted-foreground">* {{ 'auth.level' | translate }}</p>
+                  <p class="mb-2 text-xs text-muted-foreground">{{ 'auth.levelHint' | translate }}</p>
+                  <div class="flex flex-wrap gap-2">
+                    @for (l of levels; track l) {
+                      <ui-chip [clickable]="true" [active]="level() === l" (toggled)="level.set(l)">{{
+                        'enums.level.' + l | translate
+                      }}</ui-chip>
+                    }
+                  </div>
                 </div>
-              </div>
+                <div>
+                  <p class="mb-1 text-xs font-semibold text-muted-foreground">{{ 'auth.styleQuestion' | translate }}</p>
+                  <p class="mb-2 text-xs text-muted-foreground">{{ 'auth.styleHint' | translate }}</p>
+                  <div class="flex flex-wrap gap-2">
+                    @for (st of playStyles; track st.value) {
+                      <ui-chip
+                        [clickable]="true"
+                        [active]="playStyle() === st.value"
+                        (toggled)="playStyle.set(st.value)"
+                        >{{ st.emoji }} {{ st.key | translate }}</ui-chip
+                      >
+                    }
+                  </div>
+                </div>
+              }
               <div>
                 <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.format' | translate }}</p>
                 <div class="flex flex-wrap gap-2">
@@ -316,18 +353,15 @@
                 </div>
               </div>
               <div>
-                <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.surface' | translate }}</p>
+                <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.courtTypeQuestion' | translate }}</p>
                 <div class="flex flex-wrap gap-2">
                   @for (s of surfaces; track s) {
-                    <ui-chip [clickable]="true" [active]="surface() === s" (toggled)="surface.set(s)">{{ s }}</ui-chip>
+                    <ui-chip [clickable]="true" [active]="surface() === s" (toggled)="surface.set(s)">{{
+                      surfaceLabelKey(s) | translate
+                    }}</ui-chip>
                   }
                 </div>
-              </div>
-              <div>
-                <p class="mb-2 text-xs font-semibold text-muted-foreground">
-                  {{ 'auth.courtPrefQuestion' | translate }}
-                </p>
-                <div class="flex flex-wrap gap-2">
+                <div class="mt-2 flex flex-wrap gap-2">
                   @for (c of courtPrefs; track c.value) {
                     <ui-chip [clickable]="true" [active]="courtPref() === c.value" (toggled)="courtPref.set(c.value)"
                       >{{ c.emoji }} {{ c.key | translate }}</ui-chip
@@ -339,19 +373,6 @@
           }
           @case (4) {
             <div class="space-y-6">
-              <div>
-                <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.frequency' | translate }}</p>
-                <div class="flex flex-wrap gap-2">
-                  @for (f of frequencies; track f.value) {
-                    <ui-chip
-                      [clickable]="true"
-                      [active]="frequency() === f.value"
-                      (toggled)="frequency.set(frequency() === f.value ? null : f.value)"
-                      >{{ f.key | translate }}</ui-chip
-                    >
-                  }
-                </div>
-              </div>
               <div>
                 <p class="mb-2 text-xs font-semibold text-muted-foreground">
                   * {{ 'auth.coachedQuestion' | translate }}
@@ -381,6 +402,19 @@
                 }
               </div>
               <div>
+                <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.frequency' | translate }}</p>
+                <div class="flex flex-wrap gap-2">
+                  @for (f of frequencies; track f.value) {
+                    <ui-chip
+                      [clickable]="true"
+                      [active]="frequency() === f.value"
+                      (toggled)="frequency.set(frequency() === f.value ? null : f.value)"
+                      >{{ f.key | translate }}</ui-chip
+                    >
+                  }
+                </div>
+              </div>
+              <div>
                 <p class="mb-2 text-xs font-semibold text-muted-foreground">
                   {{ 'auth.timeOfDayQuestion' | translate }}
                 </p>
@@ -391,19 +425,6 @@
                       [active]="timesOfDay().includes(t.value)"
                       (toggled)="toggleTimeOfDay(t.value)"
                       >{{ t.emoji }} {{ t.key | translate }}</ui-chip
-                    >
-                  }
-                </div>
-              </div>
-              <div>
-                <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.availability' | translate }}</p>
-                <div class="flex flex-wrap gap-2">
-                  @for (a of availabilityOptions; track a.value) {
-                    <ui-chip
-                      [clickable]="true"
-                      [active]="availability().includes(a.value)"
-                      (toggled)="toggleAvailability(a.value)"
-                      >{{ a.key | translate }}</ui-chip
                     >
                   }
                 </div>
@@ -430,14 +451,13 @@
                   [placeholder]="'auth.bioPlaceholder' | translate"
                   class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
                 ></textarea>
-                <span class="mt-1.5 block text-xs text-muted-foreground">{{ 'auth.bioHint' | translate }}</span>
               </label>
             </div>
           }
         }
 
         <div class="mt-8 flex items-center justify-between gap-3">
-          @if (step() > (googleMode() ? 1 : 0)) {
+          @if (step() > 0) {
             <button
               type="button"
               (click)="back()"
@@ -469,10 +489,14 @@
         </div>
       </form>
 
-      <p class="mt-6 text-center text-sm text-muted-foreground">
-        {{ 'auth.haveAccount' | translate }}
-        <a routerLink="/login" class="font-semibold text-foreground hover:underline">{{ 'auth.signIn' | translate }}</a>
-      </p>
+      @if (!googleMode()) {
+        <p class="mt-6 text-center text-sm text-muted-foreground">
+          {{ 'auth.haveAccount' | translate }}
+          <a routerLink="/login" class="font-semibold text-foreground hover:underline">{{
+            'auth.signIn' | translate
+          }}</a>
+        </p>
+      }
     }
   </div>
 </div>

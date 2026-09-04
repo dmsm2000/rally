@@ -8,7 +8,7 @@ import { Format, Level, Surface } from '../models';
 export type Hand = 'Right' | 'Left' | 'Ambidextrous';
 export type Backhand = 'OneHanded' | 'TwoHanded' | 'Unknown';
 export type Gender = 'Male' | 'Female' | 'NonBinary' | 'PreferNotToSay';
-export type PlayStyle = 'AggressiveBaseliner' | 'Counterpuncher' | 'ServeAndVolleyer' | 'AllCourt';
+export type PlayStyle = 'AggressiveBaseliner' | 'Counterpuncher' | 'ServeAndVolleyer' | 'AllCourt' | 'Unknown';
 export type CourtPref = 'Indoor' | 'Outdoor' | 'NoPreference';
 export type TimeOfDay = 'Morning' | 'Afternoon' | 'Evening';
 export type Frequency = 'Daily' | '3–4 times a week' | 'Twice a week' | 'Once a week' | 'A few times a month';
@@ -80,7 +80,8 @@ export const PLAY_STYLES: ChipOption<PlayStyle>[] = [
   { value: 'AggressiveBaseliner', emoji: '🔥', key: 'auth.styleAggressiveBaseliner' },
   { value: 'Counterpuncher', emoji: '🛡️', key: 'auth.styleCounterpuncher' },
   { value: 'ServeAndVolleyer', emoji: '⚡', key: 'auth.styleServeVolley' },
-  { value: 'AllCourt', emoji: '🧭', key: 'auth.styleAllCourt' }
+  { value: 'AllCourt', emoji: '🧭', key: 'auth.styleAllCourt' },
+  { value: 'Unknown', emoji: '🤷', key: 'auth.styleUnknown' }
 ];
 
 export const COURT_PREFS: ChipOption<CourtPref>[] = [

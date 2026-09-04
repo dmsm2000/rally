@@ -1,216 +1,253 @@
 # Login
 
-**Rota:** `/login` (pública, fora da app shell — sem topbar/drawer)
-**Guards:** nenhum, mas uma sessão real já autenticada é redirecionada para `/` assim que o
-`AuthService` fica pronto (ver Fluxo 10) — só uma sessão de observador fica no formulário, porque
-essa é a única forma de sair do modo observador para uma conta real.
-**Componentes:** `LoginPageComponent`, `AuthCallbackPageComponent` (o passo intermédio do login com
-Google, em `/auth/callback`, fora da app shell tal como este ecrã). Visualmente, aterrar em
-`/auth/callback` dispara sempre a animação completa do brand intro (`SplashScreenComponent`, montado
-em `app.html`), que a cobre por inteiro do princípio ao fim (~3s, mesmo que a navegação para `/` ou
-`/register` aconteça bem antes disso) — ver "Nota de UI" mais abaixo. O próprio
-`AuthCallbackPageComponent` continua a renderizar um texto simples ("A concluir início de
-sessão…") por baixo, mas só como suporte; na prática nunca chega a ser visível.
-**Depende de:** `AuthService.login()`, `AuthService.loginWithGoogle()`, `AuthService.loginAsObserver()`,
+**Route:** `/login` (public, outside the app shell — no topbar/drawer)
+**Guards:** none, but an already-authenticated real session is redirected to `/` as soon as
+`AuthService` becomes ready (see Flow 10) — only an observer session stays on the form, because
+that's the only way to leave observer mode for a real account.
+**Components:** `LoginPageComponent`, `AuthCallbackPageComponent` (the intermediate step of Google
+login, at `/auth/callback`, outside the app shell just like this screen). Visually, landing on
+`/auth/callback` always triggers the full brand-intro animation (`SplashScreenComponent`, mounted in
+`app.html`), which covers the whole screen start to finish (~3s, even if the navigation to `/` or
+`/register` happens well before that) — see "UI note" further below. `AuthCallbackPageComponent`
+itself still renders plain text underneath ("A concluir início de sessão…"), but only as a fallback;
+in practice it's never actually visible.
+**Depends on:** `AuthService.login()`, `AuthService.loginWithGoogle()`, `AuthService.loginAsObserver()`,
 `AuthService.hasProfile()`, `ToastService`
 
-Mapa geral do ecrã (visão técnica — para o percurso ação-a-ação ver "Fluxos de utilizador" abaixo):
+Overall screen map (technical view — for the step-by-step journey see "User flows" below):
 
 ```mermaid
 stateDiagram-v2
   [*] --> Form
-  Form --> Redirect_Feed: sessão real já ativa (auth.ready() + currentUserId())
-  Form --> Submitting: submete com email válido e password não vazia
-  Submitting --> Form_Error: credenciais inválidas ou email por confirmar
-  Submitting --> Redirect_Feed: sucesso
+  Form --> Redirect_Feed: real session already active (auth.ready() + currentUserId())
+  Form --> Submitting: submits with a valid email and non-empty password
+  Submitting --> Form_Error: invalid credentials or unconfirmed email
+  Submitting --> Redirect_Feed: success
   Form --> Redirect_Feed: "Continuar como olheiro"
   Form --> GoogleRedirect: "Continuar com Google"
-  GoogleRedirect --> Callback: Google autentica e devolve o browser a /auth/callback
-  Callback --> Redirect_Feed: já existe profiles row
-  Callback --> Register_GoogleMode: ainda não existe profiles row
-  Callback --> Form: erro OAuth (ex. utilizador cancelou) ou sessão não se estabeleceu
+  GoogleRedirect --> Callback: Google authenticates and returns the browser to /auth/callback
+  Callback --> Redirect_Feed: profiles row already exists
+  Callback --> Register_GoogleMode: profiles row doesn't exist yet
+  Callback --> Form: OAuth error (e.g. user cancelled) or session wasn't established
   Form --> ForgotPassword: "Esqueceste-te da password?"
   Form --> Register: "Criar conta"
 ```
 
-## Fluxos de utilizador
+## User flows
 
-Cada fluxo é uma sequência de ações concretas — o mapeamento para um teste Playwright é quase 1:1
-(cada passo numerado ≈ um `page.fill`/`page.click`, o "Resultado" ≈ um `expect`).
+Each flow is a sequence of concrete actions — the mapping to a Playwright test is nearly 1:1 (each
+numbered step ≈ a `page.fill`/`page.click`, the "Result" ≈ an `expect`).
 
-### Fluxo 1 — Login com sucesso
-**Perfil:** conta real existente, sessão anónima
-1. Abre `/login`.
-2. Escreve o email da conta no campo Email.
-3. Escreve a password correta no campo Password.
-4. Clica "Iniciar sessão".
-5. **Resultado:** botão mostra estado "A iniciar sessão…" e fica desativado enquanto a chamada está em curso; ao responder, é redirecionado para `/` (Feed) com sessão real ativa.
+### Flow 1 — Successful login
+**Profile:** existing real account, anonymous session
+1. Opens `/login`.
+2. Types the account's email into the Email field.
+3. Types the correct password into the Password field.
+4. Clicks "Iniciar sessão".
+5. **Result:** the button shows the "A iniciar sessão…" state and is disabled while the call is in
+   flight; once it responds, the user is redirected to `/` (Feed) with a real session active.
 
-### Fluxo 2 — Login com password errada
-**Perfil:** conta real existente, sessão anónima
-1. Abre `/login`.
-2. Escreve o email da conta.
-3. Escreve uma password incorreta.
-4. Clica "Iniciar sessão".
-5. **Resultado:** permanece em `/login`; os dois campos ficam com contorno vermelho (`fieldError`); aparece um toast de erro traduzido ("Email ou password incorretos.") — `AuthService.login()` mapeia a mensagem em bruto do Supabase ("Invalid login credentials") para `auth.errorInvalidCredentials` via `authErrorKey()` (`core/auth/auth-errors.ts`); qualquer mensagem fora dessa lista curta continua a passar tal e qual, sem tradução, como acontecia antes desta função existir.
+### Flow 2 — Login with the wrong password
+**Profile:** existing real account, anonymous session
+1. Opens `/login`.
+2. Types the account's email.
+3. Types an incorrect password.
+4. Clicks "Iniciar sessão".
+5. **Result:** stays on `/login`; both fields get a red outline (`fieldError`); a translated error
+   toast appears ("Email ou password incorretos.") — `AuthService.login()` maps Supabase's raw
+   message ("Invalid login credentials") to `auth.errorInvalidCredentials` via `authErrorKey()`
+   (`core/auth/auth-errors.ts`); any message outside that short list still passes through
+   untranslated, exactly as it did before this function existed.
 
-### Fluxo 3 — Login com email que não existe
-**Perfil:** sessão anónima
-1. Abre `/login`.
-2. Escreve um email sintaticamente válido mas sem conta associada.
-3. Escreve qualquer password.
-4. Clica "Iniciar sessão".
-5. **Resultado:** mesmo comportamento do Fluxo 2 (Supabase não distingue "email não existe" de "password errada" na resposta) — permanece em `/login`, toast de erro, campos marcados.
+### Flow 3 — Login with an email that doesn't exist
+**Profile:** anonymous session
+1. Opens `/login`.
+2. Types a syntactically valid email with no associated account.
+3. Types any password.
+4. Clicks "Iniciar sessão".
+5. **Result:** same behavior as Flow 2 (Supabase doesn't distinguish "email doesn't exist" from
+   "wrong password" in the response) — stays on `/login`, error toast, fields marked.
 
-### Fluxo 3b — Login antes de confirmar o email
-**Perfil:** acabou de se registar (`/register`), ainda não clicou no link de confirmação
-1. Abre `/login`.
-2. Escreve o email e a password que usou no registo.
-3. Clica "Iniciar sessão".
-4. **Resultado:** mesmo tratamento visual do Fluxo 2 (campos marcados, toast de erro), mas com texto
-   próprio — "Confirma o teu email antes de iniciar sessão…" (`auth.errorEmailNotConfirmed`) —
-   porque o Supabase devolve uma mensagem diferente ("Email not confirmed") deste caso, também
-   mapeada por `authErrorKey()`.
+### Flow 3b — Login before confirming the email
+> **Currently unreachable, by product decision, not an implementation gap.** Confirmed on
+> 2026-09-04: this Supabase project has "Confirm email" switched off — every signup comes back
+> already confirmed, with a real session right away (see `supabase.auth.signUp()`/`POST
+> /auth/v1/signup`, which already returns `email_confirmed_at` populated). This flow's code (the
+> "Email not confirmed" mapping in `authErrorKey()`, the "verifica o teu email" screen in
+> `RegisterPageComponent`, `localStorage['rally.pendingProfile']`) is all still there and still
+> correct — there's just currently no way for a real account to fall into this state to exercise it.
+> If confirmation is switched back on in the dashboard, this flow starts happening again with no
+> code changes needed.
 
-### Fluxo 4 — Corrigir o erro depois de uma tentativa falhada
-**Perfil:** acabou de falhar o Fluxo 2 ou 3
-1. Com os campos ainda marcados a vermelho, volta a escrever no campo Email (ou Password).
-2. **Resultado:** a marca de erro desaparece assim que começa a escrever em qualquer um dos dois campos — não é preciso limpar o campo todo.
+**Profile:** just registered (`/register`), hasn't clicked the confirmation link yet
+1. Opens `/login`.
+2. Types the email and password used at registration.
+3. Clicks "Iniciar sessão".
+4. **Result:** the same visual treatment as Flow 2 (fields marked, error toast), but with its own
+   text — "Confirma o teu email antes de iniciar sessão…" (`auth.errorEmailNotConfirmed`) —
+   because Supabase returns a different message ("Email not confirmed") for this case, also mapped
+   by `authErrorKey()`.
 
-### Fluxo 5 — Botão desativado com formulário inválido
-**Perfil:** sessão anónima
-1. Abre `/login`.
-2. Deixa o email vazio (ou escreve algo sem `@`/domínio, ex. "abc").
-3. Escreve qualquer coisa na password.
-4. **Resultado:** botão "Iniciar sessão" permanece desativado (`disabled`); não é possível submeter, nem por Enter.
-5. Repete com email válido e password vazia.
-6. **Resultado:** mesmo botão desativado.
+### Flow 4 — Fix the error after a failed attempt
+**Profile:** just failed Flow 2 or 3
+1. With the fields still marked red, types into the Email (or Password) field again.
+2. **Result:** the error mark disappears as soon as typing starts in either field — no need to
+   clear the whole field.
 
-### Fluxo 6 — Mostrar/ocultar a password
-**Perfil:** qualquer
-1. Abre `/login`.
-2. Escreve algo no campo Password.
-3. Clica no ícone de olho (`ui-password-toggle`).
-4. **Resultado:** o texto fica visível em claro (`type="text"`).
-5. Clica outra vez.
-6. **Resultado:** volta a ficar oculto (`type="password"`), sem perder o valor escrito.
+### Flow 5 — Button disabled with an invalid form
+**Profile:** anonymous session
+1. Opens `/login`.
+2. Leaves the email empty (or types something without `@`/domain, e.g. "abc").
+3. Types anything in the password field.
+4. **Result:** the "Iniciar sessão" button stays disabled (`disabled`); can't be submitted, not
+   even via Enter.
+5. Repeats with a valid email and an empty password.
+6. **Result:** the button stays disabled the same way.
 
-### Fluxo 7 — Entrar como observador
-**Perfil:** sessão anónima
-1. Abre `/login`.
-2. Clica "👀 Continuar como olheiro" (sem preencher nada).
-3. **Resultado:** redirecionado para `/` (Feed) em modo observador — sem passar pela API, sem validação de formulário.
+### Flow 6 — Show/hide the password
+**Profile:** any
+1. Opens `/login`.
+2. Types something in the Password field.
+3. Clicks the eye icon (`ui-password-toggle`).
+4. **Result:** the text becomes visible in the clear (`type="text"`).
+5. Clicks again.
+6. **Result:** it goes back to hidden (`type="password"`), without losing the typed value.
 
-### Fluxo 8 — Ir para "Esqueceste-te da password?"
-**Perfil:** qualquer
-1. Abre `/login`.
-2. Clica no link "Esqueceste-te da password?".
-3. **Resultado:** navega para `/forgot-password`; nada do que estava escrito no formulário de login é transportado.
+### Flow 7 — Sign in as observer
+**Profile:** anonymous session
+1. Opens `/login`.
+2. Clicks "👀 Continuar como olheiro" (without filling anything in).
+3. **Result:** redirected to `/` (Feed) in observer mode — no API call, no form validation.
 
-### Fluxo 9 — Ir para "Criar conta"
-**Perfil:** qualquer
-1. Abre `/login`.
-2. Clica "Criar conta".
-3. **Resultado:** navega para `/register`.
+### Flow 8 — Go to "Esqueceste-te da password?"
+**Profile:** any
+1. Opens `/login`.
+2. Clicks the "Esqueceste-te da password?" link.
+3. **Result:** navigates to `/forgot-password`; nothing typed into the login form carries over.
 
-### Fluxo 10 — Sessão já autenticada visita `/login` manualmente
-**Perfil:** sessão real já ativa (ex. voltou atrás no browser, ou escreveu o URL)
-1. Com sessão real ativa, navega para `/login` (não há guard a impedir — a redireção é feita pelo
-   próprio `LoginPageComponent`, não por um guard de rota).
-2. **Resultado:** assim que `AuthService.ready()` fica verdadeiro (imediato se a app já estava
-   carregada; após restaurar a sessão persistida, num reload direto), é redirecionado para `/` sem
-   ver o formulário. **Uma sessão de observador não é redirecionada** — `currentUserId()` é
-   `undefined` para um observador, e é exatamente essa porta que lhe permite iniciar sessão real a
-   partir daqui.
+### Flow 9 — Go to "Criar conta"
+**Profile:** any
+1. Opens `/login`.
+2. Clicks "Criar conta".
+3. **Result:** navigates to `/register`.
 
-### Fluxo 11 — Idioma e tema a partir do login
-**Perfil:** qualquer
-1. Abre `/login`.
-2. Muda o idioma no seletor do cabeçalho.
-3. **Resultado:** todo o texto do formulário (labels, placeholders, botão) muda de imediato, sem reload.
-4. Alterna o tema claro/escuro.
-5. **Resultado:** a página troca de tema sem perder o que já estava escrito nos campos.
+### Flow 10 — Already authenticated session visits `/login` manually
+**Profile:** real session already active (e.g. went back in the browser, or typed the URL)
+1. With a real session active, navigates to `/login` (there's no guard blocking this — the
+   redirect is done by `LoginPageComponent` itself, not by a route guard).
+2. **Result:** as soon as `AuthService.ready()` becomes true (immediately if the app was already
+   loaded; after restoring the persisted session, on a direct reload), the user is redirected to
+   `/` without ever seeing the form. **An observer session is not redirected** —
+   `currentUserId()` is `undefined` for an observer, and that's exactly the door that lets them
+   start a real session from here.
 
-> **Nota de UI — brand intro cobre `/auth/callback`:** `SplashScreenComponent` normalmente só toca
-> uma vez por sessão de separador (`sessionStorage['rally.splashShown']`), na transição de uma rota
-> pré-autenticação para uma autenticada. `/auth/callback` é a exceção: aterrar aí dispara sempre a
-> animação (mesmo sinal de `play()`, incluindo marcar `sessionStorage` — não volta a tocar sozinha
-> a seguir, ao chegar a `/`), ignorando o limite de uma vez por sessão. Uma vez disparada, corre até
-> ao fim pelos seus próprios temporizadores fixos (~2.5s antes de começar a esbater, ~3s até
-> desaparecer) — **não** é cortada a meio quando `AuthCallbackPageComponent` decide mais depressa
-> para onde navegar. Como o `SplashScreenComponent` vive fora do `router-outlet` (montado em
-> `app.html`), a navegação para `/` ou `/register` acontece por baixo sem o desmontar, por isso a
-> animação continua a cobrir o que quer que carregue a seguir até se esbater sozinha. Sem isto, os
-> Fluxos 12–14 mostrariam por instantes um ecrã de texto simples ("A concluir início de sessão…") em
-> vez do brand intro, ou cortariam a animação a meio assim que a navegação acontecesse.
+### Flow 11 — Language and theme from login
+**Profile:** any
+1. Opens `/login`.
+2. Changes the language in the header selector.
+3. **Result:** all the form's text (labels, placeholders, button) changes immediately, no reload.
+4. Toggles light/dark theme.
+5. **Result:** the page switches theme without losing what was already typed into the fields.
 
-### Fluxo 12 — Login com Google, membro já registado
-**Perfil:** já tem `profiles` row associada a esta conta Google (já entrou por Google antes, ou
-associou a conta), sessão anónima
-1. Abre `/login`.
-2. Clica "Continuar com Google".
-3. **Resultado:** o browser navega inteiro para o ecrã de consentimento da Google (não é um popup);
-   o botão mostra "A ligar ao Google…" até essa navegação acontecer.
-4. Autentica-se na Google e aceita o consentimento.
-5. **Resultado:** a Google devolve o browser a `/auth/callback` (Supabase estabelece a sessão real a
-   partir da URL); `AuthCallbackPageComponent` confirma que já existe uma linha em `profiles` para
-   este utilizador e navega para `/` (Feed) — o mesmo destino de um login por email/password.
+> **UI note — brand intro covers `/auth/callback`:** `SplashScreenComponent` normally only plays
+> once per tab session (`sessionStorage['rally.splashShown']`), on the transition from a
+> pre-authentication route to an authenticated one. `/auth/callback` is the exception: landing
+> there always triggers the animation (the same `play()` signal, including marking
+> `sessionStorage` — it doesn't play again on its own afterwards, on reaching `/`), ignoring the
+> once-per-session limit. Once triggered, it runs to completion on its own fixed timers (~2.5s
+> before it starts fading, ~3s until it disappears) — it is **not** cut short when
+> `AuthCallbackPageComponent` decides where to navigate sooner. Since `SplashScreenComponent` lives
+> outside the `router-outlet` (mounted in `app.html`), the navigation to `/` or `/register` happens
+> underneath without unmounting it, so the animation keeps covering whatever loads next until it
+> fades out on its own. Without this, Flows 12-14 would briefly show a plain text screen ("A
+> concluir início de sessão…") instead of the brand intro, or would cut the animation short as soon
+> as the navigation happened.
 
-### Fluxo 13 — Login com Google, primeira vez (sem perfil)
-**Perfil:** conta Google sem `profiles` row associada, sessão anónima
-1. Abre `/login`.
-2. Clica "Continuar com Google" e completa o consentimento (passos 2–4 do Fluxo 12).
-3. **Resultado:** `AuthCallbackPageComponent` não encontra `profiles` row para este utilizador e
-   navega para `/register` em **modo de conclusão de perfil** (`completeGoogleProfile` no estado da
-   navegação) — o passo "Conta" do wizard fica de fora (a Google já deu o email; não há password a
-   definir), o nome/apelido vêm pré-preenchidos a partir de `user_metadata` da Google quando
-   disponíveis (`AuthService.googleProfileHint()`), e o wizard começa logo no passo "Traços"
-   (nascimento/género/mão dominante). **Nunca** usa a foto de perfil da Google como avatar — os
-   avatares da Rally são sempre gerados por seed, nunca carregados (ver CLAUDE.md).
-4. Preenche o resto do wizard normalmente e submete no último passo.
-5. **Resultado:** `AuthService.completeProfile()` grava a linha em `profiles` diretamente (sem
-   `signUp()` — a sessão já existe) e navega para `/` (Feed).
+### Flow 12 — Login with Google, already registered member
+**Profile:** already has a `profiles` row associated with this Google account (already signed in
+with Google before, or linked the account), anonymous session
+1. Opens `/login`.
+2. Clicks "Continuar com Google".
+3. **Result:** the browser navigates away entirely to Google's consent screen (not a popup); the
+   button shows "A ligar ao Google…" until that navigation happens.
+4. Authenticates with Google and accepts the consent.
+5. **Result:** Google returns the browser to `/auth/callback` (Supabase establishes the real
+   session from the URL); `AuthCallbackPageComponent` confirms a `profiles` row already exists for
+   this user and navigates to `/` (Feed) — the same destination as an email/password login.
 
-> **Nota de comportamento:** se a página `/register` for recarregada a meio desta conclusão de
-> perfil (F5), o modo de conclusão perde-se — `completeGoogleProfile` só existe no estado de uma
-> navegação em memória, não sobrevive a um reload. O utilizador voltaria a ver o wizard completo,
-> incluindo o passo de email/password, sobre uma sessão que já existe. É uma lacuna conhecida, não
-> corrigida nesta ronda — rara o suficiente (é preciso recarregar a página a meio deste fluxo
-> específico) para não justificar, por agora, persistir o estado de outra forma.
+### Flow 13 — Login with Google, first time (no profile)
+**Profile:** Google account with no associated `profiles` row, anonymous session
+1. Opens `/login`.
+2. Clicks "Continuar com Google" and completes the consent (steps 2-4 of Flow 12).
+3. **Result:** `AuthCallbackPageComponent` finds no `profiles` row for this user and navigates to
+   `/register` in **profile-completion mode** (`completeGoogleProfile` in the navigation state) —
+   the wizard's "Conta" step is left out (Google already gave the email; there's no password to
+   set), the first/last name come prefilled from Google's `user_metadata` when available
+   (`AuthService.googleProfileHint()`), and the wizard starts straight at the "Traços" step
+   (birth date/gender/dominant hand). It **never** uses the Google profile photo as the avatar —
+   Rally's avatars are always seed-generated, never uploaded (see CLAUDE.md).
+4. Fills in the rest of the wizard normally and submits at the last step.
+5. **Result:** `AuthService.completeProfile()` writes the `profiles` row directly (no `signUp()` —
+   the session already exists) and navigates to `/` (Feed).
 
-### Fluxo 14 — Login com Google falha ou é cancelado
-**Perfil:** sessão anónima
-1. Abre `/login`, clica "Continuar com Google".
-2. Na Google, cancela o consentimento (ou o provider ainda não está ativado no Supabase).
-3. **Resultado:** a Google/Supabase devolve o browser a `/auth/callback` com `error`/`error_description`
-   na query string; `AuthCallbackPageComponent` mostra esse texto num toast e navega de volta para
-   `/login`, formulário vazio.
+> **Behavior note:** if the `/register` page is reloaded mid-way through this profile completion
+> (F5), the completion mode is lost — `completeGoogleProfile` only exists in a navigation's
+> in-memory state, it doesn't survive a reload. The user would see the full wizard again, including
+> the email/password step, over a session that already exists. This is a known gap, not fixed in
+> this round — rare enough (the page has to be reloaded mid-way through this specific flow) that it
+> doesn't justify persisting the state some other way, for now.
+
+### Flow 14 — Login with Google fails or is cancelled
+**Profile:** anonymous session
+1. Opens `/login`, clicks "Continuar com Google".
+2. On Google, cancels the consent (or the provider isn't enabled yet in Supabase).
+3. **Result:** Google/Supabase returns the browser to `/auth/callback` with
+   `error`/`error_description` in the query string; `AuthCallbackPageComponent` shows that text in
+   a toast and navigates back to `/login`, empty form.
 
 ---
 
-**Notas para o `rally-e2e-test`:** os Fluxos 1–3 precisam de uma conta de teste real na base de
-dados (ou de mockar `supabase.auth.signInWithPassword` na camada de rede) — não há modo demo para
-login com sucesso. O Fluxo 2 vs 3 são indistinguíveis na resposta da API; não vale a pena ter dois
-testes separados que verificam exatamente o mesmo comportamento — um basta, o outro fica só como
-documentação de que foi considerado. Os Fluxos 12–14 (Google) não são realisticamente automatizáveis
-de ponta a ponta — o consentimento acontece num domínio da Google fora do nosso controlo — por isso
-o teste útil aqui é mockar `supabase.auth.signInWithOAuth` para nunca redirecionar de verdade e
-navegar diretamente para `/auth/callback` com uma sessão/erro já preparados, verificando só a lógica
-de `AuthCallbackPageComponent` (Fluxo 12 vs 13 vs 14) e não o ecrã da Google em si.
+**Status in `rally-e2e-tests`:** `tests/login.spec.ts` already covers, with real passing tests,
+Flows 3 (which also covers Flow 2 — indistinguishable in the API response, not worth duplicating),
+4, 5, 6, 7, 8, 9 and 11. The rest are documented `test.skip(...)`, each with its reason written in
+the file itself:
+
+- **Flow 3b** is left out on purpose — see the note above the flow itself: this Supabase project
+  has "Confirm email" switched off by product decision, and there's currently no way for an account
+  to fall into the "signed up, unconfirmed" state to test this against.
+- **Flows 1 and 10** need one real, hand-seeded test account (no service-role key needed — see the
+  `rally-e2e-tests` README): Account A (confirmed, with a `profiles` row, created by actually
+  completing `/register`). Without `RALLY_TEST_EMAIL`/`RALLY_TEST_PASSWORD` in the environment,
+  these two are skipped automatically.
+- **Flows 12, 13 and 14** are skipped by decision, not for lack of test accounts — confirmed on
+  2026-09-04. None of the three can drive Google's real consent screen, which remains outside our
+  control to automate: 12 and 13 used to establish a real session by password (with Account A or
+  Account B — no `profiles` row, created via Supabase Dashboard → Add user) and then visit
+  `/auth/callback` directly, which was already enough to exercise `AuthCallbackPageComponent`'s
+  routing decision (it never looks at which provider created the session) — but passing that off as
+  Google login coverage was misleading: prefilling the name from Google's `user_metadata`, for
+  instance, was never actually exercised, because a session created by password has none of that
+  data. Flow 14 is the only one of the three that doesn't fake anything (it only visits
+  `/auth/callback` with an error query string, exactly what Google/Supabase really send back on a
+  cancelled consent), but it's skipped too so the group doesn't suggest partial Google coverage.
+  Un-skipping needs a real way to automate Google's consent screen (e.g. a dedicated test account).
+
+This screen only moves to ✅ in `docs/README.md` once Flows 1, 3b, 10, 12, 13 and 14 also have a
+real passing test — see that file's "Maintenance" section.
 
 ---
 
-## Pré-requisitos fora do código
+## Prerequisites outside the code
 
-O provider Google só funciona depois de configurado manualmente — nenhum código resolve isto:
+The Google provider only works once configured by hand — no code handles this:
 
-1. **Google Cloud Console** → criar um OAuth 2.0 Client ID (tipo "Web application") → em
-   "Authorized redirect URIs" adicionar `https://<PROJECT_REF>.supabase.co/auth/v1/callback`
-   (o callback é o do Supabase, não o nosso `/auth/callback` — é a Supabase que fala com a Google).
-2. **Supabase Dashboard** → Authentication → Providers → Google → colar o Client ID e o Client
-   Secret gerados no passo 1, ativar o provider.
-3. **Supabase Dashboard** → Authentication → URL Configuration → garantir que "Redirect URLs" inclui
-   `http://localhost:4200/auth/callback` (dev) e o equivalente em produção — sem isto o
-   `redirectTo` que `AuthService.loginWithGoogle()` envia é rejeitado.
+1. **Google Cloud Console** → create an OAuth 2.0 Client ID (type "Web application") → under
+   "Authorized redirect URIs" add `https://<PROJECT_REF>.supabase.co/auth/v1/callback` (this is
+   Supabase's own callback, not our `/auth/callback` — it's Supabase that talks to Google).
+2. **Supabase Dashboard** → Authentication → Providers → Google → paste the Client ID and Client
+   Secret generated in step 1, enable the provider.
+3. **Supabase Dashboard** → Authentication → URL Configuration → make sure "Redirect URLs" includes
+   `http://localhost:4200/auth/callback` (dev) and the equivalent in production — without this the
+   `redirectTo` sent by `AuthService.loginWithGoogle()` is rejected.
 
-Até isto estar feito, o botão "Continuar com Google" mostra sempre o Fluxo 14 (erro).
+Until this is done, the "Continuar com Google" button always shows Flow 14 (error).
