@@ -28,7 +28,7 @@ import {
 } from '../../../../core/data/player-profile-options';
 import { CanComponentDeactivate } from '../../../../core/guards/unsaved-changes.guard';
 import { TranslationService } from '../../../../core/i18n/translation.service';
-import { Format, Level, Player, Surface, TripIntent } from '../../../../core/models';
+import { Format, Level, Player, Surface } from '../../../../core/models';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
 import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -39,15 +39,14 @@ import {
   AvatarComponent,
   ChipComponent,
   DatePickerComponent,
-  IconComponent,
-  PasswordToggleComponent,
   SectionHeaderComponent,
   StatComponent
 } from '../../../../shared/ui';
 import { CourtsService } from '../../../courts/courts.service';
 import { MatchesService } from '../../../matches/matches.service';
 import { PassportService } from '../../../passport/passport.service';
-import { TripsRepository } from '../../../world/data/trips.repository';
+import { ChangePasswordDialogComponent } from '../../change-password-dialog/change-password-dialog.component';
+import { MyTripsSectionComponent } from '../../my-trips-section/my-trips-section.component';
 import { ProfileService } from '../../profile.service';
 
 type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule';
@@ -64,10 +63,10 @@ type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule';
     AvatarPickerComponent,
     MatchCardComponent,
     TranslatePipe,
-    PasswordToggleComponent,
+    ChangePasswordDialogComponent,
+    MyTripsSectionComponent,
     AutocompleteComponent,
-    DatePickerComponent,
-    IconComponent
+    DatePickerComponent
   ],
   templateUrl: './profile-page.component.html',
   styleUrl: './profile-page.component.scss'
@@ -78,7 +77,6 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly matchesService = inject(MatchesService);
   protected readonly courts = inject(CourtsService);
   protected readonly passportService = inject(PassportService);
-  private readonly trips = inject(TripsRepository);
   private readonly translation = inject(TranslationService);
   private readonly toast = inject(ToastService);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -171,20 +169,6 @@ export class ProfilePageComponent implements CanComponentDeactivate {
     () => this.countries().find(c => c.name === this.draftCountry())?.flag ?? this.profile.me().flag
   );
 
-  constructor() {
-    this.countryData.loadCountries();
-    // Re-fetches this country's city list (cached per country in the service) whenever it changes.
-    effect(() => {
-      const match = this.countries().find(c => c.name === this.draftCountry());
-      if (!match) {
-        this.cityOptions.set([]);
-        return;
-      }
-      this.countryData.citiesFor(match.iso2).then(cities => this.cityOptions.set(cities));
-    });
-    void this.loadMyTrips();
-  }
-
   protected readonly canSaveTraits = computed(
     () => this.draftBirthDate().length > 0 && !!this.draftGender() && !!this.draftDominantHand()
   );
@@ -227,6 +211,30 @@ export class ProfilePageComponent implements CanComponentDeactivate {
     );
   });
 
+  // Each profile-page section saves independently, so editing one doesn't require scrolling to a
+  // single button at the bottom — savingSection/savedSection track which one is currently in flight.
+  protected readonly savingSection = signal<ProfileSection | null>(null);
+  protected readonly savedSection = signal<ProfileSection | null>(null);
+
+  protected readonly changingAvatar = signal(false);
+
+  protected readonly deletingAccount = signal(false);
+
+  protected readonly changingPassword = signal(false);
+
+  constructor() {
+    this.countryData.loadCountries();
+    // Re-fetches this country's city list (cached per country in the service) whenever it changes.
+    effect(() => {
+      const match = this.countries().find(c => c.name === this.draftCountry());
+      if (!match) {
+        this.cityOptions.set([]);
+        return;
+      }
+      this.countryData.citiesFor(match.iso2).then(cities => this.cityOptions.set(cities));
+    });
+  }
+
   protected setDraftCountry(name: string): void {
     this.draftCountry.set(name);
     this.draftCity.set('');
@@ -257,11 +265,6 @@ export class ProfilePageComponent implements CanComponentDeactivate {
     }
   }
 
-  // Each profile-page section saves independently, so editing one doesn't require scrolling to a
-  // single button at the bottom — savingSection/savedSection track which one is currently in flight.
-  protected readonly savingSection = signal<ProfileSection | null>(null);
-  protected readonly savedSection = signal<ProfileSection | null>(null);
-
   protected isSaving(section: ProfileSection): boolean {
     return this.savingSection() === section;
   }
@@ -269,8 +272,6 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected isSaved(section: ProfileSection): boolean {
     return this.savedSection() === section;
   }
-
-  protected readonly changingAvatar = signal(false);
 
   protected openAvatarDialog(): void {
     this.changingAvatar.set(true);
@@ -403,45 +404,11 @@ export class ProfilePageComponent implements CanComponentDeactivate {
     this.router.navigateByUrl('/login');
   }
 
-  protected readonly myTrips = signal<TripIntent[]>([]);
-  protected readonly myTripsLoading = signal(true);
-  protected readonly deletingTripId = signal<string | null>(null);
-
-  protected formatTripDate(iso: string): string {
-    return this.trips.formatDate(iso);
-  }
-
-  protected async deleteTrip(trip: TripIntent): Promise<void> {
-    const confirmed = await this.confirmDialog.confirm({
-      message: this.translation.t('profile.deleteTripConfirmLead'),
-      confirmLabel: this.translation.t('profile.deleteTripConfirmButton'),
-      cancelLabel: this.translation.t('profile.cancel'),
-      tone: 'destructive'
-    });
-    if (!confirmed) {
-      return;
-    }
-    this.deletingTripId.set(trip.id);
-    const success = await this.trips.deleteTrip(trip.id);
-    this.deletingTripId.set(null);
-    if (success) {
-      this.myTrips.update(list => list.filter(t => t.id !== trip.id));
-    }
-  }
-
-  private async loadMyTrips(): Promise<void> {
-    this.myTripsLoading.set(true);
-    this.myTrips.set(await this.trips.myTrips());
-    this.myTripsLoading.set(false);
-  }
-
-  protected readonly deletingAccount = signal(false);
-
   protected async deleteAccount(): Promise<void> {
     const confirmed = await this.confirmDialog.confirm({
       message: this.translation.t('profile.deleteAccountConfirmLead'),
       confirmLabel: this.translation.t('profile.deleteAccountConfirmButton'),
-      cancelLabel: this.translation.t('profile.cancel'),
+      cancelLabel: this.translation.t('common.cancel'),
       tone: 'destructive'
     });
     if (!confirmed) {
@@ -455,68 +422,6 @@ export class ProfilePageComponent implements CanComponentDeactivate {
       return;
     }
     this.router.navigateByUrl('/login');
-  }
-
-  protected readonly changingPassword = signal(false);
-  protected readonly savingPassword = signal(false);
-  protected readonly currentPassword = signal('');
-  protected readonly newPassword = signal('');
-  protected readonly confirmNewPassword = signal('');
-  protected readonly passwordFieldError = signal(false);
-  protected readonly showCurrentPassword = signal(false);
-  protected readonly showNewPassword = signal(false);
-  protected readonly showConfirmNewPassword = signal(false);
-
-  protected readonly newPasswordMismatch = computed(
-    () => this.confirmNewPassword().length > 0 && this.newPassword() !== this.confirmNewPassword()
-  );
-
-  protected readonly newPasswordTooShort = computed(
-    () => this.newPassword().length > 0 && this.newPassword().length < 6
-  );
-
-  protected readonly canSavePassword = computed(
-    () =>
-      !this.savingPassword() &&
-      this.currentPassword().length > 0 &&
-      this.newPassword().length >= 6 &&
-      this.newPassword() === this.confirmNewPassword()
-  );
-
-  protected openChangePassword(): void {
-    this.changingPassword.set(true);
-  }
-
-  protected closeChangePassword(): void {
-    this.changingPassword.set(false);
-    this.currentPassword.set('');
-    this.newPassword.set('');
-    this.confirmNewPassword.set('');
-    this.passwordFieldError.set(false);
-    this.showCurrentPassword.set(false);
-    this.showNewPassword.set(false);
-    this.showConfirmNewPassword.set(false);
-  }
-
-  protected setCurrentPassword(value: string): void {
-    this.currentPassword.set(value);
-    this.passwordFieldError.set(false);
-  }
-
-  protected async submitChangePassword(): Promise<void> {
-    if (!this.canSavePassword()) {
-      return;
-    }
-    this.savingPassword.set(true);
-    const result = await this.auth.changePassword(this.currentPassword(), this.newPassword());
-    this.savingPassword.set(false);
-    if (!result.success) {
-      this.passwordFieldError.set(true);
-      this.toast.error(this.translation.t(result.error ?? 'auth.errorGeneric'));
-      return;
-    }
-    this.toast.success(this.translation.t('profile.passwordUpdated'));
-    this.closeChangePassword();
   }
 
   /** Route guard hook — asks before leaving with unsaved edits in any of the editable sections. */

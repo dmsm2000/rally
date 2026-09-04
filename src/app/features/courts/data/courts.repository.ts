@@ -10,7 +10,6 @@ import {
   NearbyVenue,
   RegisterResult,
   Surface,
-  Venue,
   VenueAccess,
   VenueCandidate,
   VenueKind,
@@ -18,54 +17,18 @@ import {
   VenueStatus
 } from '../../../core/models';
 import { GeoFix } from '../../../core/services/geolocation.service';
-
-interface VenueRow {
-  id: string;
-  name: string;
-  kind: VenueKind;
-  city: string;
-  country: string;
-  flag: string | null;
-  access: VenueAccess | null;
-  hours: string | null;
-  price: string | null;
-  facilities: string[] | null;
-  lat: number;
-  lng: number;
-  status: VenueStatus;
-  confirmations: number;
-  verified_at: string | null;
-  created_by: string | null;
-  created_at: string;
-}
-
-interface CourtRow {
-  id: string;
-  venue_id: string;
-  number: string | null;
-  surface: Surface;
-  indoor: boolean;
-  lights: boolean;
-  capture_count: number;
-  created_by: string | null;
-  created_at: string;
-  venues: VenueRow;
-  court_photos?: CourtPhotoRow[] | null;
-}
-
-interface NearbyVenueRow extends VenueRow {
-  distance_m: number;
-  court_count: number;
-  captured_count: number;
-}
-
-interface CourtPhotoRow {
-  id: string;
-  court_id: string;
-  uploaded_by: string | null;
-  url: string;
-  created_at: string;
-}
+import {
+  COURT_WITH_VENUE,
+  CourtPhotoRow,
+  CourtRow,
+  NearbyVenueRow,
+  VENUE_COLUMNS,
+  VenueRow,
+  flagOr,
+  toCourt,
+  toPhoto,
+  toVenue
+} from './court-rows';
 
 export interface RegisterCourtInput {
   fix: GeoFix;
@@ -102,23 +65,29 @@ export type CourtActionError =
   | 'photoLimit'
   | 'unknown';
 
+/**
+ * Maps the RPCs' plain-text exception messages onto `CourtActionError`. Ordered, so the first
+ * matching fragment wins; anything unmatched falls through to 'unknown'.
+ */
+const RPC_ERROR_REASONS: readonly (readonly [readonly string[], CourtActionError])[] = [
+  [['not authenticated'], 'notAuthenticated'],
+  [['gps accuracy too low', 'location required'], 'gpsAccuracy'],
+  [['daily limit reached'], 'dailyLimit'],
+  [['venue details required'], 'venueDetails'],
+  [['venue not found', 'court not found'], 'venueNotFound'],
+  [['too far'], 'tooFar'],
+  [['court already registered'], 'alreadyRegistered'],
+  [['already captured'], 'alreadyCaptured'],
+  [['venue cooldown'], 'cooldown'],
+  [['court photo limit reached'], 'photoLimit']
+];
+
 export class CourtActionFailure extends Error {
   constructor(readonly reason: CourtActionError) {
     super(reason);
     this.name = 'CourtActionFailure';
   }
 }
-
-const VENUE_COLUMNS =
-  'id,name,kind,city,country,flag,access,hours,price,facilities,lat,lng,status,confirmations,verified_at,created_by,created_at';
-const COURT_COLUMNS = 'id,venue_id,number,surface,indoor,lights,capture_count,created_by,created_at';
-
-/** `||`, not `??`: a venue whose country matched no entry in the country dataset stores an empty
- * string rather than null, which a nullish fallback would happily render as no flag at all. */
-const flagOr = (flag: string | null): string => flag || '🎾';
-// The venue is embedded on every read: a court without its venue has no location, no access rules
-// and no name to show, so there is no useful "court alone" query.
-const COURT_WITH_VENUE = `${COURT_COLUMNS},venues!inner(${VENUE_COLUMNS}),court_photos(id,court_id,uploaded_by,url,created_at)`;
 
 /**
  * Data-access boundary for the player-maintained court database
@@ -185,7 +154,7 @@ export class CourtsRepository {
       console.error('Failed to load courts:', error?.message);
       this._catalogue.set([]);
     } else {
-      this._catalogue.set((data as unknown as CourtRow[]).map(row => this.toCourt(row, capturedIds)));
+      this._catalogue.set((data as unknown as CourtRow[]).map(row => toCourt(row, capturedIds)));
     }
     this._loaded.set(true);
   }
@@ -198,7 +167,7 @@ export class CourtsRepository {
       }
       return null;
     }
-    return this.toCourt(data as unknown as CourtRow, this._capturedIds());
+    return toCourt(data as unknown as CourtRow, this._capturedIds());
   }
 
   /** Every court inside one venue, for the venue's own detail view. */
@@ -213,7 +182,7 @@ export class CourtsRepository {
       return [];
     }
     const captured = this._capturedIds();
-    return (data as unknown as CourtRow[]).map(row => this.toCourt(row, captured));
+    return (data as unknown as CourtRow[]).map(row => toCourt(row, captured));
   }
 
   /**
@@ -232,7 +201,7 @@ export class CourtsRepository {
       return [];
     }
     return (data as NearbyVenueRow[]).map(row => ({
-      ...this.toVenue(row),
+      ...toVenue(row),
       distanceM: row.distance_m,
       courtCount: row.court_count,
       capturedCount: row.captured_count
@@ -267,14 +236,12 @@ export class CourtsRepository {
     if (error) {
       throw new CourtActionFailure(this.toFailure(error.message));
     }
-    const payload = data as {
-      status: 'candidates' | 'created';
-      candidates?: { id: string; name: string; city: string; country: string; status: VenueStatus; distance_m: number }[];
-      venue_id?: string;
-      court_id?: string;
-      venue_status?: VenueStatus;
-      confirmations?: number;
-    };
+    const payload = data as
+      | {
+          status: 'candidates';
+          candidates?: { id: string; name: string; city: string; country: string; status: VenueStatus; distance_m: number }[];
+        }
+      | { status: 'created'; venue_id: string; court_id: string; venue_status?: VenueStatus; confirmations?: number };
     if (payload.status === 'candidates') {
       const candidates: VenueCandidate[] = (payload.candidates ?? []).map(c => ({
         id: c.id,
@@ -286,11 +253,11 @@ export class CourtsRepository {
       }));
       return { status: 'candidates', candidates };
     }
-    this._lastRegisteredCourtId.set(payload.court_id!);
+    this._lastRegisteredCourtId.set(payload.court_id);
     return {
       status: 'created',
-      venueId: payload.venue_id!,
-      courtId: payload.court_id!,
+      venueId: payload.venue_id,
+      courtId: payload.court_id,
       venueStatus: payload.venue_status ?? 'draft',
       confirmations: payload.confirmations ?? 0
     };
@@ -381,7 +348,7 @@ export class CourtsRepository {
       console.error('Failed to load court photos:', error?.message);
       return [];
     }
-    return (data as CourtPhotoRow[]).map(row => this.toPhoto(row));
+    return (data as CourtPhotoRow[]).map(row => toPhoto(row));
   }
 
   /** Uploads to the `court-photos` bucket first, then inserts the row — mirrors PostsRepository.create(). */
@@ -408,7 +375,7 @@ export class CourtsRepository {
       await supabase.storage.from('court-photos').remove([path]);
       throw new CourtActionFailure(this.toFailure(error?.message ?? ''));
     }
-    return this.toPhoto(data as CourtPhotoRow);
+    return toPhoto(data as CourtPhotoRow);
   }
 
   async removePhoto(photo: CourtPhoto): Promise<boolean> {
@@ -541,70 +508,10 @@ export class CourtsRepository {
 
   // ---------------------------------------------------------------------------
 
-  private toVenue(row: VenueRow): Venue {
-    return {
-      id: row.id,
-      name: row.name,
-      kind: row.kind,
-      city: row.city,
-      country: row.country,
-      flag: flagOr(row.flag),
-      access: row.access ?? undefined,
-      hours: row.hours ?? undefined,
-      price: row.price ?? undefined,
-      facilities: row.facilities ?? [],
-      lat: row.lat,
-      lng: row.lng,
-      status: row.status,
-      confirmations: row.confirmations,
-      verifiedAt: row.verified_at ?? undefined,
-      createdBy: row.created_by ?? undefined,
-      createdAt: row.created_at
-    };
-  }
-
-  private toPhoto(row: CourtPhotoRow): CourtPhoto {
-    return {
-      id: row.id,
-      courtId: row.court_id,
-      uploadedBy: row.uploaded_by ?? undefined,
-      url: row.url,
-      createdAt: row.created_at
-    };
-  }
-
-  private toCourt(row: CourtRow, captured: Set<string>): Court {
-    return {
-      id: row.id,
-      venueId: row.venue_id,
-      number: row.number ?? undefined,
-      surface: row.surface,
-      indoor: row.indoor,
-      lights: row.lights,
-      captureCount: row.capture_count,
-      createdBy: row.created_by ?? undefined,
-      createdAt: row.created_at,
-      venue: this.toVenue(row.venues),
-      capturedByMe: captured.has(row.id),
-      photos: (row.court_photos ?? [])
-        .map(photo => this.toPhoto(photo))
-        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    };
-  }
-
   /** The RPCs raise plain-text exceptions; this is the single place that turns them into a reason. */
   private toFailure(message: string): CourtActionError {
-    if (message.includes('not authenticated')) return 'notAuthenticated';
-    if (message.includes('gps accuracy too low') || message.includes('location required')) return 'gpsAccuracy';
-    if (message.includes('daily limit reached')) return 'dailyLimit';
-    if (message.includes('venue details required')) return 'venueDetails';
-    if (message.includes('venue not found') || message.includes('court not found')) return 'venueNotFound';
-    if (message.includes('too far')) return 'tooFar';
-    if (message.includes('court already registered')) return 'alreadyRegistered';
-    if (message.includes('already captured')) return 'alreadyCaptured';
-    if (message.includes('venue cooldown')) return 'cooldown';
-    if (message.includes('court photo limit reached')) return 'photoLimit';
-    return 'unknown';
+    const match = RPC_ERROR_REASONS.find(([fragments]) => fragments.some(fragment => message.includes(fragment)));
+    return match?.[1] ?? 'unknown';
   }
 
   private extractStoragePath(url: string): string | null {

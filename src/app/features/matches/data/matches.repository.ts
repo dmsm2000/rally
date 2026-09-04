@@ -3,35 +3,11 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { AuthService } from '../../../core/auth/auth.service';
 import { supabase } from '../../../core/auth/supabase.client';
 import { RallyDataService } from '../../../core/data/rally-data.service';
-import { Court, Match, MatchFormat, MatchKind, MatchStatus, SessionType } from '../../../core/models';
+import { Court, Match, MatchFormat, SessionType } from '../../../core/models';
 import { CourtsRepository } from '../../courts/data/courts.repository';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { PlayersRepository } from '../../players/data/players.repository';
-
-interface MatchRow {
-  id: string;
-  kind: MatchKind;
-  status: MatchStatus;
-  player_a: string;
-  player_b: string | null;
-  format: MatchFormat;
-  session_type: SessionType | null;
-  court_id: string | null;
-  city: string;
-  country: string;
-  radius_km: number | null;
-  match_date: string;
-  match_time: string;
-  match_time_end: string | null;
-  duration_minutes: number | null;
-  note: string | null;
-  winner: string | null;
-  sets: [number, number][] | null;
-  cancelled_by: string | null;
-  confirmed_at: string | null;
-  created_at: string;
-  match_participants?: { player_id: string }[] | null;
-}
+import { MatchRow, SELECT_COLUMNS_WITH_PARTICIPANTS, toMatch } from './match-rows';
 
 export interface CreateMatchInput {
   format: MatchFormat;
@@ -46,12 +22,6 @@ export interface CreateMatchInput {
   durationMinutes?: number;
   note?: string;
 }
-
-const SELECT_COLUMNS =
-  'id,kind,status,player_a,player_b,format,session_type,court_id,city,country,radius_km,match_date,match_time,match_time_end,duration_minutes,note,winner,sets,cancelled_by,confirmed_at,created_at';
-// Embeds the doubles roster (see 0021_doubles_matches.sql) — Supabase follows the FK
-// automatically and enforces match_participants' own RLS on the embedded rows.
-const SELECT_COLUMNS_WITH_PARTICIPANTS = `${SELECT_COLUMNS},match_participants(player_id)`;
 
 /** Data-access boundary for real matches (see supabase/migrations/0018_matches.sql). */
 @Injectable({ providedIn: 'root' })
@@ -73,7 +43,7 @@ export class MatchesRepository {
       .channel('matches-inbox')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, payload => {
         const row = (payload.new ?? payload.old) as MatchRow;
-        onChange(this.toMatch(row));
+        onChange(toMatch(row));
       })
       // A doubles join/leave that doesn't fill the roster never touches the matches row itself
       // (only the 4th join does, via the status flip) — re-fetch the full match (with its
@@ -101,7 +71,7 @@ export class MatchesRepository {
     return this.courts.catalogue();
   }
 
-  ensureCourts(): Promise<void> {
+  async ensureCourts(): Promise<void> {
     return this.courts.ensureCatalogue();
   }
 
@@ -158,7 +128,7 @@ export class MatchesRepository {
       console.error('Failed to load matches:', error?.message);
       return [];
     }
-    return (data as MatchRow[]).map(row => this.toMatch(row));
+    return (data as MatchRow[]).map(row => toMatch(row));
   }
 
   /** Every match this player is (or was) part of, that RLS lets the caller see — see
@@ -181,7 +151,7 @@ export class MatchesRepository {
       console.error('Failed to load matches for player:', error?.message);
       return [];
     }
-    return (data as MatchRow[]).map(row => this.toMatch(row));
+    return (data as MatchRow[]).map(row => toMatch(row));
   }
 
   /** Open matches still waiting for a taker, near this location. */
@@ -200,7 +170,7 @@ export class MatchesRepository {
       console.error('Failed to load open matches:', error?.message);
       return [];
     }
-    return (data as MatchRow[]).map(row => this.toMatch(row));
+    return (data as MatchRow[]).map(row => toMatch(row));
   }
 
   /** Every open match still waiting for a taker, anywhere — the "In the world" browse scope. */
@@ -215,7 +185,7 @@ export class MatchesRepository {
       console.error('Failed to load open matches:', error?.message);
       return [];
     }
-    return (data as MatchRow[]).map(row => this.toMatch(row));
+    return (data as MatchRow[]).map(row => toMatch(row));
   }
 
   async getById(id: string): Promise<Match | null> {
@@ -226,7 +196,7 @@ export class MatchesRepository {
       }
       return null;
     }
-    return this.toMatch(data as MatchRow);
+    return toMatch(data as MatchRow);
   }
 
   /** Batch fetch for feed hydration — mirrors TripsRepository.getByIds(). */
@@ -239,7 +209,7 @@ export class MatchesRepository {
       console.error('Failed to load matches by id:', error?.message);
       return [];
     }
-    return (data as MatchRow[]).map(row => this.toMatch(row));
+    return (data as MatchRow[]).map(row => toMatch(row));
   }
 
   /** Open match ids at this location — powers the feed's location-based visibility (see PostsRepository.list()). */
@@ -372,7 +342,7 @@ export class MatchesRepository {
     } catch (err) {
       console.error('Failed to notify inviter:', err);
     }
-    return this.toMatch(row);
+    return toMatch(row);
   }
 
   /** Joins an open match. Null means it's no longer available (already taken/withdrawn) or the request failed. */
@@ -393,7 +363,7 @@ export class MatchesRepository {
     } catch (err) {
       console.error('Failed to notify the match poster:', err);
     }
-    return this.toMatch(row);
+    return toMatch(row);
   }
 
   /** Joins an open doubles match's roster. Null means it's full/gone/already joined, or the request failed. */
@@ -457,7 +427,7 @@ export class MatchesRepository {
         console.error('Failed to notify the other player:', err);
       }
     }
-    return this.toMatch(row);
+    return toMatch(row);
   }
 
   /** winnerId null means "no result" — a training session or drill has nothing to declare. */
@@ -467,7 +437,7 @@ export class MatchesRepository {
       console.error('Failed to complete match:', error?.message);
       return null;
     }
-    return this.toMatch(data as MatchRow);
+    return toMatch(data as MatchRow);
   }
 
   async deleteMatch(matchId: string): Promise<boolean> {
@@ -477,32 +447,5 @@ export class MatchesRepository {
       return false;
     }
     return true;
-  }
-
-  private toMatch(row: MatchRow): Match {
-    return {
-      id: row.id,
-      kind: row.kind,
-      status: row.status,
-      matchDate: row.match_date,
-      matchTime: row.match_time,
-      matchTimeEnd: row.match_time_end ?? undefined,
-      courtId: row.court_id ?? undefined,
-      city: row.city,
-      country: row.country,
-      radiusKm: row.radius_km ?? undefined,
-      format: row.format,
-      sessionType: row.session_type ?? undefined,
-      playerA: row.player_a,
-      playerB: row.player_b ?? undefined,
-      participantIds: row.format === 'Doubles' ? (row.match_participants ?? []).map(p => p.player_id) : undefined,
-      note: row.note ?? undefined,
-      durationMinutes: row.duration_minutes ?? undefined,
-      sets: row.sets ?? undefined,
-      winner: row.winner ?? undefined,
-      cancelledBy: row.cancelled_by ?? undefined,
-      confirmedAt: row.confirmed_at ?? undefined,
-      createdAt: row.created_at
-    };
   }
 }

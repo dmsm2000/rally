@@ -1,5 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { ToastService } from '../../../core/services/toast.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { IconComponent } from '../icon/icon.component';
 
 // Matches the CSS transition duration below — actual removal from the list waits for it to finish.
@@ -8,7 +9,7 @@ const EXIT_MS = 250;
 /** Fixed-position stack of dismissible toasts (errors/success/info), driven by ToastService. */
 @Component({
   selector: 'ui-toast-container',
-  imports: [IconComponent],
+  imports: [IconComponent, TranslatePipe],
   templateUrl: './toast-container.component.html'
 })
 export class ToastContainerComponent {

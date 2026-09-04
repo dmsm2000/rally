@@ -1,4 +1,5 @@
 import { Injectable, computed, inject } from '@angular/core';
+import { Conversation, Player } from '../../core/models';
 import { MessagesRepository } from './data/messages.repository';
 
 @Injectable({ providedIn: 'root' })
@@ -12,7 +13,7 @@ export class MessagesService {
     this.repository
       .conversations()
       .map((conversation) => ({ conversation, player: this.repository.playerById(conversation.playerId) }))
-      .filter((row) => !!row.player),
+      .filter((row): row is { conversation: Conversation; player: Player } => !!row.player),
   );
 
   readonly unreadTotal = computed(() => this.repository.conversations().reduce((sum, c) => sum + c.unread, 0));
@@ -26,7 +27,7 @@ export class MessagesService {
     return this.repository.conversationByPlayer(playerId);
   }
 
-  ensureConversationWithPlayer(playerId: string): Promise<string> {
+  async ensureConversationWithPlayer(playerId: string): Promise<string> {
     return this.repository.ensureConversationWithPlayer(playerId);
   }
 
@@ -34,7 +35,7 @@ export class MessagesService {
     this.repository.markRead(conversationId);
   }
 
-  deleteConversation(conversationId: string): Promise<void> {
+  async deleteConversation(conversationId: string): Promise<void> {
     return this.repository.deleteConversation(conversationId);
   }
 

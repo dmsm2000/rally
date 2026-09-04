@@ -169,33 +169,31 @@ export class ProfileRepositoryService {
       return { profiles: [], error: error.message };
     }
     return {
-      profiles: ((data ?? []) as DiscoverableProfileRow[]).map(profile => {
-        return {
-          id: profile.id,
-          memberNumber: profile.member_number == null ? null : String(profile.member_number).padStart(6, '0'),
-          firstName: profile.first_name,
-          lastName: profile.last_name,
-          city: profile.city,
-          country: profile.country,
-          gender: profile.gender,
-          level: profile.level,
-          years: profile.years,
-          format: profile.format,
-          surface: profile.surface,
-          dominantHand: profile.dominant_hand,
-          backhand: profile.backhand,
-          playStyle: profile.play_style,
-          courtPref: profile.court_pref,
-          frequency: profile.frequency,
-          coached: profile.coached,
-          coachedFrequency: profile.coached_frequency,
-          timesOfDay: profile.times_of_day,
-          availability: profile.availability,
-          bio: profile.bio,
-          avatarSeed: profile.avatar_seed,
-          avatarStyle: profile.avatar_style
-        };
-      })
+      profiles: ((data ?? []) as DiscoverableProfileRow[]).map(profile => ({
+        id: profile.id,
+        memberNumber: profile.member_number == null ? null : String(profile.member_number).padStart(6, '0'),
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        city: profile.city,
+        country: profile.country,
+        gender: profile.gender,
+        level: profile.level,
+        years: profile.years,
+        format: profile.format,
+        surface: profile.surface,
+        dominantHand: profile.dominant_hand,
+        backhand: profile.backhand,
+        playStyle: profile.play_style,
+        courtPref: profile.court_pref,
+        frequency: profile.frequency,
+        coached: profile.coached,
+        coachedFrequency: profile.coached_frequency,
+        timesOfDay: profile.times_of_day,
+        availability: profile.availability,
+        bio: profile.bio,
+        avatarSeed: profile.avatar_seed,
+        avatarStyle: profile.avatar_style
+      }))
     };
   }
 

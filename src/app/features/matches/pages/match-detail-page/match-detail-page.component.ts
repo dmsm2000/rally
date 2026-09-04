@@ -39,16 +39,22 @@ export class MatchDetailPageComponent {
 
   protected readonly match = computed(() => this.matchRaw());
   protected readonly loading = computed(() => this.matchRaw() === undefined);
-  protected readonly playerA = computed(() => this.match() && this.matches.playerById(this.match()!.playerA));
-  protected readonly playerB = computed(() => this.match() && this.matches.playerById(this.match()!.playerB));
+  protected readonly playerA = computed(() => this.matches.playerById(this.match()?.playerA));
+  protected readonly playerB = computed(() => this.matches.playerById(this.match()?.playerB));
   // Doubles roster — see MatchesService.participantsFor(). Empty for Singles matches.
-  protected readonly participants = computed(() => (this.match() ? this.matches.participantsFor(this.match()!) : []));
-  protected readonly emptyDoublesSlots = computed(() => (this.match() ? this.matches.emptyDoublesSlots(this.match()!) : []));
+  protected readonly participants = computed(() => {
+    const match = this.match();
+    return match ? this.matches.participantsFor(match) : [];
+  });
+  protected readonly emptyDoublesSlots = computed(() => {
+    const match = this.match();
+    return match ? this.matches.emptyDoublesSlots(match) : [];
+  });
   // Own profile has no /players/:id entry — route there instead when a slot is me. Each guards on a
   // real uid first: an observer's myId() is undefined, and so is playerB on an open/doubles match.
   protected readonly playerALink = computed(() => this.linkFor(this.match()?.playerA));
   protected readonly playerBLink = computed(() => this.linkFor(this.match()?.playerB));
-  protected readonly court = computed(() => this.match() && this.matches.courtById(this.match()!.courtId));
+  protected readonly court = computed(() => this.matches.courtById(this.match()?.courtId));
   protected readonly done = computed(() => this.match()?.status === 'complete');
   protected readonly aWon = computed(() => this.match()?.winner === this.match()?.playerA);
 
@@ -101,7 +107,9 @@ export class MatchDetailPageComponent {
   constructor() {
     effect(() => {
       const id = this.matchId();
-      untracked(() => void this.load(id));
+      untracked(() => {
+        void this.load(id);
+      });
     });
 
     // Live-patches this exact match the moment it changes elsewhere (the other side responded,

@@ -5,4 +5,4 @@ export interface CanComponentDeactivate {
 }
 
 /** Generic CanDeactivate guard — delegates to whichever component implements CanComponentDeactivate. */
-export const unsavedChangesGuard: CanDeactivateFn<CanComponentDeactivate> = component => component.canDeactivate();
+export const unsavedChangesGuard: CanDeactivateFn<CanComponentDeactivate> = async component => component.canDeactivate();

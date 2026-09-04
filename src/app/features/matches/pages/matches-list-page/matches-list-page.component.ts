@@ -10,12 +10,15 @@ import {
   AvatarComponent,
   ChipComponent,
   DatePickerComponent,
+  DialogComponent,
   EmptyStateComponent,
+  FabComponent,
   IconComponent,
   SectionHeaderComponent,
   StatComponent,
   TimePickerComponent
 } from '../../../../shared/ui';
+import { CourtComposerService } from '../../../courts/court-composer.service';
 import { CourtsService } from '../../../courts/courts.service';
 import { MatchesService } from '../../matches.service';
 
@@ -28,8 +31,10 @@ import { MatchesService } from '../../matches.service';
     StatComponent,
     SectionHeaderComponent,
     EmptyStateComponent,
+    FabComponent,
     ChipComponent,
     DatePickerComponent,
+    DialogComponent,
     TimePickerComponent,
     AutocompleteComponent,
     AvatarComponent,
@@ -44,15 +49,8 @@ import { MatchesService } from '../../matches.service';
 export class MatchesListPageComponent {
   protected readonly matches = inject(MatchesService);
   protected readonly courts = inject(CourtsService);
+  protected readonly composer = inject(CourtComposerService);
   protected readonly auth = inject(AuthService);
   // Placeholder rows shown in place of each list while the first load is in flight.
   protected readonly skeletonRows = [0, 1, 2];
-
-  // Mirrors FeedPageComponent.onBackdropClick — only closes when the backdrop itself (not the
-  // dialog panel or one of its inputs) receives the click.
-  protected onComposerBackdropClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.matches.closeComposer();
-    }
-  }
 }

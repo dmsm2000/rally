@@ -143,19 +143,6 @@ export class RegisterPageComponent {
 
   protected readonly fullName = computed(() => `${this.firstName().trim()} ${this.lastName().trim()}`.trim());
 
-  constructor() {
-    this.countryData.loadCountries();
-    // Re-fetches this country's city list (cached per country in the service) whenever it changes.
-    effect(() => {
-      const match = this.countryData.countries().find(c => c.name === this.country());
-      if (!match) {
-        this.cityOptions.set([]);
-        return;
-      }
-      this.countryData.citiesFor(match.iso2).then(cities => this.cityOptions.set(cities));
-    });
-  }
-
   protected readonly canContinue = computed(() => {
     switch (this.step()) {
       case 0:
@@ -180,6 +167,19 @@ export class RegisterPageComponent {
         return true;
     }
   });
+
+  constructor() {
+    this.countryData.loadCountries();
+    // Re-fetches this country's city list (cached per country in the service) whenever it changes.
+    effect(() => {
+      const match = this.countryData.countries().find(c => c.name === this.country());
+      if (!match) {
+        this.cityOptions.set([]);
+        return;
+      }
+      this.countryData.citiesFor(match.iso2).then(cities => this.cityOptions.set(cities));
+    });
+  }
 
   protected setEmail(value: string): void {
     this.email.set(value);

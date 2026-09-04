@@ -1,0 +1,20 @@
+<div
+  class="fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 sm:items-center sm:p-4"
+  role="presentation"
+  (click)="onBackdropClick($event)"
+>
+  <div [class]="panelClasses()" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-between gap-2">
+      <p class="text-eyebrow text-muted-foreground">{{ eyebrow() }}</p>
+      <button
+        type="button"
+        (click)="closed.emit()"
+        [attr.aria-label]="'common.close' | translate"
+        class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+      >
+        <ui-icon name="close" className="size-4" />
+      </button>
+    </div>
+    <ng-content />
+  </div>
+</div>

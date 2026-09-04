@@ -67,7 +67,9 @@ export class CourtDetailPageComponent {
   constructor() {
     effect(() => {
       const id = this.courtId();
-      untracked(() => void this.load(id));
+      untracked(() => {
+        void this.load(id);
+      });
     });
   }
 
@@ -121,7 +123,7 @@ export class CourtDetailPageComponent {
     const confirmed = await this.confirmDialog.confirm({
       message: this.translation.t('courts.removePhotoConfirm'),
       confirmLabel: this.translation.t('courts.removePhoto'),
-      cancelLabel: this.translation.t('courts.cancel'),
+      cancelLabel: this.translation.t('common.cancel'),
       tone: 'destructive'
     });
     if (!confirmed) {

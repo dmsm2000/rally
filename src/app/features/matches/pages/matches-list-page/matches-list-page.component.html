@@ -222,201 +222,172 @@
 </section>
 
 @if (!auth.isObserver()) {
-  <button
-    type="button"
-    (click)="matches.openComposer()"
-    [attr.aria-label]="'matches.composerFabLabel' | translate"
-    class="rally-fab fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl lg:right-6 lg:bottom-[6.25rem]"
-  >
-    🎾
-  </button>
+  <ui-fab [ariaLabel]="'matches.composerFabLabel' | translate" (action)="matches.openComposer()">🎾</ui-fab>
 
   @if (matches.composerOpen()) {
-    <div
-      class="fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 sm:items-center sm:p-4"
-      role="presentation"
-      (click)="onComposerBackdropClick($event)"
-    >
-      <div
-        class="animate-tennis-pop no-scrollbar max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-border bg-card p-5 shadow-xl sm:rounded-3xl sm:p-6"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <p class="text-eyebrow text-muted-foreground">{{ 'matches.composerDialogTitle' | translate }}</p>
+    <ui-dialog [eyebrow]="'matches.composerDialogTitle' | translate" (closed)="matches.closeComposer()">
+      <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerSessionType' | translate }}</p>
+      <div class="mb-4 flex flex-wrap gap-2">
+        @for (t of matches.sessionTypes; track t) {
+          <ui-chip
+            [clickable]="true"
+            [active]="matches.composerSessionType() === t"
+            (toggled)="matches.composerSessionType.set(t)"
+            >{{ 'enums.sessionType.' + t | translate }}</ui-chip
+          >
+        }
+      </div>
+
+      <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerFormat' | translate }}</p>
+      <div class="mb-4 flex flex-wrap gap-2">
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerFormat() === 'Singles'"
+          (toggled)="matches.composerFormat.set('Singles')"
+          >{{ 'enums.format.Singles' | translate }}</ui-chip
+        >
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerFormat() === 'Doubles'"
+          (toggled)="matches.composerFormat.set('Doubles')"
+          >{{ 'enums.format.Doubles' | translate }}</ui-chip
+        >
+      </div>
+
+      <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerLocation' | translate }}</p>
+      <div class="mb-3 flex flex-wrap gap-2">
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerLocationMode() === 'radius'"
+          (toggled)="matches.composerLocationMode.set('radius')"
+          >{{ 'matches.composerLocationArea' | translate }}</ui-chip
+        >
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerLocationMode() === 'court'"
+          (toggled)="matches.composerLocationMode.set('court')"
+          >{{ 'matches.composerLocationCourt' | translate }}</ui-chip
+        >
+      </div>
+
+      @if (matches.composerLocationMode() === 'court') {
+        <div class="mb-3">
+          <ui-autocomplete
+            [value]="matches.composerCourtLabel()"
+            (valueChange)="matches.setComposerCourtLabel($event)"
+            name="matchCourt"
+            [options]="matches.courtOptionLabels()"
+            [placeholder]="'matches.composerCourt' | translate"
+          />
+          <!-- The registration dialog is the same one the courts catalogue uses, so a court added
+               here is a real, GPS-verified registration rather than a throwaway label. -->
           <button
             type="button"
-            (click)="matches.closeComposer()"
-            [attr.aria-label]="'matches.cancel' | translate"
-            class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            (click)="composer.openComposer()"
+            class="mt-2 flex cursor-pointer items-center gap-1.5 text-xs font-bold text-lime-deep uppercase hover:underline"
           >
-            <ui-icon name="close" className="size-4" />
+            <ui-icon name="plus" className="size-3.5" />
+            {{ 'matches.composerRegisterCourt' | translate }}
           </button>
+          <p class="text-eyebrow mt-2 text-muted-foreground">{{ 'matches.composerCourtHint' | translate }}</p>
+          <p class="mt-2 flex items-start gap-2 rounded-xl border border-clay/40 bg-clay/10 px-3 py-2.5 text-xs">
+            <ui-icon name="error-circle" className="mt-px size-4 shrink-0 text-clay" />
+            <span>{{ 'matches.courtNotBooked' | translate }}</span>
+          </p>
         </div>
-
-        <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerSessionType' | translate }}</p>
+      } @else {
+        <div class="mb-3 grid gap-3 sm:grid-cols-2">
+          <ui-autocomplete
+            [value]="matches.composerCountry()"
+            (valueChange)="matches.setComposerCountry($event)"
+            name="matchCountry"
+            [options]="matches.countryNames()"
+            [optionIcons]="matches.countryFlags()"
+            [placeholder]="'matches.composerSelectCountry' | translate"
+          />
+          <ui-autocomplete
+            [value]="matches.composerCity()"
+            (valueChange)="matches.composerCity.set($event)"
+            name="matchCity"
+            [options]="matches.composerCityOptions()"
+            [disabled]="!matches.composerCountry()"
+            [placeholder]="(matches.composerCountry() ? 'matches.composerCityPlaceholder' : 'matches.composerSelectCountryFirst') | translate"
+          />
+        </div>
         <div class="mb-4 flex flex-wrap gap-2">
-          @for (t of matches.sessionTypes; track t) {
+          @for (r of matches.radiusOptions; track r) {
             <ui-chip
               [clickable]="true"
-              [active]="matches.composerSessionType() === t"
-              (toggled)="matches.composerSessionType.set(t)"
-              >{{ 'enums.sessionType.' + t | translate }}</ui-chip
+              [active]="matches.composerRadiusKm() === r"
+              tone="cobalt"
+              (toggled)="matches.composerRadiusKm.set(r)"
+              >±{{ r }} km</ui-chip
             >
           }
         </div>
+      }
 
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerFormat' | translate }}</p>
-        <div class="mb-4 flex flex-wrap gap-2">
-          <ui-chip
-            [clickable]="true"
-            [active]="matches.composerFormat() === 'Singles'"
-            (toggled)="matches.composerFormat.set('Singles')"
-            >{{ 'enums.format.Singles' | translate }}</ui-chip
-          >
-          <ui-chip
-            [clickable]="true"
-            [active]="matches.composerFormat() === 'Doubles'"
-            (toggled)="matches.composerFormat.set('Doubles')"
-            >{{ 'enums.format.Doubles' | translate }}</ui-chip
-          >
-        </div>
-
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerLocation' | translate }}</p>
-        <div class="mb-3 flex flex-wrap gap-2">
-          <ui-chip
-            [clickable]="true"
-            [active]="matches.composerLocationMode() === 'radius'"
-            (toggled)="matches.composerLocationMode.set('radius')"
-            >{{ 'matches.composerLocationArea' | translate }}</ui-chip
-          >
-          <ui-chip
-            [clickable]="true"
-            [active]="matches.composerLocationMode() === 'court'"
-            (toggled)="matches.composerLocationMode.set('court')"
-            >{{ 'matches.composerLocationCourt' | translate }}</ui-chip
-          >
-        </div>
-
-        @if (matches.composerLocationMode() === 'court') {
-          <div class="mb-3">
-            <ui-autocomplete
-              [value]="matches.composerCourtLabel()"
-              (valueChange)="matches.setComposerCourtLabel($event)"
-              name="matchCourt"
-              [options]="matches.courtOptionLabels()"
-              [placeholder]="'matches.composerCourt' | translate"
-            />
-            <!-- The registration dialog is the same one the courts catalogue uses, so a court added
-                 here is a real, GPS-verified registration rather than a throwaway label. -->
-            <button
-              type="button"
-              (click)="courts.openComposer()"
-              class="mt-2 flex cursor-pointer items-center gap-1.5 text-xs font-bold text-lime-deep uppercase hover:underline"
-            >
-              <ui-icon name="plus" className="size-3.5" />
-              {{ 'matches.composerRegisterCourt' | translate }}
-            </button>
-            <p class="text-eyebrow mt-2 text-muted-foreground">{{ 'matches.composerCourtHint' | translate }}</p>
-            <p class="mt-2 flex items-start gap-2 rounded-xl border border-clay/40 bg-clay/10 px-3 py-2.5 text-xs">
-              <ui-icon name="error-circle" className="mt-px size-4 shrink-0 text-clay" />
-              <span>{{ 'matches.courtNotBooked' | translate }}</span>
-            </p>
-          </div>
-        } @else {
-          <div class="mb-3 grid gap-3 sm:grid-cols-2">
-            <ui-autocomplete
-              [value]="matches.composerCountry()"
-              (valueChange)="matches.setComposerCountry($event)"
-              name="matchCountry"
-              [options]="matches.countryNames()"
-              [optionIcons]="matches.countryFlags()"
-              [placeholder]="'matches.composerSelectCountry' | translate"
-            />
-            <ui-autocomplete
-              [value]="matches.composerCity()"
-              (valueChange)="matches.composerCity.set($event)"
-              name="matchCity"
-              [options]="matches.composerCityOptions()"
-              [disabled]="!matches.composerCountry()"
-              [placeholder]="(matches.composerCountry() ? 'matches.composerCityPlaceholder' : 'matches.composerSelectCountryFirst') | translate"
-            />
-          </div>
-          <div class="mb-4 flex flex-wrap gap-2">
-            @for (r of matches.radiusOptions; track r) {
-              <ui-chip
-                [clickable]="true"
-                [active]="matches.composerRadiusKm() === r"
-                tone="cobalt"
-                (toggled)="matches.composerRadiusKm.set(r)"
-                >±{{ r }} km</ui-chip
-              >
-            }
-          </div>
-        }
-
-        <ui-date-picker
-          [value]="matches.composerDate()"
-          (valueChange)="matches.composerDate.set($event)"
-          name="matchDate"
-          [min]="matches.todayIso"
-          [max]="matches.maxMatchDateIso"
-          [placeholder]="'matches.composerDate' | translate"
+      <ui-date-picker
+        [value]="matches.composerDate()"
+        (valueChange)="matches.composerDate.set($event)"
+        name="matchDate"
+        [min]="matches.todayIso"
+        [max]="matches.maxMatchDateIso"
+        [placeholder]="'matches.composerDate' | translate"
+      />
+      <p class="mt-3 mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerTimeRange' | translate }}</p>
+      <div class="grid grid-cols-2 gap-3">
+        <ui-time-picker
+          [value]="matches.composerTime()"
+          (valueChange)="matches.setComposerTime($event)"
+          name="matchTime"
+          [placeholder]="'matches.composerTime' | translate"
         />
-        <p class="mt-3 mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerTimeRange' | translate }}</p>
-        <div class="grid grid-cols-2 gap-3">
-          <ui-time-picker
-            [value]="matches.composerTime()"
-            (valueChange)="matches.setComposerTime($event)"
-            name="matchTime"
-            [placeholder]="'matches.composerTime' | translate"
-          />
-          <ui-time-picker
-            [value]="matches.composerTimeEnd()"
-            (valueChange)="matches.composerTimeEnd.set($event)"
-            name="matchTimeEnd"
-            [min]="matches.composerTime()"
-            [placeholder]="'matches.composerTimeEndPlaceholder' | translate"
-          />
-        </div>
-
-        <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerDuration' | translate }}</p>
-        <div class="mb-4 flex flex-wrap gap-2">
-          @for (d of matches.durationOptions; track d) {
-            <ui-chip
-              [clickable]="true"
-              [active]="matches.composerDurationMinutes() === d"
-              (toggled)="matches.composerDurationMinutes.set(d)"
-              >{{ d }} min</ui-chip
-            >
-          }
-          <ui-chip
-            [clickable]="true"
-            [active]="matches.composerDurationMinutes() === null"
-            (toggled)="matches.composerDurationMinutes.set(null)"
-          >
-            <ui-icon name="help-circle" className="size-3.5" />
-            {{ 'matches.durationUncertain' | translate }}
-          </ui-chip>
-        </div>
-
-        <input
-          [ngModel]="matches.composerNote()"
-          (ngModelChange)="matches.composerNote.set($event)"
-          [placeholder]="'matches.composerNotePlaceholder' | translate"
-          class="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+        <ui-time-picker
+          [value]="matches.composerTimeEnd()"
+          (valueChange)="matches.composerTimeEnd.set($event)"
+          name="matchTimeEnd"
+          [min]="matches.composerTime()"
+          [placeholder]="'matches.composerTimeEndPlaceholder' | translate"
         />
-        <button
-          type="button"
-          [disabled]="!matches.canPublish() || matches.publishing()"
-          (click)="matches.publishOpenMatch()"
-          class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:w-auto"
-        >
-          {{ (matches.publishing() ? 'matches.composerPublishing' : 'matches.composerPublish') | translate }}
-        </button>
-        <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'matches.composerHint' | translate }}</p>
       </div>
-    </div>
+
+      <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">{{ 'matches.composerDuration' | translate }}</p>
+      <div class="mb-4 flex flex-wrap gap-2">
+        @for (d of matches.durationOptions; track d) {
+          <ui-chip
+            [clickable]="true"
+            [active]="matches.composerDurationMinutes() === d"
+            (toggled)="matches.composerDurationMinutes.set(d)"
+            >{{ d }} min</ui-chip
+          >
+        }
+        <ui-chip
+          [clickable]="true"
+          [active]="matches.composerDurationMinutes() === null"
+          (toggled)="matches.composerDurationMinutes.set(null)"
+        >
+          <ui-icon name="help-circle" className="size-3.5" />
+          {{ 'matches.durationUncertain' | translate }}
+        </ui-chip>
+      </div>
+
+      <input
+        [ngModel]="matches.composerNote()"
+        (ngModelChange)="matches.composerNote.set($event)"
+        [placeholder]="'matches.composerNotePlaceholder' | translate"
+        class="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      />
+      <button
+        type="button"
+        [disabled]="!matches.canPublish() || matches.publishing()"
+        (click)="matches.publishOpenMatch()"
+        class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:w-auto"
+      >
+        {{ (matches.publishing() ? 'matches.composerPublishing' : 'matches.composerPublish') | translate }}
+      </button>
+      <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'matches.composerHint' | translate }}</p>
+    </ui-dialog>
   }
 }
 

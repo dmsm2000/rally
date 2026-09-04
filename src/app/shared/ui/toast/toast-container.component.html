@@ -15,7 +15,7 @@
         type="button"
         (click)="dismiss(t.id)"
         class="shrink-0 cursor-pointer text-white/80 hover:text-white"
-        aria-label="Dismiss"
+        [attr.aria-label]="'common.dismiss' | translate"
       >
         ✕
       </button>

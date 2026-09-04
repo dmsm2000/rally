@@ -3,7 +3,6 @@ import {
   CountryEntry,
   Destination,
   Player,
-  PlayerIntent,
   WorldActivityItem
 } from '../models';
 
@@ -411,12 +410,4 @@ export const WORLD_ACTIVITY: WorldActivityItem[] = [
     time: '5h ago',
     coords: { x: 50, y: 34 }
   }
-];
-
-export const PLAYER_INTENTS: PlayerIntent[] = [
-  { id: 'pi1', playerId: 'maria', text: 'Fancy hitting some balls tonight?', time: '18m ago' },
-  { id: 'pi2', playerId: 'marc', text: 'Looking for a hitting partner in Barcelona this week.', time: '35m ago' },
-  { id: 'pi3', playerId: 'yuki', text: "I'd love to discover a new city to play in soon.", time: '1h ago' },
-  { id: 'pi4', playerId: 'pedro', text: 'Free tomorrow morning for a set or two?', time: '2h ago' },
-  { id: 'pi5', playerId: 'ana', text: 'Doubles this weekend? Need one more player.', time: '4h ago' }
 ];

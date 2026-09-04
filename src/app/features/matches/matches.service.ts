@@ -52,14 +52,6 @@ export class MatchesService {
     return [...mine, ...this.openNearbyRaw().filter(m => !mineIds.has(m.id))];
   });
 
-  setOpenScope(scope: 'country' | 'world'): void {
-    if (this.openScope() === scope) {
-      return;
-    }
-    this.openScope.set(scope);
-    void this.reload();
-  }
-
   // Courts the player can pick from when scheduling: real, public, and — since captures are what
   // make a place worth knowing — their own captured ones first.
   readonly courts = computed(() => this.repository.courtCatalogue());
@@ -198,6 +190,14 @@ export class MatchesService {
     });
   }
 
+  setOpenScope(scope: 'country' | 'world'): void {
+    if (this.openScope() === scope) {
+      return;
+    }
+    this.openScope.set(scope);
+    void this.reload();
+  }
+
   openComposer(): void {
     this.composerOpen.set(true);
   }
@@ -248,12 +248,12 @@ export class MatchesService {
     }
   }
 
-  getById(id: string): Promise<Match | null> {
+  async getById(id: string): Promise<Match | null> {
     return this.repository.getById(id);
   }
 
   /** For a public player-detail page's match-history tabs — see MatchesRepository.matchesForPlayer(). */
-  matchesForPlayer(playerId: string): Promise<Match[]> {
+  async matchesForPlayer(playerId: string): Promise<Match[]> {
     return this.repository.matchesForPlayer(playerId);
   }
 

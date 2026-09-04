@@ -241,7 +241,7 @@ export class FeedService {
     const confirmed = await this.confirmDialog.confirm({
       message: this.translation.t('feed.deletePostConfirmLead'),
       confirmLabel: this.translation.t('feed.deletePostConfirmButton'),
-      cancelLabel: this.translation.t('feed.cancel'),
+      cancelLabel: this.translation.t('common.cancel'),
       tone: 'destructive'
     });
     if (!confirmed) {

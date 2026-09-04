@@ -1,15 +1,19 @@
 import type { Translations } from './en';
 
 export const pt = {
+  common: {
+    cancel: 'Cancelar',
+    close: 'Fechar',
+    back: 'Voltar',
+    dismiss: 'Dispensar'
+  },
   nav: {
+    rallyHome: 'Página inicial do Rally',
     home: 'Início',
     world: 'Explorar',
-    profile: 'Perfil',
-    feed: 'Feed',
     courts: 'Courts',
     matches: 'Partidas',
     passport: 'Passaporte',
-    search: 'Pesquisar',
     notifications: 'Notificações',
     yourProfile: 'O teu perfil',
     language: 'Idioma',
@@ -26,11 +30,7 @@ export const pt = {
   players: {
     eyebrow: 'Descoberta de jogadores',
     title: 'Com quem podes jogar?',
-    lead: 'A Rally avalia cada jogador consoante como, quando e onde jogas — e explica-te exatamente porquê.',
-    statTotal: 'Jogadores na comunidade',
-    statNearby: 'A menos de 300 km',
     searchPlaceholder: 'Pesquisar jogadores, cidades, países',
-    within300: 'A menos de 300 km',
     filters: 'Filtros',
     sort: 'Ordenar',
     sortNewest: 'Mais recentes',
@@ -68,11 +68,9 @@ export const pt = {
     gameFrequency: 'Frequência de jogo',
     coaching: 'Treino acompanhado',
     matchHistoryEyebrow: 'Histórico de partidas',
-    recentMatches: 'Partidas recentes',
     collectedEyebrow: 'Coleção',
     courtsDiscovered: 'Courts descobertos',
     passport: 'Passaporte',
-    achievements: 'Conquistas',
     notFound: 'Jogador não encontrado.',
     backToPlayers: 'Voltar aos jogadores'
   },
@@ -101,14 +99,12 @@ export const pt = {
     noResultsTitle: 'Nenhum campo corresponde',
     noResultsBody: 'Experimenta outro piso, ou limpa a pesquisa.',
     notFound: 'Campo não encontrado.',
-    backToCourts: 'Voltar aos campos',
 
     registerEyebrow: 'Registar um campo',
     registerFabLabel: 'Registar um campo',
     registerAction: 'Registar campo',
     registering: 'A registar...',
     registerHint: 'Fica privado até outro jogador o confirmar no local.',
-    cancel: 'Cancelar',
     change: 'Mudar',
 
     locating: 'A localizar-te',
@@ -241,8 +237,6 @@ export const pt = {
     statThisWeek: 'Partidas esta semana',
     statOpenCount: 'Partidas em aberto',
     statOpenPlayers: 'Jogadores à procura de jogo',
-    winRate: 'Taxa de vitórias',
-    longestRally: 'Rali mais longo',
     bookedEyebrow: 'Marcado',
     upcoming: 'Próximas',
     emptyTitle: 'Sem partidas marcadas',
@@ -268,8 +262,6 @@ export const pt = {
     whoWon: 'Quem ganhou?',
     noResult: 'Sem resultado / foi só treino',
     matchStatistics: 'Estatísticas da partida',
-    headToHead: '{name} já jogou {count} partidas e prefere courts de {surface}.',
-    viewAll: 'Todas as partidas',
     openEyebrow: 'Comunidade',
     openTitle: 'Partidas em aberto',
     openScopeCountry: 'No meu país',
@@ -278,7 +270,6 @@ export const pt = {
     openEmptyBody: 'Sê o primeiro a publicar uma e a comunidade vem ter contigo.',
     composerFabLabel: 'Publicar partida em aberto',
     composerDialogTitle: 'Publicar partida em aberto',
-    cancel: 'Cancelar',
     composerSessionType: 'Que tipo de sessão?',
     composerFormat: 'Formato',
     composerLocation: 'Onde?',
@@ -315,7 +306,6 @@ export const pt = {
     withdraw: 'Retirar publicação',
     openSlot: 'Vaga em aberto',
     doublesRoster: '{count}/4 inscritos',
-    alreadyJoined: 'Estás inscrito',
     leaveMatch: 'Sair',
     inviteTitle: 'Convidar para uma partida',
     sendInvite: 'Enviar convite',
@@ -342,8 +332,7 @@ export const pt = {
     deleteConversation: 'Apagar conversa',
     deleteConfirmLead: 'Tens a certeza? Isto apaga a conversa para os dois e não pode ser desfeito.',
     deleteConfirmButton: 'Sim, apagar conversa',
-    deleteFailed: 'Não foi possível apagar a conversa. Tenta novamente.',
-    cancel: 'Cancelar'
+    deleteFailed: 'Não foi possível apagar a conversa. Tenta novamente.'
   },
   notifications: {
     title: 'Notificações',
@@ -352,7 +341,6 @@ export const pt = {
     clearAllConfirmLead: 'Tens a certeza? Isto apaga permanentemente todas as tuas notificações e não pode ser desfeito.',
     clearAllConfirmButton: 'Sim, limpar tudo',
     clearAllFailed: 'Não foi possível limpar as notificações. Tenta novamente.',
-    cancel: 'Cancelar',
     kinds: {
       tripHostVolunteered: {
         text: '{name} ofereceu-se para te mostrar {city}',
@@ -398,14 +386,6 @@ export const pt = {
     statCourtsCaptured: 'Courts capturados',
     statCountriesUnlocked: 'Países desbloqueados',
     statActivePlayers: 'Jogadores ativos',
-    legendPlayers: 'Jogadores',
-    legendCourts: 'Courts',
-    legendActivity: 'Atividade recente',
-    legendLocked: 'Por desbloquear',
-    playersInCity: 'Jogadores em {city}',
-    hotspotsEyebrow: 'Sítios perto de ti',
-    hotspotsTitle: 'Hotspots da comunidade',
-    playersLookingForGames: '{players} jogadores à procura de jogo · {courts} courts',
     tripEyebrow: 'Planeia uma viagem',
     tripTitle: 'Vou estar por aí — mostras-me o ténis local?',
     tripSelectCountry: 'País de destino',
@@ -420,7 +400,6 @@ export const pt = {
     tripPublishFailed: 'Não foi possível publicar a viagem. Tenta novamente.',
     tripHint: 'Fica visível para jogadores dessa cidade, que se podem oferecer para te mostrar a zona.',
     tripComposerFabLabel: 'Planear uma viagem',
-    cancel: 'Cancelar',
     hostEyebrow: 'Voluntaria-te',
     hostTitle: 'Quem está à procura de anfitrião',
     hostEmpty: 'Sem pedidos no teu país no momento.',
@@ -432,6 +411,7 @@ export const pt = {
     hostAutoMessage: 'Vou mostrar-te {city}! 🎾 Vi que vais estar por cá de {fromDate} a {toDate} — combinamos um jogo?'
   },
   feed: {
+    heroImageAlt: 'Dois jogadores num rally num court no terraço, sobre uma cidade mediterrânica',
     greeting: 'Boa noite',
     heroMatchesOne: 'Há 1 partida à tua espera',
     heroMatchesMany: 'Há {count} partidas à tua espera',
@@ -482,7 +462,6 @@ export const pt = {
     deletePost: 'Apagar publicação',
     deletePostConfirmLead: 'Tens a certeza? Isto remove a publicação para todos e não pode ser desfeito.',
     deletePostConfirmButton: 'Sim, apagar publicação',
-    cancel: 'Cancelar',
     loadMore: 'Carregar mais',
     loadingMore: 'A carregar…',
     newPosts: 'Novos posts',
@@ -535,9 +514,7 @@ export const pt = {
     playersMetEmpty: 'Ainda não jogaste com ninguém — essa lista vai crescer a cada partida.'
   },
   achievements: {
-    eyebrow: 'Marcos',
     title: 'Conquistas',
-    lead: 'Progresso que te dá vontade de marcar um voo, não de acumular pontos.',
     unlockedStat: 'Desbloqueadas',
     earnedEyebrow: 'Conquistado',
     unlockedTitle: 'Desbloqueadas',
@@ -587,7 +564,6 @@ export const pt = {
     deleteAccountConfirmLead: 'Tens a certeza? Isto vai apagar a tua conta e perfil permanentemente.',
     deleteAccountConfirmButton: 'Sim, apagar a minha conta',
     deletingAccount: 'A apagar…',
-    cancel: 'Cancelar',
     unsavedChangesLead: 'Tens alterações por guardar. Se saíres agora, vão perder-se.',
     discardChanges: 'Descartar alterações',
     keepEditing: 'Continuar a editar',
@@ -636,9 +612,7 @@ export const pt = {
     passwordMismatch: 'As palavras-passe não coincidem',
     passwordTooShort: 'A palavra-passe deve ter pelo menos 6 caracteres.',
     city: 'Cidade',
-    cityPlaceholder: 'ex. Porto',
     country: 'País',
-    countryPlaceholder: 'ex. Portugal',
     selectCountry: 'Seleciona o teu país',
     selectCity: 'Seleciona a tua cidade',
     selectCountryFirst: 'Escolhe primeiro um país',
@@ -748,7 +722,7 @@ export const pt = {
     },
     surface: {
       Clay: 'Terra batida',
-      Hard: 'Hard',
+      Hard: 'Rápido',
       Grass: 'Relva',
       Carpet: 'Alcatifa'
     },

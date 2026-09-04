@@ -228,92 +228,64 @@
     </div>
   </section>
 
-  <button
-    type="button"
-    (click)="world.openTripComposer()"
-    [attr.aria-label]="'world.tripComposerFabLabel' | translate"
-    class="rally-fab fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl lg:right-6 lg:bottom-[6.25rem]"
-  >
-    🗺️
-  </button>
+  <ui-fab [ariaLabel]="'world.tripComposerFabLabel' | translate" (action)="world.openTripComposer()">🗺️</ui-fab>
 
   @if (world.tripComposerOpen()) {
-    <div
-      class="fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 sm:items-center sm:p-4"
-      role="presentation"
-      (click)="onTripBackdropClick($event)"
-    >
-      <div
-        class="animate-tennis-pop no-scrollbar max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-border bg-card p-5 shadow-xl sm:rounded-3xl sm:p-6"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <p class="text-eyebrow text-muted-foreground">{{ 'world.tripEyebrow' | translate }}</p>
-          <button
-            type="button"
-            (click)="world.closeTripComposer()"
-            [attr.aria-label]="'world.cancel' | translate"
-            class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <ui-icon name="close" className="size-4" />
-          </button>
-        </div>
-        <h2 class="text-display mt-2 text-xl">{{ 'world.tripTitle' | translate }}</h2>
+    <ui-dialog [eyebrow]="'world.tripEyebrow' | translate" (closed)="world.closeTripComposer()">
+      <h2 class="text-display mt-2 text-xl">{{ 'world.tripTitle' | translate }}</h2>
 
-        <div class="mt-4 grid gap-3 sm:grid-cols-2">
-          <ui-autocomplete
-            [value]="world.tripCountry()"
-            (valueChange)="world.setTripCountry($event)"
-            name="tripCountry"
-            [options]="world.countryNames()"
-            [optionIcons]="world.countryFlags()"
-            [placeholder]="'world.tripSelectCountry' | translate"
-          />
-          <ui-autocomplete
-            [value]="world.tripCity()"
-            (valueChange)="world.tripCity.set($event)"
-            name="tripCity"
-            [options]="world.tripCityOptions()"
-            [disabled]="!world.tripCountry()"
-            [placeholder]="(world.tripCountry() ? 'world.tripSelectCity' : 'world.tripSelectCountryFirst') | translate"
-          />
-        </div>
-        <div class="mt-3 grid gap-3 sm:grid-cols-2">
-          <ui-date-picker
-            [value]="world.tripFromDate()"
-            (valueChange)="world.tripFromDate.set($event)"
-            name="tripFromDate"
-            [min]="world.todayIso"
-            [max]="world.maxTripDateIso"
-            [placeholder]="'world.tripFrom' | translate"
-          />
-          <ui-date-picker
-            [value]="world.tripToDate()"
-            (valueChange)="world.tripToDate.set($event)"
-            name="tripToDate"
-            [min]="world.tripFromDate() || world.todayIso"
-            [max]="world.maxTripDateIso"
-            [placeholder]="'world.tripTo' | translate"
-          />
-        </div>
-        <input
-          [ngModel]="world.tripNote()"
-          (ngModelChange)="world.tripNote.set($event)"
-          [placeholder]="'world.tripNotePlaceholder' | translate"
-          class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+        <ui-autocomplete
+          [value]="world.tripCountry()"
+          (valueChange)="world.setTripCountry($event)"
+          name="tripCountry"
+          [options]="world.countryNames()"
+          [optionIcons]="world.countryFlags()"
+          [placeholder]="'world.tripSelectCountry' | translate"
         />
-        <button
-          type="button"
-          (click)="world.publishTripIntent()"
-          [disabled]="!world.canPublishTrip() || world.tripPublishing()"
-          class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40 sm:w-auto"
-        >
-          {{ (world.tripPublishing() ? 'world.tripPublishing' : 'world.tripPublish') | translate }}
-        </button>
-        <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'world.tripHint' | translate }}</p>
+        <ui-autocomplete
+          [value]="world.tripCity()"
+          (valueChange)="world.tripCity.set($event)"
+          name="tripCity"
+          [options]="world.tripCityOptions()"
+          [disabled]="!world.tripCountry()"
+          [placeholder]="(world.tripCountry() ? 'world.tripSelectCity' : 'world.tripSelectCountryFirst') | translate"
+        />
       </div>
-    </div>
+      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+        <ui-date-picker
+          [value]="world.tripFromDate()"
+          (valueChange)="world.tripFromDate.set($event)"
+          name="tripFromDate"
+          [min]="world.todayIso"
+          [max]="world.maxTripDateIso"
+          [placeholder]="'world.tripFrom' | translate"
+        />
+        <ui-date-picker
+          [value]="world.tripToDate()"
+          (valueChange)="world.tripToDate.set($event)"
+          name="tripToDate"
+          [min]="world.tripFromDate() || world.todayIso"
+          [max]="world.maxTripDateIso"
+          [placeholder]="'world.tripTo' | translate"
+        />
+      </div>
+      <input
+        [ngModel]="world.tripNote()"
+        (ngModelChange)="world.tripNote.set($event)"
+        [placeholder]="'world.tripNotePlaceholder' | translate"
+        class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+      />
+      <button
+        type="button"
+        (click)="world.publishTripIntent()"
+        [disabled]="!world.canPublishTrip() || world.tripPublishing()"
+        class="mt-4 w-full cursor-pointer rounded-full bg-lime px-6 py-3 text-sm font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40 sm:w-auto"
+      >
+        {{ (world.tripPublishing() ? 'world.tripPublishing' : 'world.tripPublish') | translate }}
+      </button>
+      <p class="text-eyebrow mt-3 text-muted-foreground">{{ 'world.tripHint' | translate }}</p>
+    </ui-dialog>
   }
 
   @if (world.hostDialogOpen()) {
@@ -328,7 +300,7 @@
           <button
             type="button"
             (click)="world.closeHostDialog()"
-            aria-label="Close"
+            [attr.aria-label]="'common.close' | translate"
             class="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10"
           >
             ✕

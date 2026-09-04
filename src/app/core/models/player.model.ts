@@ -49,9 +49,3 @@ export interface Player {
   maxDistanceKm?: number;
 }
 
-export interface PlayerIntent {
-  id: string;
-  playerId: string;
-  text: string;
-  time: string;
-}

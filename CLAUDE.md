@@ -81,7 +81,8 @@ src/app/
   features/
     auth/          Login, registration, reset-password pages
     players/       Real-profile discovery and public player details
-    profile/       Own profile editing and account management
+    profile/       Own profile editing and account management, plus the change-password
+                   dialog and "my trips" strip as their own components
     feed/courts/matches/passport/world/  Mostly mock-backed product areas
   layout/          App shell, fixed topbar, mobile bottom navigation
   shared/
@@ -95,10 +96,23 @@ supabase/migrations/
 
 - Custom components use the `rally-` selector prefix. Reusable primitives under `shared/ui` use `ui-`.
 - Use Angular signals, `computed`, `input`, `output`, and standalone component imports. Follow local patterns; do not introduce NgModules.
-- All user-visible copy must use the custom `TranslatePipe` / `TranslationService`. `en.ts` is the canonical type; `pt.ts` and `es.ts` use `satisfies Translations`, so every new key must exist in all three files.
+- All user-visible copy must use the custom `TranslatePipe` / `TranslationService` — including `aria-label`, `alt` and `placeholder`, which are as user-visible as body text to anyone using a screen reader. `en.ts` is the canonical type; `pt.ts` and `es.ts` use `satisfies Translations`, so every new key must exist in all three files.
+- Keys are grouped by feature, with one exception: `common.*` holds the chrome words shared by every feature (`cancel`, `close`, `back`, `dismiss`). Reach for `common` only when a word is genuinely feature-independent — a per-feature key that happens to read the same today is not duplication, it's room for the two to diverge.
 - Use `ui-icon` plus a real SVG in `public/assets/icons/`; do not write inline SVG in templates. Add icon names to `shared/ui/icon/icon.component.ts`.
 - `ui-icon` injects SVG through `innerHTML`. Rules targeting injected SVG must live in global `src/styles.css`, not component-scoped SCSS.
+- `styles.css` imports Tailwind with `source(none)` plus an explicit `@source '../src'`. An explicit `@source` *adds to* v4's automatic
+  detection rather than replacing it, so without `source(none)` Tailwind scans the whole repo — `CLAUDE.md` and `PRODUCT.md` included,
+  where class names mentioned in prose quietly became real rules in the bundle (that was ~660 bytes of `.contents`, `.sticky`,
+  `.lowercase`, `.ordinal` nothing used). Keep the scope on `src/`: documentation should not be able to emit CSS.
 - Reuse `ui-chip`, `ui-avatar`, `ui-empty-state`, `ui-autocomplete`, and `ui-date-picker` rather than reimplementing variants.
+- `ui-fab` is the floating action button (feed, courts, matches, world, messages). It projects its
+  content — the messages FAB layers an unread badge over its emoji — and `[fixed]="false"` opts out
+  of the shared bottom-right corner for a FAB its own wrapper positions.
+- `ui-dialog` is the composer shell: bottom sheet on mobile, centred card from `sm` up, with the
+  eyebrow/close header and backdrop-click-to-close. It deliberately takes **no** `open` input —
+  callers keep their own `@if`, because projected content lives in the caller's view and an `@if`
+  inside the dialog would build a closed composer's body anyway. `[scrollable]="false"` drops the
+  `max-h-[90vh]` cap for a short body.
 - `ui-chip` with `[subtle]="true"` is read-only metadata: neutral, static, no hover/transition. Use clickable chips only for actual interactions.
 - Do not use `window.confirm`; use `ConfirmDialogService`.
 
@@ -204,7 +218,7 @@ Note: migration filenames on disk don't currently match this list's numbering 1:
   2. **Existing requires corroboration.** A venue is created `status = 'draft'` and goes `'live'` only once 2 distinct players have checked in with an accurate fix. A draft is invisible in the catalogue, the feed and search — its *only* route to visibility is `nearby_venues()`, which surfaces it to someone standing within 250 m. That is deliberate and load-bearing: if drafts were invisible there too, no draft could ever be confirmed and the state would be a dead end. It also self-cleans, since a draft registered from a sofa has coordinates kilometres from the real court and never surfaces to anyone.
   3. **Captures and the feed post only happen after verification.** This is what keeps the competition honest: registering earns nothing, so a fabricated court is never corroborated, therefore never scores, therefore isn't worth fabricating. The GPS is a *filter*, never a proof — it's spoofable in three clicks — and this rule, not the fix, is what secures the data.
   4. **One visit captures one court.** GPS distinguishes venues, not court 3 from court 4, so a 12 h per-venue cooldown stops someone standing at a club's gate and collecting all 8 at once. Completing a Rally match at a court is the exception and captures it for free (see `0028`).
-  `CourtsRepository` (`features/courts/data/`) is the only data-access boundary and holds a lazily-loaded catalogue signal — plus the viewer's collection from `my_captured_courts()`, which is what `capturedByMe`, the "captured by me" filter, the profile/feed stats and the whole passport all read, so no two of them can drift. Note this means a court in a still-unconfirmed venue never counts as captured, even by the player who registered it — its card shows "Por confirmar" rather than "Capturado". `CourtsRepository`, so `courtById()` stays a synchronous lookup for match cards, the world map and the profile page — it returns undefined for an unconfirmed draft, and every caller falls back to the match's own denormalized `city`/`country`. `rally-court-composer-dialog` (`shared/components/`) is the single registration UI, used by both `/courts` and the match composer. `mapCoordsFor()` projects real lat/lng onto `rally-map`'s stylised 0-100 grid, so the abstract map stops inventing positions. Two notification kinds (`court_verified` to the discoverer, `court_added_nearby` to the city) are sent client-side on the confirming check-in, while the feed post is written by the RPC — the split exists because notifying is something a client may do as itself, and authoring a post as somebody else is not.
+  `CourtsRepository` (`features/courts/data/`) is the only data-access boundary and holds a lazily-loaded catalogue signal — plus the viewer's collection from `my_captured_courts()`, which is what `capturedByMe`, the "captured by me" filter, the profile/feed stats and the whole passport all read, so no two of them can drift. Note this means a court in a still-unconfirmed venue never counts as captured, even by the player who registered it — its card shows "Por confirmar" rather than "Capturado". `CourtsRepository`, so `courtById()` stays a synchronous lookup for match cards, the world map and the profile page — it returns undefined for an unconfirmed draft, and every caller falls back to the match's own denormalized `city`/`country`. `rally-court-composer-dialog` (`shared/components/`) is the single registration UI, used by both `/courts` and the match composer, and it is driven by `CourtComposerService` (`features/courts/court-composer.service.ts`) — the whole locate → nearby → form → candidates flow, split out of `CourtsService`, which now owns only the catalogue, the viewer's collection, and capture/photos/reports. A component that both browses and registers injects both. `courtErrorKey()` (`features/courts/court-errors.ts`) is the one place an RPC refusal or a failed fix becomes a translation key, so the two services can't drift on how the same failure reads. `court-rows.ts` (`features/courts/data/`) holds the snake_case row types and their mapping to the domain models, keeping the repository's queries readable — `match-rows.ts` does the same for matches. `mapCoordsFor()` projects real lat/lng onto `rally-map`'s stylised 0-100 grid, so the abstract map stops inventing positions. Two notification kinds (`court_verified` to the discoverer, `court_added_nearby` to the city) are sent client-side on the confirming check-in, while the feed post is written by the RPC — the split exists because notifying is something a client may do as itself, and authoring a post as somebody else is not.
 
 ### Mock today
 
@@ -326,27 +340,31 @@ Agreed with the user: **once the app is stable enough**, do a general cleanup pa
 more features. Not now — none of this is urgent, and doing it mid-feature risks working code. This
 is the running list, so nothing has to be rediscovered.
 
+A first pass of this ran on 2026-09-04; what it did is in the Cleanup Pass section below. What
+follows is what is still outstanding.
+
 **Code duplication**
 
-- **A `ui-fab` primitive.** Five FABs (matches 🎾, courts 📍, feed ➕, world 🗺️, messages 💬) repeat
-  the same ~200-character class string, plus the shared `rally-fab` class. They differ only in
-  emoji, `aria-label` and click handler — an obvious `shared/ui` component. Note the messages one is
-  positioned by its wrapper rather than `fixed`, so the primitive needs a positioning opt-out.
 - **`MatchesRepository.subscribeToMatchEvents()` holds a single channel handle**, so a second caller
   silently steals it from the first. `FeedService` therefore opens its own `feed-open-matches`
   channel to keep its headline count live. Converting the repository to a multi-listener registry
   would let the feed drop that duplicate subscription. Deliberately deferred: it means touching
   working realtime code.
+- **The centred-modal shell is still copied four times** (world host list, player invite, profile
+  avatar, profile password). `ui-dialog` covers the *sheet* composers only — the centred ones differ
+  enough (always centred, `px-4`, `max-w-md`/`max-w-sm`, a text `✕` instead of the icon button, no
+  backdrop-click close) that folding them in would mean either a second variant input or changing
+  how they look. Worth doing, but it is a design decision, not a mechanical one.
+- **32 component `.scss` files contain nothing but `:host { display: block|contents }`.** They could
+  all become a `host: { class: 'block' }` in the component metadata, deleting 32 files. Left alone
+  because it is pure churn across 32 components for no behaviour change.
 
-**Lint** — `npm run lint` currently reports 6 errors and ~705 warnings. The breakdown is much less
-alarming than the number:
-
-- 572 `member-ordering` — cosmetic, and many are auto-fixable with `--fix`.
-- 31 `promise-function-async`, 9 `no-non-null-assertion` — worth a look, mostly harmless.
-- **6 errors, all `label-has-associated-control`**, in `register-page.component.html` (3) and
-  `profile-page.component.html` (3). These are pre-existing and predate the courts work; they are
-  real accessibility issues (a `<label>` wrapping a file input or a custom control). Fixing these
-  six is the only lint work that actually matters.
+**Lint** — `npm run lint` reports **0 errors and 6 warnings**, all `max-lines` (see the Cleanup Pass
+section for what the other ~705 were and where they went). The six that remain are real code files
+over the 300-line limit: `courts.repository.ts` (434), `matches.repository.ts` (389),
+`profile-page.component.ts` (390), `matches.service.ts` (380), `feed.service.ts` (351),
+`posts.repository.ts` (335). Each needs a judgement call about what to split off rather than a
+mechanical fix — the obvious row-type/mapper layers have already been extracted.
 
 **Bundle** — the initial bundle is ~1.77 MB against a 1 MB budget, so every build warns. The obvious
 suspect is the country dataset; worth measuring before assuming. Either trim it or raise the budget
@@ -363,8 +381,66 @@ deliberately rather than leaving a warning everyone learns to ignore.
   `'UK'`/`'USA'` while the real country dataset says "United Kingdom"/"United States", so a court
   captured there shows as stamped *and* still-to-play. Fix by deriving this list from the real
   dataset instead of hardcoding names.
-- `DESTINATIONS`, `WORLD_ACTIVITY`, `PLAYER_INTENTS` — the world page's showcase content.
+- `DESTINATIONS`, `WORLD_ACTIVITY` — the world page's showcase content. (`PLAYER_INTENTS` was
+  deleted in the cleanup pass: nothing had referenced it since real trip intents shipped.)
 - `MOCK_MATCH_PAIRINGS` — passport's "players met" graph.
+
+## Cleanup Pass (2026-09-04)
+
+A pass over lint, dead code, translations and duplication. No feature behaviour was changed, and
+the generated `styles.css` is byte-identical to before it — which is the check that mattered, since
+several long Tailwind class strings moved from templates into `.ts` files.
+
+**Lint went from 6 errors + 705 warnings to 0 errors + 6 warnings.** Most of that was three rules
+whose defaults fight this codebase, resolved in `eslint.config.js` rather than by rewriting code to
+suit them — the reasoning is in comments there:
+
+- `label-has-associated-control` (the 6 errors) now declares `ui-autocomplete`/`ui-date-picker`/
+  `ui-time-picker` as `controlComponents`. Each renders a real `<input>`, so a `<label>` wrapping one
+  *is* associated in the DOM; the rule simply can't see through a custom element.
+- `member-ordering` (572 warnings) now enforces the coarse shape — fields, constructor, methods —
+  instead of the default's public-before-private field order, which Angular's
+  `private readonly x = inject(...)` idiom violates in every service. The ~110 real violations left
+  after that were fixed by moving members, not by loosening it further.
+- `no-void` (61) allows `void somePromise()` as a statement, which is the deliberate fire-and-forget
+  marker used throughout.
+- `id-denylist` keeps `number` only outside the courts feature: `Court.number` is the number painted
+  on the ground and mirrors the `courts.number` column.
+- `max-lines` is off for the translation dictionaries and `rally-dataset.ts` — flat data tables where
+  the rule measures nothing.
+
+Everything else was fixed in code: `promise-function-async` (31, including rewriting the lazy route
+loaders as `async () => (await import(...)).ROUTES`), `no-non-null-assertion` (9 — the
+`register_court` RPC payload became a discriminated union, and `MessagesService.conversations`
+narrows with a type predicate instead of pushing a `!` onto its consumer), `curly` (10, an if-chain
+that became the `RPC_ERROR_REASONS` table), `component-class-suffix` (`App` → `AppComponent`), and
+`arrow-body-style`.
+
+**Dead code removed:** `CountryBadgeComponent`, `PageHeaderComponent`, `NavigationStateService`,
+`PLAYER_INTENTS`/`PlayerIntent`, `CourtFacility`. Nothing referenced any of them. A re-scan of all
+238 exported symbols and every private/protected class member now finds none unused. `tsconfig.json`
+also referenced a `tsconfig.spec.json` that does not exist; the dangling reference is gone.
+
+**Translations:** 27 unused keys deleted, the 7 per-feature `cancel` copies collapsed into
+`common.cancel`, and 13 never-translated `aria-label`/`alt` strings ("Close", "Back", "Dismiss",
+"Rally home", the feed hero's alt text) given real keys in all three languages. `enums.surface.Hard`
+was still "Hard" in `pt.ts` while Clay/Grass/Carpet were translated — it is now "Rápido". The three
+dictionaries carry identical key sets (639 keys), every key is reachable, and every `| translate`
+target resolves. Note two things left alone deliberately: PT uses "Courts", "Backhand" and "Match
+score" as loanwords, which reads as a product-voice choice rather than a gap; and the lowercase "vs"
+in `rally-match-card` is still hardcoded, being identical in all three languages like "km" and "min".
+
+Also found along the way: Tailwind was scanning the repo's Markdown, so prose describing class
+names was emitting real (unused) CSS. `styles.css` now uses `source(none)` — see Styling and UX.
+
+**Duplication removed:** `ui-fab` (the five FABs) and `ui-dialog` (the four sheet composers, which
+also had three copies of the same `onBackdropClick` handler — including the comment explaining why
+it must be a method and not an inline expression, now carried into the primitive).
+
+**Files split**, each because it was over the line limit *and* had two jobs:
+`CourtsService` → `CourtComposerService`; `profile-page.component.ts` → `ChangePasswordDialogComponent`
+and `MyTripsSectionComponent`; the repositories' row types and mappers → `court-rows.ts` /
+`match-rows.ts`.
 
 ## Current Product Priorities
 

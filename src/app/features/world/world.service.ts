@@ -42,12 +42,6 @@ export class WorldService {
       .map((c) => ({ id: `l-${c.name}`, x: c.coords.x, y: c.coords.y, kind: 'locked' as const, label: c.name })),
   ]);
 
-  select(id: string): void {
-    if (this.destinations().some((d) => d.id === id)) {
-      this.selectedId.set(id);
-    }
-  }
-
   readonly meId = this.auth.currentUserId;
 
   // Trip publish draft — country/city picked the same way as registration/profile.
@@ -96,14 +90,6 @@ export class WorldService {
 
   readonly hostDialogOpen = signal(false);
 
-  openHostDialog(): void {
-    this.hostDialogOpen.set(true);
-  }
-
-  closeHostDialog(): void {
-    this.hostDialogOpen.set(false);
-  }
-
   // Re-derives only when the resolved country actually changes value (not on every unrelated
   // profile-signal update), and reloads the host list whenever it does.
   private readonly myCountryKey = computed(() => this.auth.currentPlayer().country ?? '');
@@ -127,6 +113,20 @@ export class WorldService {
         void this.loadHostRequests(this.auth.currentPlayer().country);
       });
     });
+  }
+
+  select(id: string): void {
+    if (this.destinations().some((d) => d.id === id)) {
+      this.selectedId.set(id);
+    }
+  }
+
+  openHostDialog(): void {
+    this.hostDialogOpen.set(true);
+  }
+
+  closeHostDialog(): void {
+    this.hostDialogOpen.set(false);
   }
 
   openTripComposer(): void {

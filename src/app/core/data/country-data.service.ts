@@ -21,7 +21,7 @@ export class CountryDataService {
   readonly countries = this._countries.asReadonly();
 
   /** Loads (and caches) the full country list once, lazily, on first call. */
-  loadCountries(): Promise<CountryLite[]> {
+  async loadCountries(): Promise<CountryLite[]> {
     if (!this.countriesPromise) {
       this.countriesPromise = getCountries().then(list => {
         const mapped = list
@@ -35,7 +35,7 @@ export class CountryDataService {
   }
 
   /** Loads (and caches) every distinct city name for a country, lazily per country code. */
-  citiesFor(countryIso2: string): Promise<string[]> {
+  async citiesFor(countryIso2: string): Promise<string[]> {
     if (!countryIso2) {
       return Promise.resolve([]);
     }

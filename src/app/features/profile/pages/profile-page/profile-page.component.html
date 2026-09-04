@@ -48,7 +48,7 @@
         @if (!auth.isObserver()) {
           <button
             type="button"
-            (click)="openChangePassword()"
+            (click)="changingPassword.set(true)"
             class="cursor-pointer rounded-full border border-amber-400 px-4 py-2 text-xs font-extrabold tracking-wide text-amber-400 uppercase hover:bg-amber-400 hover:text-ink"
           >
             {{ 'profile.changePassword' | translate }}
@@ -94,35 +94,7 @@
   </a>
 </section>
 
-<section class="mb-10">
-  <ui-section-header [eyebrow]="'profile.tripsEyebrow' | translate" [title]="'profile.myTrips' | translate" />
-  @if (myTrips().length) {
-    <div class="no-scrollbar flex gap-4 overflow-x-auto pb-2">
-      @for (trip of myTrips(); track trip.id) {
-        <div class="w-72 shrink-0 rounded-2xl border border-border bg-card p-4 shadow-sm">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-eyebrow truncate text-muted-foreground">{{ formatTripDate(trip.fromDate) }} – {{ formatTripDate(trip.toDate) }}</span>
-            <button
-              type="button"
-              (click)="deleteTrip(trip)"
-              [disabled]="deletingTripId() === trip.id"
-              [attr.aria-label]="'profile.deleteTrip' | translate"
-              class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-loss disabled:pointer-events-none disabled:opacity-40"
-            >
-              <ui-icon name="trash" className="size-3.5" />
-            </button>
-          </div>
-          <p class="mt-3 truncate text-sm font-bold">
-            {{ countryFlags()[trip.destinationCountry] }} {{ trip.destinationCity }}, {{ trip.destinationCountry }}
-          </p>
-          <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">{{ trip.note }}</p>
-        </div>
-      }
-    </div>
-  } @else if (!myTripsLoading()) {
-    <p class="text-sm text-muted-foreground">{{ 'profile.myTripsEmpty' | translate }}</p>
-  }
-</section>
+<rally-my-trips-section />
 
 <section class="mb-10">
   <ui-section-header
@@ -227,7 +199,7 @@
         [disabled]="isSaving('traits')"
         class="cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ 'profile.cancel' | translate }}
+        {{ 'common.cancel' | translate }}
       </button>
       <button
         type="button"
@@ -294,7 +266,7 @@
         [disabled]="isSaving('location')"
         class="cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ 'profile.cancel' | translate }}
+        {{ 'common.cancel' | translate }}
       </button>
       <button
         type="button"
@@ -406,7 +378,7 @@
         [disabled]="isSaving('game')"
         class="cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ 'profile.cancel' | translate }}
+        {{ 'common.cancel' | translate }}
       </button>
       <button
         type="button"
@@ -504,7 +476,7 @@
         [disabled]="isSaving('schedule')"
         class="cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ 'profile.cancel' | translate }}
+        {{ 'common.cancel' | translate }}
       </button>
       <button
         type="button"
@@ -567,7 +539,7 @@
           [disabled]="isSaving('avatar')"
           class="cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
         >
-          {{ 'profile.cancel' | translate }}
+          {{ 'common.cancel' | translate }}
         </button>
         <button
           type="button"
@@ -583,106 +555,7 @@
 }
 
 @if (changingPassword()) {
-  <div class="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 px-4" role="presentation">
-    <div
-      class="animate-tennis-pop w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-xl sm:p-8"
-      role="dialog"
-      aria-modal="true"
-    >
-      <p class="text-eyebrow text-muted-foreground">{{ 'profile.changePassword' | translate }}</p>
-      <p class="mt-1 text-sm text-muted-foreground">{{ 'profile.changePasswordLead' | translate }}</p>
-
-      <form class="mt-5 space-y-4" (ngSubmit)="submitChangePassword()">
-        <label class="block">
-          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
-            >* {{ 'auth.currentPassword' | translate }}</span
-          >
-          <div class="relative">
-            <input
-              [ngModel]="currentPassword()"
-              (ngModelChange)="setCurrentPassword($event)"
-              name="currentPassword"
-              [type]="showCurrentPassword() ? 'text' : 'password'"
-              autocomplete="current-password"
-              [placeholder]="'auth.currentPasswordPlaceholder' | translate"
-              [class]="
-                'w-full rounded-xl border bg-background px-4 py-3 pr-11 text-sm outline-none focus:border-foreground ' +
-                (passwordFieldError() ? 'border-loss' : 'border-border')
-              "
-            />
-            <ui-password-toggle
-              [visible]="showCurrentPassword()"
-              (toggled)="showCurrentPassword.set(!showCurrentPassword())"
-            />
-          </div>
-        </label>
-        <label class="block">
-          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
-            >* {{ 'auth.newPassword' | translate }}</span
-          >
-          <div class="relative">
-            <input
-              [ngModel]="newPassword()"
-              (ngModelChange)="newPassword.set($event)"
-              name="newPassword"
-              [type]="showNewPassword() ? 'text' : 'password'"
-              autocomplete="new-password"
-              [placeholder]="'auth.newPasswordPlaceholder' | translate"
-              [class]="
-                'w-full rounded-xl border bg-background px-4 py-3 pr-11 text-sm outline-none focus:border-foreground ' +
-                (newPasswordTooShort() ? 'border-loss' : 'border-border')
-              "
-            />
-            <ui-password-toggle [visible]="showNewPassword()" (toggled)="showNewPassword.set(!showNewPassword())" />
-          </div>
-          @if (newPasswordTooShort()) {
-            <span class="mt-1.5 block text-xs font-semibold text-loss">{{ 'auth.passwordTooShort' | translate }}</span>
-          }
-        </label>
-        <label class="block">
-          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
-            >* {{ 'auth.confirmPassword' | translate }}</span
-          >
-          <div class="relative">
-            <input
-              [ngModel]="confirmNewPassword()"
-              (ngModelChange)="confirmNewPassword.set($event)"
-              name="confirmNewPassword"
-              [type]="showConfirmNewPassword() ? 'text' : 'password'"
-              autocomplete="new-password"
-              [placeholder]="'auth.confirmPasswordPlaceholder' | translate"
-              class="w-full rounded-xl border border-border bg-background px-4 py-3 pr-11 text-sm outline-none focus:border-foreground"
-            />
-            <ui-password-toggle
-              [visible]="showConfirmNewPassword()"
-              (toggled)="showConfirmNewPassword.set(!showConfirmNewPassword())"
-            />
-          </div>
-          @if (newPasswordMismatch()) {
-            <span class="mt-1.5 block text-xs font-semibold text-loss">{{ 'auth.passwordMismatch' | translate }}</span>
-          }
-        </label>
-
-        <div class="mt-6 flex flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            (click)="closeChangePassword()"
-            [disabled]="savingPassword()"
-            class="cursor-pointer rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
-          >
-            {{ 'profile.cancel' | translate }}
-          </button>
-          <button
-            type="submit"
-            [disabled]="!canSavePassword()"
-            class="cursor-pointer rounded-full bg-lime px-4 py-2 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
-          >
-            {{ (savingPassword() ? 'auth.savingPassword' : 'auth.savePassword') | translate }}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <rally-change-password-dialog (closed)="changingPassword.set(false)" />
 }
 
 <p class="mt-10 text-center text-xs text-muted-foreground">

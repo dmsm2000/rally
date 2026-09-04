@@ -3,10 +3,10 @@
     <div class="mb-3 flex h-[28rem] w-80 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
       @if (activePlayer(); as p) {
         <div class="flex items-center gap-3 border-b border-border bg-ink px-4 py-3 text-bone">
-          <button type="button" (click)="widget.backToList()" aria-label="Back" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10">←</button>
+          <button type="button" (click)="widget.backToList()" [attr.aria-label]="'common.back' | translate" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10">←</button>
           <ui-avatar [initials]="p.initials" [accent]="p.accent" [seed]="p.avatarSeed" [avatarStyle]="p.avatarStyle" size="xs" />
           <p class="min-w-0 flex-1 truncate text-sm font-bold">{{ p.name }}</p>
-          <button type="button" (click)="widget.close()" aria-label="Close" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10">✕</button>
+          <button type="button" (click)="widget.close()" [attr.aria-label]="'common.close' | translate" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10">✕</button>
         </div>
 
         <div class="no-scrollbar flex-1 space-y-2 overflow-y-auto p-4">
@@ -50,7 +50,7 @@
       } @else {
         <div class="flex items-center justify-between border-b border-border px-4 py-3">
           <p class="text-eyebrow text-muted-foreground">{{ 'messages.title' | translate }}</p>
-          <button type="button" (click)="widget.close()" aria-label="Close" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-muted">✕</button>
+          <button type="button" (click)="widget.close()" [attr.aria-label]="'common.close' | translate" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-muted">✕</button>
         </div>
         <div class="no-scrollbar flex-1 overflow-y-auto">
           @for (row of rows(); track row.conversation.id) {
@@ -82,15 +82,10 @@
     </div>
   }
 
-  <button
-    type="button"
-    (click)="widget.toggle()"
-    [attr.aria-label]="'messages.title' | translate"
-    class="rally-fab relative flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl"
-  >
+  <ui-fab [ariaLabel]="'messages.title' | translate" [fixed]="false" (action)="widget.toggle()">
     <span [class.animate-tennis-bounce]="messages.unreadTotal() > 0 && !widget.isOpen()">💬</span>
     @if (messages.unreadTotal() > 0) {
       <span class="animate-tennis-pop absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-clay px-1 text-[10px] font-extrabold text-bone">{{ messages.unreadTotal() }}</span>
     }
-  </button>
+  </ui-fab>
 </div>

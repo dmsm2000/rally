@@ -2,9 +2,10 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SURFACES } from '../../../core/data/player-profile-options';
 import { COURT_FACILITIES, Court, NearbyVenue, VENUE_ACCESS_OPTIONS, VENUE_KINDS } from '../../../core/models';
+import { CourtComposerService } from '../../../features/courts/court-composer.service';
 import { CourtsService } from '../../../features/courts/courts.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { AutocompleteComponent, ChipComponent, IconComponent } from '../../ui';
+import { AutocompleteComponent, ChipComponent, DialogComponent, IconComponent } from '../../ui';
 
 /**
  * The one place a court can be registered, used both from the courts catalogue and from the match
@@ -17,10 +18,11 @@ import { AutocompleteComponent, ChipComponent, IconComponent } from '../../ui';
  */
 @Component({
   selector: 'rally-court-composer-dialog',
-  imports: [FormsModule, ChipComponent, IconComponent, AutocompleteComponent, TranslatePipe],
+  imports: [FormsModule, ChipComponent, DialogComponent, IconComponent, AutocompleteComponent, TranslatePipe],
   templateUrl: './court-composer-dialog.component.html'
 })
 export class CourtComposerDialogComponent {
+  protected readonly composer = inject(CourtComposerService);
   protected readonly courts = inject(CourtsService);
 
   protected readonly surfaces = SURFACES;
@@ -32,12 +34,6 @@ export class CourtComposerDialogComponent {
   protected readonly expandedVenueId = signal<string | null>(null);
   protected readonly venueCourts = signal<Record<string, Court[]>>({});
   protected readonly loadingVenueId = signal<string | null>(null);
-
-  protected onBackdropClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.courts.closeComposer();
-    }
-  }
 
   protected async toggleVenue(venue: NearbyVenue): Promise<void> {
     if (this.expandedVenueId() === venue.id) {
@@ -63,7 +59,7 @@ export class CourtComposerDialogComponent {
     await this.courts.capture(court);
     const refreshed = await this.courts.courtsForVenue(court.venueId);
     this.venueCourts.update(map => ({ ...map, [court.venueId]: refreshed }));
-    await this.courts.locate();
+    await this.composer.locate();
   }
 
   protected distanceLabel(metres: number): string {

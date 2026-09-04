@@ -1,4 +1,7 @@
-@import 'tailwindcss';
+/* source(none) turns off Tailwind v4's automatic content detection, which otherwise scans the
+   whole repo — including CLAUDE.md and PRODUCT.md, whose prose mentions class names in prose and
+   quietly adds unused rules to the bundle. Only src/ should be able to generate CSS. */
+@import 'tailwindcss' source(none);
 @source '../src';
 
 @custom-variant dark (&:is(.dark *));

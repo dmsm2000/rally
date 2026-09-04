@@ -14,7 +14,6 @@ export const VENUE_KINDS: VenueKind[] = ['club', 'public', 'hotel', 'condo', 'ot
 export const VENUE_ACCESS_OPTIONS: VenueAccess[] = ['free', 'paid', 'members', 'guest'];
 /** Fixed list rather than free text, so facilities stay filterable. */
 export const COURT_FACILITIES = ['showers', 'lights', 'parking', 'bar', 'rackets', 'shop', 'wheelchair'] as const;
-export type CourtFacility = (typeof COURT_FACILITIES)[number];
 
 export interface Venue {
   id: string;

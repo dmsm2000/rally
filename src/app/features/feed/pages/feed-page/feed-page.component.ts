@@ -5,7 +5,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { POST_TYPES, PostType } from '../../../../core/models';
 import { FeedCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { AvatarComponent, ChipComponent, EmptyStateComponent, IconComponent } from '../../../../shared/ui';
+import { AvatarComponent, ChipComponent, DialogComponent, EmptyStateComponent, FabComponent, IconComponent } from '../../../../shared/ui';
 import { FeedScope } from '../../data/posts.repository';
 import { FeedService } from '../../feed.service';
 
@@ -31,7 +31,9 @@ const NEAR_TOP_THRESHOLD_PX = 24;
     AvatarComponent,
     IconComponent,
     ChipComponent,
+    DialogComponent,
     EmptyStateComponent,
+    FabComponent,
     FeedCardComponent,
     TranslatePipe
   ],
@@ -88,16 +90,6 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
   private refreshFeed(): void {
     this.feed.refreshFeed();
     this.mainEl?.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // Not an inline template expression: `target === currentTarget && closeComposer()` evaluates to
-  // the literal `false` for every click that isn't on the backdrop itself, and Angular calls
-  // event.preventDefault() whenever a bound expression returns exactly `false` — which was silently
-  // cancelling the file input's native "open picker" default action for every click inside the dialog.
-  protected onBackdropClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.feed.closeComposer();
-    }
   }
 
   protected onMediaSelected(event: Event): void {

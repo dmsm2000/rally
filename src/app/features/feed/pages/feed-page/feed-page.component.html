@@ -39,7 +39,7 @@
       <article class="animate-slide-in relative overflow-hidden rounded-2xl border border-border bg-ink">
         <img
           [src]="feed.heroImage"
-          alt="Two players in a rally on a rooftop court above a Mediterranean city"
+          [alt]="'feed.heroImageAlt' | translate"
           class="absolute inset-0 size-full object-cover opacity-30"
         />
         <button
@@ -138,118 +138,89 @@
 </div>
 
 @if (!auth.isObserver()) {
-  <button
-    type="button"
-    (click)="feed.openComposer()"
-    [attr.aria-label]="'feed.composerFabLabel' | translate"
-    class="rally-fab fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl lg:right-6 lg:bottom-[6.25rem]"
-  >
-    ➕
-  </button>
+  <ui-fab [ariaLabel]="'feed.composerFabLabel' | translate" (action)="feed.openComposer()">➕</ui-fab>
 
   @if (feed.composerOpen()) {
-    <div
-      class="fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 sm:items-center sm:p-4"
-      role="presentation"
-      (click)="onBackdropClick($event)"
-    >
-      <div
-        class="animate-tennis-pop w-full max-w-lg rounded-t-3xl border border-border bg-card p-5 shadow-xl sm:rounded-3xl sm:p-6"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <p class="text-eyebrow text-muted-foreground">{{ 'feed.composerTitle' | translate }}</p>
-          <button
-            type="button"
-            (click)="feed.closeComposer()"
-            [attr.aria-label]="'feed.cancel' | translate"
-            class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+    <ui-dialog [eyebrow]="'feed.composerTitle' | translate" [scrollable]="false" (closed)="feed.closeComposer()">
+      <div class="mt-4 flex gap-3">
+        <ui-avatar
+          [initials]="feed.me().initials"
+          [accent]="feed.me().accent"
+          [seed]="feed.me().avatarSeed"
+          [avatarStyle]="feed.me().avatarStyle"
+          size="sm"
+        />
+        <div class="min-w-0 flex-1">
+          <textarea
+            [ngModel]="feed.composerText()"
+            (ngModelChange)="feed.composerText.set($event)"
+            [placeholder]="'feed.composerPlaceholder' | translate"
+            rows="3"
+            maxlength="280"
+            class="w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+          ></textarea>
+          <span class="mt-1 block text-right text-xs text-muted-foreground"
+            >{{ feed.composerText().length }}/280</span
           >
-            <ui-icon name="close" className="size-4" />
-          </button>
-        </div>
-
-        <div class="mt-4 flex gap-3">
-          <ui-avatar
-            [initials]="feed.me().initials"
-            [accent]="feed.me().accent"
-            [seed]="feed.me().avatarSeed"
-            [avatarStyle]="feed.me().avatarStyle"
-            size="sm"
-          />
-          <div class="min-w-0 flex-1">
-            <textarea
-              [ngModel]="feed.composerText()"
-              (ngModelChange)="feed.composerText.set($event)"
-              [placeholder]="'feed.composerPlaceholder' | translate"
-              rows="3"
-              maxlength="280"
-              class="w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-            ></textarea>
-            <span class="mt-1 block text-right text-xs text-muted-foreground"
-              >{{ feed.composerText().length }}/280</span
-            >
-          </div>
-        </div>
-
-        @if (feed.composerPreviewUrl()) {
-          <div class="relative mt-3 overflow-hidden rounded-xl border border-border">
-            @if (feed.composerMediaType() === 'video') {
-              <video [src]="feed.composerPreviewUrl()" controls class="max-h-64 w-full bg-ink object-contain"></video>
-            } @else {
-              <img [src]="feed.composerPreviewUrl()" alt="" class="max-h-64 w-full object-contain" />
-            }
-            <button
-              type="button"
-              (click)="feed.clearMedia()"
-              class="absolute top-2 right-2 cursor-pointer rounded-full bg-ink/70 px-3 py-1 text-xs font-bold text-bone uppercase"
-            >
-              {{ 'feed.removeMedia' | translate }}
-            </button>
-          </div>
-        }
-
-        <div class="mt-4">
-          <p class="text-eyebrow text-muted-foreground">{{ 'feed.typeLabel' | translate }}</p>
-          <div class="mt-2 flex flex-wrap gap-2">
-            @for (type of postTypes; track type) {
-              <ui-chip
-                [clickable]="true"
-                [active]="feed.composerType() === type"
-                (toggled)="feed.setComposerType(type)"
-              >
-                {{ 'feed.type.' + type | translate }}
-              </ui-chip>
-            }
-          </div>
-        </div>
-
-        <div class="mt-4 flex items-center justify-between gap-3">
-          <label
-            for="feed-composer-file"
-            class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
-          >
-            📷 {{ 'feed.composerAddMedia' | translate }}
-          </label>
-          <!-- Native label[for] activation, not a scripted .click() — avoids user-activation edge cases inside this modal. -->
-          <input
-            id="feed-composer-file"
-            type="file"
-            accept="image/*,video/*"
-            class="hidden"
-            (change)="onMediaSelected($event)"
-          />
-          <button
-            type="button"
-            [disabled]="!feed.canPublish() || feed.publishing()"
-            (click)="feed.publishPost()"
-            class="cursor-pointer rounded-full bg-lime px-6 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
-          >
-            {{ (feed.publishing() ? 'feed.publishing' : 'feed.composerPublish') | translate }}
-          </button>
         </div>
       </div>
-    </div>
+
+      @if (feed.composerPreviewUrl()) {
+        <div class="relative mt-3 overflow-hidden rounded-xl border border-border">
+          @if (feed.composerMediaType() === 'video') {
+            <video [src]="feed.composerPreviewUrl()" controls class="max-h-64 w-full bg-ink object-contain"></video>
+          } @else {
+            <img [src]="feed.composerPreviewUrl()" alt="" class="max-h-64 w-full object-contain" />
+          }
+          <button
+            type="button"
+            (click)="feed.clearMedia()"
+            class="absolute top-2 right-2 cursor-pointer rounded-full bg-ink/70 px-3 py-1 text-xs font-bold text-bone uppercase"
+          >
+            {{ 'feed.removeMedia' | translate }}
+          </button>
+        </div>
+      }
+
+      <div class="mt-4">
+        <p class="text-eyebrow text-muted-foreground">{{ 'feed.typeLabel' | translate }}</p>
+        <div class="mt-2 flex flex-wrap gap-2">
+          @for (type of postTypes; track type) {
+            <ui-chip
+              [clickable]="true"
+              [active]="feed.composerType() === type"
+              (toggled)="feed.setComposerType(type)"
+            >
+              {{ 'feed.type.' + type | translate }}
+            </ui-chip>
+          }
+        </div>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between gap-3">
+        <label
+          for="feed-composer-file"
+          class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
+        >
+          📷 {{ 'feed.composerAddMedia' | translate }}
+        </label>
+        <!-- Native label[for] activation, not a scripted .click() — avoids user-activation edge cases inside this modal. -->
+        <input
+          id="feed-composer-file"
+          type="file"
+          accept="image/*,video/*"
+          class="hidden"
+          (change)="onMediaSelected($event)"
+        />
+        <button
+          type="button"
+          [disabled]="!feed.canPublish() || feed.publishing()"
+          (click)="feed.publishPost()"
+          class="cursor-pointer rounded-full bg-lime px-6 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+        >
+          {{ (feed.publishing() ? 'feed.publishing' : 'feed.composerPublish') | translate }}
+        </button>
+      </div>
+    </ui-dialog>
   }
 }

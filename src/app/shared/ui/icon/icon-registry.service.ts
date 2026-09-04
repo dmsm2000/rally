@@ -10,7 +10,7 @@ export class IconRegistryService {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly cache = new Map<string, Promise<SafeHtml>>();
 
-  load(url: string): Promise<SafeHtml> {
+  async load(url: string): Promise<SafeHtml> {
     let entry = this.cache.get(url);
     if (!entry) {
       entry = firstValueFrom(this.http.get(url, { responseType: 'text' })).then(svg =>

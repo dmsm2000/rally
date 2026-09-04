@@ -10,7 +10,7 @@ import { ConfirmDialogComponent, MediaLightboxComponent, ToastContainerComponent
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App implements OnInit {
+export class AppComponent implements OnInit {
   private readonly twemoji = inject(TwemojiRendererService);
 
   ngOnInit(): void {

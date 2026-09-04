@@ -6,7 +6,7 @@ const SVG_BASE = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@17.0.3/assets/';
 
 /**
  * Renders every emoji character in the DOM as a Twemoji SVG `<img>` — same look on iOS/Android/desktop,
- * instead of each device's own (inconsistent) emoji font. Started once from the root `App` component.
+ * instead of each device's own (inconsistent) emoji font. Started once from the root `AppComponent`.
  */
 @Injectable({ providedIn: 'root' })
 export class TwemojiRendererService {

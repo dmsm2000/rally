@@ -20,7 +20,7 @@ export class ConfirmDialogService {
 
   readonly active = this._active.asReadonly();
 
-  confirm(request: ConfirmRequest): Promise<boolean> {
+  async confirm(request: ConfirmRequest): Promise<boolean> {
     return new Promise(resolve => {
       this._active.set({ ...request, resolve });
     });

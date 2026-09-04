@@ -3,7 +3,7 @@
     <button
       type="button"
       (click)="lightbox.close()"
-      aria-label="Close"
+      [attr.aria-label]="'common.close' | translate"
       class="absolute top-4 right-4 flex size-10 cursor-pointer items-center justify-center rounded-full bg-bone/10 text-lg text-bone hover:bg-bone/20"
     >
       ✕

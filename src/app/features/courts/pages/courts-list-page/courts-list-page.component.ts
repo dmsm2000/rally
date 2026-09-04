@@ -3,7 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CourtCardComponent, CourtComposerDialogComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { ChipComponent, EmptyStateComponent, IconComponent, StatComponent } from '../../../../shared/ui';
+import { ChipComponent, EmptyStateComponent, FabComponent, IconComponent, StatComponent } from '../../../../shared/ui';
+import { CourtComposerService } from '../../court-composer.service';
 import { CourtsService } from '../../courts.service';
 
 @Component({
@@ -14,6 +15,7 @@ import { CourtsService } from '../../courts.service';
     ChipComponent,
     IconComponent,
     EmptyStateComponent,
+    FabComponent,
     CourtCardComponent,
     CourtComposerDialogComponent,
     TranslatePipe
@@ -23,6 +25,7 @@ import { CourtsService } from '../../courts.service';
 })
 export class CourtsListPageComponent {
   protected readonly courts = inject(CourtsService);
+  protected readonly composer = inject(CourtComposerService);
   protected readonly auth = inject(AuthService);
   protected readonly skeletonCards = [0, 1, 2, 3, 4, 5];
 

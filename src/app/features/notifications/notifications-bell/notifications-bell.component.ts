@@ -142,7 +142,7 @@ export class NotificationsBellComponent {
     const confirmed = await this.confirmDialog.confirm({
       message: this.translation.t('notifications.clearAllConfirmLead'),
       confirmLabel: this.translation.t('notifications.clearAllConfirmButton'),
-      cancelLabel: this.translation.t('notifications.cancel'),
+      cancelLabel: this.translation.t('common.cancel'),
       tone: 'destructive'
     });
     if (!confirmed) {

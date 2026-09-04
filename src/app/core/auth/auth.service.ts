@@ -66,7 +66,7 @@ export class AuthService {
   }
 
   /** Guards should `await` this before reading `isAuthenticated()` on first load. */
-  whenReady(): Promise<void> {
+  async whenReady(): Promise<void> {
     return this.initialLoad;
   }
 

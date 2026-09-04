@@ -5,12 +5,12 @@ import { MessagesService } from '../messages.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { MessagesWidgetService } from '../../../core/services/messages-widget.service';
 import { TranslationService } from '../../../core/i18n/translation.service';
-import { AvatarComponent, IconComponent } from '../../../shared/ui';
+import { AvatarComponent, FabComponent, IconComponent } from '../../../shared/ui';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'rally-messages-widget',
-  imports: [FormsModule, AvatarComponent, IconComponent, TranslatePipe, DatePipe],
+  imports: [FormsModule, AvatarComponent, FabComponent, IconComponent, TranslatePipe, DatePipe],
   templateUrl: './messages-widget.component.html',
   styleUrl: './messages-widget.component.scss',
 })
@@ -23,7 +23,7 @@ export class MessagesWidgetComponent {
   protected readonly rows = computed(() =>
     this.messages.conversations().map(({ conversation, player }) => ({
       conversation,
-      player: player!,
+      player,
       lastMessage: conversation.messages.at(-1),
     })),
   );
@@ -85,7 +85,7 @@ export class MessagesWidgetComponent {
     const confirmed = await this.confirmDialog.confirm({
       message: this.translation.t('messages.deleteConfirmLead'),
       confirmLabel: this.translation.t('messages.deleteConfirmButton'),
-      cancelLabel: this.translation.t('messages.cancel'),
+      cancelLabel: this.translation.t('common.cancel'),
       tone: 'destructive',
     });
     if (!confirmed) {
