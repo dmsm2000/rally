@@ -487,23 +487,22 @@ export const en = {
     emptyBody: 'Be the first person to play here!'
   },
   passport: {
+    countriesEmptyTitle: 'No countries stamped yet',
+    countriesEmptyBody: 'Capture a court and the country it sits in lands here.',
+    courtsRegisteredHere: '{courts} courts registered here',
+    stillToPlayEmpty: "You've stamped every country Rally knows a court in.",
     eyebrow: 'Tennis passport',
     memberNumber: 'Member No. {number}',
     titleLine1: 'My tennis',
     titleLine2: 'world',
-    tabOverview: 'Overview',
     tabCountries: 'Countries',
     tabCourts: 'Courts',
     tabPlayers: 'Players',
-    tabAchievements: 'Achievements',
-    viewAll: 'View all',
-    almostThere: 'Almost there',
     stampedEyebrow: 'Stamped',
     countriesPlayed: 'Countries played',
     firstPlayed: '{courts} courts · first played {date}',
     lockedEyebrow: 'Locked',
     stillToPlay: 'Still to play',
-    oneMatchUnlocks: 'One match unlocks this stamp',
     collectionEyebrow: 'Collection',
     courtsEmptyTitle: 'No courts captured yet',
     courtsEmptyBody: 'Go to a court, capture it, and it lands here. One court per visit.',
@@ -512,21 +511,6 @@ export const en = {
     playersMetEyebrow: "People I've met",
     playersMetTitle: "Players I've played with",
     playersMetEmpty: "You haven't played anyone yet — this list grows with every match."
-  },
-  achievements: {
-    title: 'Achievements',
-    unlockedStat: 'Unlocked',
-    earnedEyebrow: 'Earned',
-    unlockedTitle: 'Unlocked',
-    inProgressEyebrow: 'In progress',
-    nextUp: 'Next up',
-    progressNote: 'Two courts away from "Twenty-five courts".',
-    tier: {
-      bronze: 'Bronze',
-      silver: 'Silver',
-      gold: 'Gold',
-      world: 'World'
-    }
   },
   profile: {
     yourProfile: 'Your profile',

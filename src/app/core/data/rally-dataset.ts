@@ -1,5 +1,4 @@
 import {
-  Achievement,
   CountryEntry,
   Destination,
   Player,
@@ -212,89 +211,6 @@ export const PLAYERS: Player[] = [
     accent: 'clay',
     avatarSeed: 'sofia',
     avatarStyle: 'lorelei'
-  }
-];
-
-// Mock "who has João shared a court with" pairing data — matches themselves are real now (see
-// MatchesRepository), but Passport's connections graph is still mock, and only ever needs pairs of
-// player ids, not the full Match shape. See RallyDataService.playersMetBy().
-export const MOCK_MATCH_PAIRINGS: readonly [string, string][] = [
-  ['joao', 'maria'],
-  ['joao', 'pedro'],
-  ['joao', 'marc'],
-  ['joao', 'chloe']
-];
-
-export const ACHIEVEMENTS: Achievement[] = [
-  {
-    id: 'a1',
-    icon: '🏅',
-    name: 'First International Match',
-    description: 'Play a match outside your home country.',
-    unlocked: true,
-    tier: 'bronze'
-  },
-  {
-    id: 'a2',
-    icon: '🌍',
-    name: 'Five Countries',
-    description: 'Play in five different countries.',
-    unlocked: true,
-    tier: 'silver'
-  },
-  {
-    id: 'a3',
-    icon: '🎾',
-    name: 'Twenty-Five Courts',
-    description: 'Discover 25 courts.',
-    unlocked: false,
-    progress: 23,
-    goal: 25,
-    tier: 'silver'
-  },
-  {
-    id: 'a4',
-    icon: '🤝',
-    name: 'Fifty Players Met',
-    description: 'Play against 50 different players.',
-    unlocked: false,
-    progress: 48,
-    goal: 50,
-    tier: 'gold'
-  },
-  {
-    id: 'a5',
-    icon: '✈️',
-    name: 'First Tennis Trip',
-    description: 'Play three courts in one trip abroad.',
-    unlocked: true,
-    tier: 'bronze'
-  },
-  {
-    id: 'a6',
-    icon: '🌎',
-    name: 'Tennis Around The World',
-    description: 'Play on four continents.',
-    unlocked: false,
-    progress: 2,
-    goal: 4,
-    tier: 'world'
-  },
-  {
-    id: 'a7',
-    icon: '🔥',
-    name: 'Ten Match Streak',
-    description: 'Play ten matches in thirty days.',
-    unlocked: true,
-    tier: 'gold'
-  },
-  {
-    id: 'a8',
-    icon: '🌙',
-    name: 'Night Owl',
-    description: 'Finish a match after midnight.',
-    unlocked: false,
-    tier: 'bronze'
   }
 ];
 

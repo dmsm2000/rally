@@ -30,7 +30,6 @@ export const routes: Routes = [
         canActivate: [noObserverGuard],
         loadChildren: async () => (await import('./features/passport/passport.routes')).PASSPORT_ROUTES
       },
-      { path: 'achievements', redirectTo: '/passport' },
       {
         path: 'profile',
         canActivate: [noObserverGuard],

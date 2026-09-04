@@ -487,23 +487,22 @@ export const pt = {
     emptyBody: 'Sê a primeira pessoa a jogar aqui!'
   },
   passport: {
+    countriesEmptyTitle: 'Ainda não tens países carimbados',
+    countriesEmptyBody: 'Captura um court e o país onde ele fica aparece aqui.',
+    courtsRegisteredHere: '{courts} courts registados aqui',
+    stillToPlayEmpty: 'Já carimbaste todos os países onde o Rally conhece um court.',
     eyebrow: 'Passaporte de ténis',
     memberNumber: 'Nº de membro {number}',
     titleLine1: 'O meu',
     titleLine2: 'mundo do ténis',
-    tabOverview: 'Visão geral',
     tabCountries: 'Países',
     tabCourts: 'Courts',
     tabPlayers: 'Jogadores',
-    tabAchievements: 'Conquistas',
-    viewAll: 'Ver tudo',
-    almostThere: 'Quase lá',
     stampedEyebrow: 'Carimbados',
     countriesPlayed: 'Países onde jogaste',
     firstPlayed: '{courts} courts · primeira vez em {date}',
     lockedEyebrow: 'Bloqueados',
     stillToPlay: 'Ainda por jogar',
-    oneMatchUnlocks: 'Uma partida desbloqueia este carimbo',
     collectionEyebrow: 'Coleção',
     courtsEmptyTitle: 'Ainda não capturaste campos',
     courtsEmptyBody: 'Vai a um campo, captura-o, e aparece aqui. Um campo por visita.',
@@ -512,21 +511,6 @@ export const pt = {
     playersMetEyebrow: 'Pessoas que conheci',
     playersMetTitle: 'Jogadores com quem já joguei',
     playersMetEmpty: 'Ainda não jogaste com ninguém — essa lista vai crescer a cada partida.'
-  },
-  achievements: {
-    title: 'Conquistas',
-    unlockedStat: 'Desbloqueadas',
-    earnedEyebrow: 'Conquistado',
-    unlockedTitle: 'Desbloqueadas',
-    inProgressEyebrow: 'Em progresso',
-    nextUp: 'A seguir',
-    progressNote: 'A dois courts de "Vinte e cinco courts".',
-    tier: {
-      bronze: 'Bronze',
-      silver: 'Prata',
-      gold: 'Ouro',
-      world: 'Mundial'
-    }
   },
   profile: {
     yourProfile: 'O teu perfil',

@@ -246,6 +246,11 @@ export class MatchesService {
     if (isMine || isRelevantOpen) {
       void this.reload();
     }
+    // Someone else on the roster finished a doubles match we both played — the check-in it wrote is
+    // mine too, so the passport has to pick it up without waiting for a reload.
+    if (isMine && match.status === 'complete' && match.courtId) {
+      void this.courtsService.refreshCaptures();
+    }
   }
 
   async getById(id: string): Promise<Match | null> {
@@ -430,6 +435,11 @@ export class MatchesService {
       this.toast.error(this.translation.t('matches.completeFailed'));
     }
     void this.reload();
+    // complete_match captures the court for everyone who played (0028_matches_court_fk.sql), so the
+    // collection just changed server-side without the client touching it.
+    if (result?.courtId) {
+      void this.courtsService.refreshCaptures();
+    }
   }
 
   async deleteMatch(matchId: string): Promise<void> {

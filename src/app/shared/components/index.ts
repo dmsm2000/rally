@@ -3,7 +3,6 @@ export * from './court-card/court-card.component';
 export * from './court-composer-dialog/court-composer-dialog.component';
 export * from './match-card/match-card.component';
 export * from './feed-card/feed-card.component';
-export * from './achievement-card/achievement-card.component';
 export * from './rally-map/rally-map.component';
 export * from './language-switcher/language-switcher.component';
 export * from './theme-toggle/theme-toggle.component';

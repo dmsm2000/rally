@@ -86,9 +86,8 @@
       {{ 'profile.tennisPassport' | translate }}
     </p>
     <p class="mt-2 text-xs text-bone/70">
-      {{ passportService.visitedCountries().length }} {{ 'profile.countriesSuffix' | translate }} ·
-      {{ passportService.unlockedAchievements().length }}/{{ passportService.achievements().length }}
-      {{ 'achievements.title' | translate }}
+      {{ courts.myCountryCount() }} {{ 'profile.countriesSuffix' | translate }} ·
+      {{ courts.myCaptureCount() }} {{ 'courts.courtsSuffix' | translate }}
     </p>
     <p class="mt-4 text-xs font-bold text-lime">{{ 'profile.openPassport' | translate }} →</p>
   </a>

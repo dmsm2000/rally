@@ -487,23 +487,22 @@ export const es = {
     emptyBody: '¡Sé la primera persona en jugar aquí!'
   },
   passport: {
+    countriesEmptyTitle: 'Aún no tienes países sellados',
+    countriesEmptyBody: 'Captura una pista y el país donde está aparecerá aquí.',
+    courtsRegisteredHere: '{courts} pistas registradas aquí',
+    stillToPlayEmpty: 'Ya has sellado todos los países donde Rally conoce una pista.',
     eyebrow: 'Pasaporte de tenis',
     memberNumber: 'N.º de socio {number}',
     titleLine1: 'Mi',
     titleLine2: 'mundo del tenis',
-    tabOverview: 'Resumen',
     tabCountries: 'Países',
     tabCourts: 'Pistas',
     tabPlayers: 'Jugadores',
-    tabAchievements: 'Logros',
-    viewAll: 'Ver todo',
-    almostThere: 'Casi lo tienes',
     stampedEyebrow: 'Sellados',
     countriesPlayed: 'Países donde jugaste',
     firstPlayed: '{courts} pistas · primera vez en {date}',
     lockedEyebrow: 'Bloqueados',
     stillToPlay: 'Todavía por jugar',
-    oneMatchUnlocks: 'Un partido desbloquea este sello',
     collectionEyebrow: 'Colección',
     courtsEmptyTitle: 'Aún no has capturado pistas',
     courtsEmptyBody: 'Ve a una pista, captúrala y aparecerá aquí. Una pista por visita.',
@@ -512,21 +511,6 @@ export const es = {
     playersMetEyebrow: 'Personas que conocí',
     playersMetTitle: 'Jugadores con los que ya jugué',
     playersMetEmpty: 'Todavía no has jugado con nadie — esta lista crecerá con cada partido.'
-  },
-  achievements: {
-    title: 'Logros',
-    unlockedStat: 'Desbloqueados',
-    earnedEyebrow: 'Conseguidos',
-    unlockedTitle: 'Desbloqueados',
-    inProgressEyebrow: 'En progreso',
-    nextUp: 'A continuación',
-    progressNote: 'A dos pistas de "Veinticinco pistas".',
-    tier: {
-      bronze: 'Bronce',
-      silver: 'Plata',
-      gold: 'Oro',
-      world: 'Mundial'
-    }
   },
   profile: {
     yourProfile: 'Tu perfil',

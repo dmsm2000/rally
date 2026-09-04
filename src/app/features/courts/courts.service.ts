@@ -96,15 +96,21 @@ export class CourtsService {
   // Community-wide, and real: every public court, and the countries they sit in.
   readonly communityCourts = computed(() => this.all().length);
   readonly communityCountries = computed(() => new Set(this.all().map(c => c.venue.country)).size);
-  readonly topCountries = computed(() => {
-    const byCountry = new Map<string, { country: string; flag: string; n: number }>();
+  /** Every country the catalogue has a court in, most courts first. */
+  readonly countryCourtCounts = computed(() => {
+    const byCountry = new Map<string, { name: string; flag: string; courts: number }>();
     for (const c of this.all()) {
-      const entry = byCountry.get(c.venue.country) ?? { country: c.venue.country, flag: c.venue.flag, n: 0 };
-      entry.n += 1;
+      const entry = byCountry.get(c.venue.country) ?? { name: c.venue.country, flag: c.venue.flag, courts: 0 };
+      entry.courts += 1;
       byCountry.set(c.venue.country, entry);
     }
-    return [...byCountry.values()].sort((a, b) => b.n - a.n).slice(0, 4);
+    return [...byCountry.values()].sort((a, b) => b.courts - a.courts);
   });
+  readonly topCountries = computed(() =>
+    this.countryCourtCounts()
+      .slice(0, 4)
+      .map(entry => ({ country: entry.name, flag: entry.flag, n: entry.courts }))
+  );
 
   readonly countriesWithCourts = computed(() => new Set(this.results().map(c => c.venue.country)).size);
   /** The court currently being captured, so its own button can show progress. */
@@ -157,6 +163,16 @@ export class CourtsService {
 
   async courtsForVenue(venueId: string): Promise<Court[]> {
     return this.repository.courtsForVenue(venueId);
+  }
+
+  /**
+   * Re-reads the catalogue and the viewer's collection. Needed because completing a match at a
+   * registered court inserts check-ins server-side (0028_matches_court_fk.sql) — nothing the client
+   * did locally — so without this the passport, profile counts and "captured by me" filter stay
+   * stale until a full page reload.
+   */
+  async refreshCaptures(): Promise<void> {
+    await this.repository.reload();
   }
 
   async myCapturedCourts(): Promise<CapturedCourt[]> {

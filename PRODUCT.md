@@ -137,16 +137,17 @@ The Feed is user-authored posts, kept deliberately simple — Twitter-like, not 
 - Country/city options in profile forms.
 - Direct messaging between two registered players, delivered live (Supabase Realtime), with a real typing indicator and per-participant read state.
 - Trip intents ("show me around"): publishing a trip, browsing host requests for your own country, volunteering (which sends a real message to the traveller, without hiding the post), and managing your own trips from your profile.
-- The Feed: user-authored posts (text and/or one photo/video), scoped to your city, your country, or the world; a single like reaction; and a "Reply" that opens a real DM to the author rather than a public comment. Not yet auto-posted to by courts — deliberately deferred until that feature is itself real.
+- The Feed: user-authored posts (text and/or one photo/video), scoped to your city, your country, or the world, and a single like reaction. There is no reply/comment affordance — the original "Reply opens a DM" was removed after the initial ship and may return later. Trips, open matches and newly verified courts all post into it automatically.
 - Matches: two ways to arrange a real game. A direct invite from a player's profile ("Convidar para uma partida"), which the invitee must accept or decline; and an open match anyone can publish (court or general area, date/time, format, a note), which is joinable by any other player and also posts into the Feed automatically. Every step — invited, accepted, declined, joined, cancelled — sends the other side a real, live notification.
 - Notifications: a real, generic notifications system delivered live. Covers "someone volunteered to host you" (see Trip intents above) and every step of the match flow above, including "a match opened up near you" when someone publishes an open match in your city. Other kinds (achievements, ...) will reuse the same generic system once those features are themselves real — see "Still mock today".
+- Courts: a player-maintained database of real courts. Registering one requires standing at it (the GPS fix's accuracy is checked server-side), and a new place stays invisible until a second player confirms it on the spot. Capturing a court — and the feed post announcing it — only happens after that confirmation, which is what stops the collection competition from rewarding invention.
+- The Passport: countries, courts, players met and matches played, all derived from real captures and completed matches. Nothing on it can be changed by editing a profile.
 
 ### Still mock today
 
-- Courts and court activity.
-- Passport countries, courts, achievements, and player connections.
-- World community map/activity feed and stats.
+- World community map/activity feed and its showcase destinations.
 - Match compatibility, score, and geographic distance.
+- Achievements — temporarily removed from the Passport rather than faked; they return once the app is more stable.
 
 The visual product may contain mature-looking mock flows, but new work must not present mock activity as belonging to a real registered player.
 

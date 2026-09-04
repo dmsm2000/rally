@@ -219,10 +219,11 @@ Note: migration filenames on disk don't currently match this list's numbering 1:
   3. **Captures and the feed post only happen after verification.** This is what keeps the competition honest: registering earns nothing, so a fabricated court is never corroborated, therefore never scores, therefore isn't worth fabricating. The GPS is a *filter*, never a proof — it's spoofable in three clicks — and this rule, not the fix, is what secures the data.
   4. **One visit captures one court.** GPS distinguishes venues, not court 3 from court 4, so a 12 h per-venue cooldown stops someone standing at a club's gate and collecting all 8 at once. Completing a Rally match at a court is the exception and captures it for free (see `0028`).
   `CourtsRepository` (`features/courts/data/`) is the only data-access boundary and holds a lazily-loaded catalogue signal — plus the viewer's collection from `my_captured_courts()`, which is what `capturedByMe`, the "captured by me" filter, the profile/feed stats and the whole passport all read, so no two of them can drift. Note this means a court in a still-unconfirmed venue never counts as captured, even by the player who registered it — its card shows "Por confirmar" rather than "Capturado". `CourtsRepository`, so `courtById()` stays a synchronous lookup for match cards, the world map and the profile page — it returns undefined for an unconfirmed draft, and every caller falls back to the match's own denormalized `city`/`country`. `rally-court-composer-dialog` (`shared/components/`) is the single registration UI, used by both `/courts` and the match composer, and it is driven by `CourtComposerService` (`features/courts/court-composer.service.ts`) — the whole locate → nearby → form → candidates flow, split out of `CourtsService`, which now owns only the catalogue, the viewer's collection, and capture/photos/reports. A component that both browses and registers injects both. `courtErrorKey()` (`features/courts/court-errors.ts`) is the one place an RPC refusal or a failed fix becomes a translation key, so the two services can't drift on how the same failure reads. `court-rows.ts` (`features/courts/data/`) holds the snake_case row types and their mapping to the domain models, keeping the repository's queries readable — `match-rows.ts` does the same for matches. `mapCoordsFor()` projects real lat/lng onto `rally-map`'s stylised 0-100 grid, so the abstract map stops inventing positions. Two notification kinds (`court_verified` to the discoverer, `court_added_nearby` to the city) are sent client-side on the confirming check-in, while the feed post is written by the RPC — the split exists because notifying is something a client may do as itself, and authoring a post as somebody else is not.
+- The Passport (`/passport`) is real end to end, and is the one page where that matters most — a collection nobody can fake by editing a profile. Three tabs, no overview: **Countries** and **Courts** come from `my_captured_courts()` via `CourtsService` (`myCountries()`/`myCaptures()`), so a court in an unconfirmed venue never counts, even for the player who registered it. **Players met** and the hero's matches count come from `MatchesService.completed()` — everyone on a *completed* match's `playerA`/`playerB`/`participantIds`, minus yourself, deduplicated: you meet someone by playing, not by being invited. Both are live, since `MatchesService` keeps its lists fresh over Realtime. The "still to play" list is countries the real catalogue has a court in that you haven't stamped (`CourtsService.countryCourtCounts()`), which is a reachable target rather than an aspirational roster — and, because it is named from the same `venues.country` values as the stamps, it retires the old `'UK'`/`'USA'`-vs-"United Kingdom" wart where a country could show as stamped *and* still-to-play at once. Achievements were **removed**, not made real (see the Passport entry under Cleanup).
 
 ### Mock today
 
-- Passport achievements and the aspirational "still to play" country roster still originate in `RallyDataService` / `rally-dataset.ts`. `CommunityStats` and its mock `COMMUNITY_STATS` are **gone**: the matches hero's "matches this week" now comes from `count_matches_this_week()` (`0030`), and the world hero's courts/countries from the real catalogue (`CourtsService.communityCourts()/communityCountries()`). The mock `COURTS` dataset and `RallyDataService.createCourt()`/`courts()`/`courtById()` are **gone** — courts started green field, with no seeding, because fake courts in a real table would poison the passport. `RallyDataService.playersMetBy()` — Passport's "players met" connections graph — is now backed by a small standalone `MOCK_MATCH_PAIRINGS` list (`rally-dataset.ts`), not by real match rows; do not wire it to `MatchesRepository` without also making that part of Passport real. The passport's **courts tab is now real**: `PassportService.visitedCourts` comes from the `my_captured_courts()` RPC — check-ins in verified venues, with no visits table to write and therefore nothing to fake. Countries, achievements and "players met" around it are still mock, so the tab is real inside a page that isn't yet.
+- `CommunityStats` and its mock `COMMUNITY_STATS` are **gone**: the matches hero's "matches this week" now comes from `count_matches_this_week()` (`0030`), and the world hero's courts/countries from the real catalogue (`CourtsService.communityCourts()/communityCountries()`). The mock `COURTS` dataset and `RallyDataService.createCourt()`/`courts()`/`courtById()` are **gone** — courts started green field, with no seeding, because fake courts in a real table would poison the passport.
 - Real discovery profiles map into the older rich `Player` UI contract with neutral placeholder activity values: no distance, zero stats/match score. `Player.stats` is therefore still mock **for other players**, and the signed-in player's own numbers are no longer read from it anywhere: the feed's welcome card, the profile header and the passport all derive matches from `MatchesService.completed()` and courts/countries from `CourtsService` (`myCaptureCount()`, `myCountryCount()`). One source, so those counts can never disagree between pages.
 - The player detail page's match-history tabs (`matchTab` on `PlayerDetailPageComponent`) are wired to `MatchesService.matchesForPlayer()` (`MatchesRepository.matchesForPlayer()`), rendering real `rally-match-card`s per tab (upcoming/complete/open) with a loading skeleton and the existing `players.matchesEmptyTitle/Body` empty state. Since `matches` select RLS (`0018_matches.sql`) only grants a signed-in viewer rows where they're also a participant, plus that player's public open-match posts, another player's tabs will typically only surface matches shared with the viewer, not that player's full private history — this is intended, not a bug. The player's own discovered courts and the passport block on their profile are still deliberately empty (courts are real, but per-player court activity isn't surfaced there yet). Do not reintroduce unrelated mock courts/achievements into a real player's profile.
 
@@ -375,15 +376,13 @@ deliberately rather than leaving a warning everyone learns to ignore.
 - `ME` / `PLAYERS` — the `RallyDataService.me()` bridge (see High-Value Gotchas). The biggest and
   most entangled piece; `Player.stats` is still mock for *other* players even though the signed-in
   player's own numbers are now all real.
-- `ACHIEVEMENTS` — passport achievements. The easiest win: they're thresholds over
-  `my_captured_courts()` and `MatchesService`, so most could become real with no schema change.
-- `COUNTRIES` — only the passport's aspirational "still to play" roster now. **Known wart:** it uses
-  `'UK'`/`'USA'` while the real country dataset says "United Kingdom"/"United States", so a court
-  captured there shows as stamped *and* still-to-play. Fix by deriving this list from the real
-  dataset instead of hardcoding names.
+- `COUNTRIES` — now only the world map's "still locked" markers and `PlayersRepository.countryCoords()`.
+  It still uses `'UK'`/`'USA'` where the real country dataset says "United Kingdom"/"United States";
+  that no longer causes a visible contradiction (the passport stopped reading it), but it does mean
+  the world map can draw a "locked" marker for a country someone has actually played in. Fix by
+  deriving the roster from the real dataset, or by dropping it the way the passport did.
 - `DESTINATIONS`, `WORLD_ACTIVITY` — the world page's showcase content. (`PLAYER_INTENTS` was
   deleted in the cleanup pass: nothing had referenced it since real trip intents shipped.)
-- `MOCK_MATCH_PAIRINGS` — passport's "players met" graph.
 
 ## Cleanup Pass (2026-09-04)
 
@@ -442,6 +441,32 @@ it must be a method and not an inline expression, now carried into the primitive
 and `MyTripsSectionComponent`; the repositories' row types and mappers → `court-rows.ts` /
 `match-rows.ts`.
 
+### Passport (same pass)
+
+Cut down to what is real, at the user's request.
+
+- **Achievements are gone for now** — the tab, the hero stat, the "almost there" nudge, the profile
+  card's ratio, `AchievementCardComponent`, the `Achievement` model, `ACHIEVEMENTS`, the whole
+  `achievements.*` translation group, the `--achievement`/`--silver` colour tokens and the
+  `/achievements` redirect. They were a static mock list: every player saw the same "unlocked"
+  badges regardless of what they had actually done, which is worse than showing nothing on a page
+  whose entire point is that it cannot be faked. **This is a deferral, not a rejection** — the user
+  confirmed on 2026-09-04 that achievements come back once the app is more stable. Do not treat the
+  removal as a decision against the feature; see Current Product Priorities for how to rebuild them.
+- **The Overview tab went with them.** Once the achievement nudge was gone it was three buttons
+  restating the three numbers in the hero directly above it. Tabs are now Countries / Courts /
+  Players, defaulting to Countries.
+- **"Players met" is real**: everyone on a *completed* match with you (`playerA`/`playerB`/
+  `participantIds`, minus yourself). `MOCK_MATCH_PAIRINGS` and `RallyDataService.playersMetBy()` are
+  deleted. The hero's fourth stat is now matches played, also real.
+- **"Still to play" is real**: countries the catalogue has a court in that you haven't stamped.
+- **A real bug fixed on the way:** `complete_match` inserts check-ins for everyone who played at a
+  registered court (`0028`), but nothing client-side re-read the collection afterwards, so a court
+  captured by finishing a match stayed invisible in the passport, the profile counts and the
+  "captured by me" filter until a full page reload. `MatchesService` now calls
+  `CourtsService.refreshCaptures()` both when *you* complete a match and when a realtime event says
+  a match of yours became complete at a court — which covers a doubles partner finishing it.
+
 ## Current Product Priorities
 
 Courts are now real, which was the big one. A player-maintained database where registering requires
@@ -474,9 +499,36 @@ makes sense to build:
 1. **The capture leaderboard.** The competition currently has scoring but no scoreboard. Deferred
    until there is enough real data to be worth ordering — it's the natural next step once a handful
    of players are actually capturing.
-2. **Finish the passport.** Countries and courts are now derived from real captures; achievements
-   ("Discover 25 courts" and friends) and "players met" are the last mock parts. Achievements are
-   the easy half — they're just thresholds over `my_captured_courts()` and `MatchesService`.
+2. **Bring achievements back.** Agreed with the user on 2026-09-04: they were pulled from the
+   passport to get that page onto real data, and they return **once the app is more stable** — not
+   before. They are a wanted feature, not a rejected one.
+
+   When rebuilding, two things carry over from why they were pulled:
+
+   - **Compute them, never store them.** Thresholds derived from `my_captured_courts()` and
+     `MatchesService.completed()` (courts captured, countries stamped, matches played, players met —
+     every input already exists and is already real). A stored `unlocked` flag is exactly what made
+     the old ones a lie: the mock list showed every player the same badges regardless of what they
+     had done. On a page whose whole point is that it cannot be faked, a fakeable badge is worse
+     than no badge.
+   - **Wait for the numbers to mean something.** A "25 courts" badge is noise while the catalogue
+     has a handful of courts in it. Until then the raw counts in the passport hero say the same
+     thing without the machinery — which is why pulling them cost nothing.
+
+   The deleted code is still in git (nothing from the cleanup pass was committed, so it is all in
+   `HEAD`) and is worth reading before rewriting rather than starting cold — the card's tier styling
+   in particular:
+
+   ```bash
+   git show HEAD:src/app/shared/components/achievement-card/achievement-card.component.ts
+   git show HEAD:src/app/core/models/achievement.model.ts
+   git show HEAD:src/app/core/data/rally-dataset.ts          # the ACHIEVEMENTS list
+   git show HEAD:src/app/core/i18n/translations/pt.ts        # the achievements.* group, all 3 langs
+   git show HEAD:src/styles.css                              # --achievement / --silver tokens
+   ```
+
+   Note this recovery path only holds until the cleanup pass is committed and `HEAD` moves; after
+   that it is `git show <that commit>^:<path>`.
 3. **"Would you play again?"** A one-tap yes/no offered after completing a match at a court, feeding
    the `playAgain` percentage the old mock UI used to show. Cut from v1 because it served neither
    registration, verification nor the competition — but it's the natural way to make a court listing

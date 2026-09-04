@@ -44,7 +44,6 @@ import {
 } from '../../../../shared/ui';
 import { CourtsService } from '../../../courts/courts.service';
 import { MatchesService } from '../../../matches/matches.service';
-import { PassportService } from '../../../passport/passport.service';
 import { ChangePasswordDialogComponent } from '../../change-password-dialog/change-password-dialog.component';
 import { MyTripsSectionComponent } from '../../my-trips-section/my-trips-section.component';
 import { ProfileService } from '../../profile.service';
@@ -76,7 +75,6 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly auth = inject(AuthService);
   protected readonly matchesService = inject(MatchesService);
   protected readonly courts = inject(CourtsService);
-  protected readonly passportService = inject(PassportService);
   private readonly translation = inject(TranslationService);
   private readonly toast = inject(ToastService);
   private readonly confirmDialog = inject(ConfirmDialogService);
