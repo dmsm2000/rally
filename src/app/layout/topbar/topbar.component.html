@@ -3,19 +3,35 @@
   [style.transform]="'translateY(-' + hideOffset() + 'px)'"
 >
   <div class="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-3 sm:gap-6 sm:px-5">
-      <div class="col-start-1 flex min-w-0 items-center">
-        <a routerLink="/" class="shrink-0 inline-flex items-center gap-2 text-foreground" [attr.aria-label]="'nav.rallyHome' | translate">
-          <img
-            [src]="theme.theme() === 'dark' ? 'assets/rally-logo-white.svg' : 'assets/rally-logo.svg'"
-            alt=""
-            class="size-7"
-          />
-          <span class="text-display text-xl leading-none">Rally</span>
-        </a>
+      <div class="col-start-1 row-start-1 flex min-w-0 items-center lg:hidden">
+        <button
+          type="button"
+          (click)="menuToggled.emit()"
+          [attr.aria-label]="(menuOpen() ? 'nav.closeMenu' : 'nav.openMenu') | translate"
+          [attr.aria-expanded]="menuOpen()"
+          class="-ml-1.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-foreground hover:bg-muted"
+        >
+          <ui-icon [name]="menuOpen() ? 'close' : 'menu'" className="size-5" />
+        </button>
       </div>
 
+      <!-- Symbol alone, centred, on mobile: the wordmark is what made a three-item bar feel full.
+           At lg it moves back beside the nav and takes the wordmark with it. -->
+      <a
+        routerLink="/"
+        class="col-start-2 row-start-1 flex shrink-0 items-center gap-2 justify-self-center text-foreground lg:col-start-1 lg:justify-self-start"
+        [attr.aria-label]="'nav.rallyHome' | translate"
+      >
+        <img
+          [src]="theme.theme() === 'dark' ? 'assets/rally-logo-white.svg' : 'assets/rally-logo.svg'"
+          alt=""
+          class="size-7"
+        />
+        <span class="text-display hidden text-xl leading-none lg:inline">Rally</span>
+      </a>
+
       <nav
-        class="no-scrollbar relative col-start-2 hidden min-w-0 items-center justify-center gap-1 overflow-x-auto lg:flex"
+        class="no-scrollbar relative col-start-2 row-start-1 hidden min-w-0 items-center justify-center gap-1 overflow-x-auto lg:flex"
       >
         <span
           class="nav-indicator"
@@ -45,9 +61,13 @@
         }
       </nav>
 
-      <div class="col-start-3 flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
-        <rally-language-switcher />
-        <rally-theme-toggle />
+      <!-- Below `lg` these live in the drawer's footer instead — see NavDrawerComponent. The bell
+           stays because it carries an unread badge that has to be glanceable. -->
+      <div class="col-start-3 row-start-1 flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
+        <div class="hidden items-center gap-1.5 sm:gap-2 lg:flex">
+          <rally-language-switcher />
+          <rally-theme-toggle />
+        </div>
         @if (!auth.isObserver()) {
           <rally-notifications-bell />
         }
@@ -56,12 +76,16 @@
             type="button"
             (click)="exitObserverMode()"
             [attr.aria-label]="'nav.exitObserver' | translate"
-            class="flex size-9 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-base"
+            class="hidden size-9 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-base lg:flex"
           >
             👀
           </button>
         } @else {
-          <a routerLink="/profile" [attr.aria-label]="'nav.yourProfile' | translate" class="flex items-center justify-center">
+          <a
+            routerLink="/profile"
+            [attr.aria-label]="'nav.yourProfile' | translate"
+            class="hidden items-center justify-center lg:flex"
+          >
             <ui-avatar
               [initials]="auth.currentPlayer().initials"
               [seed]="auth.currentPlayer().avatarSeed"
@@ -74,4 +98,3 @@
       </div>
     </div>
   </header>
-

@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, input, signal } from '@angular/core';
 import { TranslationService } from '../../../core/i18n/translation.service';
 import { TwemojiRendererService } from '../../../core/services/twemoji-renderer.service';
 import { Locale, LOCALE_FLAGS, LOCALE_LABELS } from '../../../core/i18n/locale';
@@ -19,6 +19,9 @@ export class LanguageSwitcherComponent {
   protected readonly labels = LOCALE_LABELS;
   protected readonly flags = LOCALE_FLAGS;
   protected readonly open = signal(false);
+
+  /** Set where the trigger sits near the bottom of the screen — the drawer's footer. */
+  readonly dropUp = input(false);
 
   protected toggle(): void {
     this.open.update((value) => !value);

@@ -1,10 +1,10 @@
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Component, ElementRef, computed, effect, inject, input, signal, viewChildren } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, output, signal, viewChildren } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
-import { AvatarComponent } from '../../shared/ui';
+import { AvatarComponent, IconComponent } from '../../shared/ui';
 import { LanguageSwitcherComponent, ThemeToggleComponent } from '../../shared/components';
 import { NotificationsBellComponent } from '../../features/notifications/notifications-bell/notifications-bell.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
@@ -14,13 +14,16 @@ const PRIMARY_PATHS = ['/', '/world'];
 
 @Component({
   selector: 'rally-topbar',
-  imports: [RouterLink, AvatarComponent, LanguageSwitcherComponent, ThemeToggleComponent, NotificationsBellComponent, TranslatePipe],
+  imports: [RouterLink, AvatarComponent, IconComponent, LanguageSwitcherComponent, ThemeToggleComponent, NotificationsBellComponent, TranslatePipe],
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.scss',
 })
 export class TopbarComponent {
   // Pixels (0..header height) the shell wants the bar translated up, tracking scroll on mobile.
   readonly hideOffset = input(0);
+  /** Drives the hamburger's icon and label — it closes the drawer as well as opening it. */
+  readonly menuOpen = input(false);
+  readonly menuToggled = output<void>();
 
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);

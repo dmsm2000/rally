@@ -17,7 +17,9 @@ export const en = {
     yourProfile: 'Your profile',
     language: 'Language',
     toggleTheme: 'Toggle dark mode',
-    exitObserver: 'Stop observing'
+    exitObserver: 'Stop observing',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
   },
   stats: {
     wins: 'Wins',

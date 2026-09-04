@@ -22,7 +22,7 @@ export class FabComponent {
     () =>
       'rally-fab flex size-14 cursor-pointer items-center justify-center rounded-full bg-lime text-2xl shadow-lg transition-transform hover:-translate-y-0.5 hover:shadow-xl ' +
       (this.fixed()
-        ? 'fixed right-4 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] z-40 lg:right-6 lg:bottom-[6.25rem]'
+        ? 'fixed right-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-40 lg:right-6 lg:bottom-[6.25rem]'
         : 'relative')
   );
 }

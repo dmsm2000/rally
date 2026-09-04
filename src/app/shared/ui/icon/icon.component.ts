@@ -30,7 +30,8 @@ export type IconName =
   | 'plus'
   | 'check'
   | 'lightbulb'
-  | 'close';
+  | 'close'
+  | 'menu';
 
 // Maps each name to its dedicated file under public/assets/icons/.
 const ICON_URLS: Record<IconName, string> = {
@@ -61,7 +62,8 @@ const ICON_URLS: Record<IconName, string> = {
   plus: 'assets/icons/plus.svg',
   check: 'assets/icons/check.svg',
   lightbulb: 'assets/icons/lightbulb.svg',
-  close: 'assets/icons/close.svg'
+  close: 'assets/icons/close.svg',
+  menu: 'assets/icons/menu.svg'
 };
 
 /** Public icon API — loads the real .svg file for `name()` and inlines it so `stroke="currentColor"` still themes correctly. */

@@ -1,0 +1,66 @@
+<!-- Both start below the topbar (h-16) rather than covering it: the logo stays visible so the
+     drawer doesn't need to repeat it, and the hamburger stays tappable to close what it opened. -->
+<div
+  class="drawer-backdrop fixed inset-x-0 top-16 bottom-0 z-[100] bg-ink/60 lg:hidden"
+  [class.is-open]="open()"
+  role="presentation"
+  (click)="onBackdropClick($event)"
+></div>
+
+<aside
+  class="drawer-panel fixed top-16 bottom-0 left-0 z-[100] flex w-64 max-w-[78vw] flex-col border-r border-border bg-card pb-[env(safe-area-inset-bottom)] shadow-2xl lg:hidden"
+  [class.is-open]="open()"
+>
+  <nav class="no-scrollbar flex-1 space-y-0.5 overflow-y-auto p-3">
+    @for (item of items(); track item.path) {
+      <a
+        [routerLink]="item.path"
+        (click)="closed.emit()"
+        [class.is-active]="isActive(item)"
+        class="nav-link flex items-center gap-3 rounded-2xl px-2 py-2 text-sm font-semibold text-muted-foreground transition-colors"
+      >
+        <span class="nav-icon flex size-9 shrink-0 items-center justify-center rounded-full">
+          <ui-icon [name]="item.icon" className="size-5" />
+        </span>
+        <span class="nav-label">{{ item.label | translate }}</span>
+      </a>
+    }
+  </nav>
+
+  <!-- Everything that used to crowd the topbar's right-hand corner on mobile lives here instead. -->
+  <div class="shrink-0 border-t border-border p-3">
+    @if (auth.isObserver()) {
+      <button
+        type="button"
+        (click)="exitObserverMode()"
+        class="flex w-full cursor-pointer items-center gap-3 rounded-2xl px-2 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <span class="flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-card text-base">👀</span>
+        {{ 'nav.exitObserver' | translate }}
+      </button>
+    } @else {
+      <a
+        routerLink="/profile"
+        (click)="closed.emit()"
+        class="mb-1 flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-muted"
+      >
+        <ui-avatar
+          [initials]="auth.currentPlayer().initials"
+          [seed]="auth.currentPlayer().avatarSeed"
+          [avatarStyle]="auth.currentPlayer().avatarStyle"
+          accent="lime"
+          size="sm"
+        />
+        <span class="min-w-0 flex-1">
+          <span class="block truncate text-sm font-bold text-foreground">{{ auth.currentPlayer().name }}</span>
+          <span class="block truncate text-xs text-muted-foreground">{{ 'nav.yourProfile' | translate }}</span>
+        </span>
+      </a>
+    }
+
+    <div class="flex items-center gap-2 px-2 pt-1">
+      <rally-language-switcher [dropUp]="true" />
+      <rally-theme-toggle />
+    </div>
+  </div>
+</aside>

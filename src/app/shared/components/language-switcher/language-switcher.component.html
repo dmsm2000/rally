@@ -13,7 +13,11 @@
 
   @if (open()) {
     <div
-      class="absolute top-full right-0 z-50 mt-1.5 w-max min-w-full overflow-hidden rounded-2xl border border-border bg-card p-1 shadow-lg"
+      class="absolute right-0 z-50 w-max min-w-full overflow-hidden rounded-2xl border border-border bg-card p-1 shadow-lg"
+      [class.top-full]="!dropUp()"
+      [class.mt-1.5]="!dropUp()"
+      [class.bottom-full]="dropUp()"
+      [class.mb-1.5]="dropUp()"
     >
       @for (locale of i18n.locales; track locale) {
         <button

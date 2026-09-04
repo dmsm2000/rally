@@ -18,7 +18,9 @@ export const es = {
     yourProfile: 'Tu perfil',
     language: 'Idioma',
     toggleTheme: 'Alternar modo oscuro',
-    exitObserver: 'Dejar de observar'
+    exitObserver: 'Dejar de observar',
+    openMenu: 'Abrir menú',
+    closeMenu: 'Cerrar menú',
   },
   stats: {
     wins: 'Victorias',
