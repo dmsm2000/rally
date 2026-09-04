@@ -44,13 +44,23 @@ export class LoginPageComponent {
   );
 
   constructor() {
-    // A real session visiting /login directly (back button, bookmark, typed URL) has nothing to do
-    // here — send it on to the Feed instead of showing the form again. Observers are exempt: one of
-    // them landing here is most likely trying to sign in for real, which the form has to stay for.
+    // A real, *complete* session visiting /login directly (back button, bookmark, typed URL) has
+    // nothing to do here — send it on to the Feed instead of showing the form again. Observers are
+    // exempt: one of them landing here is most likely trying to sign in for real, which the form has
+    // to stay for. A session with no `profiles` row yet (mid Google sign-up, see RegisterPageComponent)
+    // is exempt too — hasProfile() catches what a bare currentUserId() check can't: that user is
+    // "signed in" but has nowhere else to go, so the form has to stay reachable for them as well (e.g.
+    // to abandon the Google flow and sign into an existing account instead).
     effect(() => {
-      if (this.auth.ready() && this.auth.currentUserId()) {
-        this.router.navigateByUrl('/');
+      const userId = this.auth.currentUserId();
+      if (!this.auth.ready() || !userId) {
+        return;
       }
+      void this.auth.hasProfile(userId).then(has => {
+        if (has) {
+          this.router.navigateByUrl('/');
+        }
+      });
     });
   }
 

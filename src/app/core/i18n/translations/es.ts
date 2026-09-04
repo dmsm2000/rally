@@ -605,10 +605,9 @@ export const es = {
     selectCity: 'Selecciona tu ciudad',
     selectCountryFirst: 'Elige antes un país',
     maxDistanceQuestion: '¿Hasta dónde estás dispuesto a desplazarte dentro de tu ciudad?',
-    maxDistanceSliderQuestion: 'Distancia máxima que estás dispuesto a recorrer',
+    maxDistanceSliderQuestion: 'Distancia que estás dispuesto a recorrer',
     locationPermissionQuestion: '¿Podemos usar tu ubicación?',
-    locationPermissionHint:
-      'Nos ayuda a sugerirte jugadores y pistas más cercanas. Siempre puedes cambiar esto más tarde.',
+    locationPermissionHint: 'Rellenamos tu país y ciudad por ti — siempre puedes corregirlos a mano después.',
     locationAllow: 'Sí, usar mi ubicación',
     locationLocating: 'Localizando…',
     locationDeny: 'Ahora no',

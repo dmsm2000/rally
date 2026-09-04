@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CountryDataService } from '../../../../core/data/country-data.service';
 import { GeolocationService } from '../../../../core/services/geolocation.service';
+import { ReverseGeocodeService } from '../../../../core/services/reverse-geocode.service';
 import {
   AvailabilityOption,
   Backhand,
@@ -70,6 +71,7 @@ export class RegisterPageComponent {
   protected readonly theme = inject(ThemeService);
   private readonly countryData = inject(CountryDataService);
   private readonly geolocation = inject(GeolocationService);
+  private readonly reverseGeocode = inject(ReverseGeocodeService);
 
   protected readonly levels = LEVELS;
   protected readonly formats = FORMATS;
@@ -244,12 +246,25 @@ export class RegisterPageComponent {
   protected async requestLocation(): Promise<void> {
     this.locatingConsent.set(true);
     try {
-      await this.geolocation.locate();
+      const fix = await this.geolocation.locate();
       this.locationConsent.set(true);
+      await this.fillLocationFromFix(fix.lat, fix.lng);
     } catch {
       this.locationConsent.set(false);
     } finally {
       this.locatingConsent.set(false);
+    }
+  }
+
+  // Best-effort only — a failed or unmatched lookup leaves country/city exactly as manual fields.
+  private async fillLocationFromFix(lat: number, lng: number): Promise<void> {
+    const [result, countries] = await Promise.all([this.reverseGeocode.lookup(lat, lng), this.countryData.loadCountries()]);
+    const match = result && countries.find(c => c.iso2.toUpperCase() === result.countryCode);
+    if (match) {
+      this.setCountry(match.name);
+    }
+    if (result?.city) {
+      this.city.set(result.city);
     }
   }
 

@@ -605,10 +605,9 @@ export const pt = {
     selectCity: 'Seleciona a tua cidade',
     selectCountryFirst: 'Escolhe primeiro um país',
     maxDistanceQuestion: 'Até que distância estás disposto a percorrer dentro da tua cidade?',
-    maxDistanceSliderQuestion: 'Distância máxima que estás disposto a percorrer',
+    maxDistanceSliderQuestion: 'Distância que estás disposto a percorrer',
     locationPermissionQuestion: 'Podemos usar a tua localização?',
-    locationPermissionHint:
-      'Ajuda-nos a sugerir jogadores e courts mais próximos de ti. Podes sempre alterar isto mais tarde.',
+    locationPermissionHint: 'Preenchemos o país e a cidade por ti — podes sempre corrigir à mão a seguir.',
     locationAllow: 'Sim, usar localização',
     locationLocating: 'A localizar…',
     locationDeny: 'Agora não',
