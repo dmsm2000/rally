@@ -15,6 +15,10 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
   styleUrl: './messages-widget.component.scss',
 })
 export class MessagesWidgetComponent {
+  // How long the panel stays mounted after widget.isOpen() goes false, so the exit animation
+  // (see the effect below) gets to play instead of the panel just vanishing.
+  private static readonly CLOSE_ANIMATION_MS = 180;
+
   protected readonly messages = inject(MessagesService);
   protected readonly widget = inject(MessagesWidgetService);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -35,10 +39,29 @@ export class MessagesWidgetComponent {
   });
 
   protected readonly draft = signal('');
+  protected readonly panelVisible = signal(false);
+  protected readonly closing = signal(false);
 
   private readonly host = inject(ElementRef<HTMLElement>);
 
   constructor() {
+    effect(onCleanup => {
+      if (this.widget.isOpen()) {
+        this.closing.set(false);
+        this.panelVisible.set(true);
+        return;
+      }
+      if (!this.panelVisible()) {
+        return;
+      }
+      this.closing.set(true);
+      const timeout = setTimeout(() => {
+        this.panelVisible.set(false);
+        this.closing.set(false);
+      }, MessagesWidgetComponent.CLOSE_ANIMATION_MS);
+      onCleanup(() => clearTimeout(timeout));
+    });
+
     // Opening a thread (from the list, a player's "Message" button or a notification) starts it,
     // marks it read, and joins its live typing channel — left again as soon as the thread closes
     // or another one opens. The ensure/markRead calls read+write the conversations signal, so they

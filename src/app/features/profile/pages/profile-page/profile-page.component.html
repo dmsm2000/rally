@@ -1,6 +1,6 @@
 <section class="mb-10 overflow-hidden rounded-3xl border border-border bg-ink text-bone">
   <div class="court-grid-ink p-6 sm:p-10">
-    <div class="flex flex-wrap items-start justify-between gap-5">
+    <div class="flex flex-wrap items-center justify-between gap-5">
       <div class="flex flex-wrap items-center gap-5">
         <span class="relative inline-flex shrink-0">
           <ui-avatar
@@ -25,11 +25,7 @@
         <div class="flex-1">
           <p class="text-eyebrow text-bone/60">{{ 'profile.yourProfile' | translate }}</p>
           <h1 class="text-display mt-1 text-4xl sm:text-6xl">{{ profile.me().name }}</h1>
-          <p class="mt-2 text-sm text-bone/70">
-            {{ draftFlag() }} {{ draftCity() }}, {{ draftCountry() }} ·
-            {{ 'enums.level.' + draftLevel() | translate }} ·
-            {{ 'profile.yearsPlaying' | translate: { years: draftYears() ?? 0 } }}
-          </p>
+          <p class="mt-2 text-sm text-bone/70">{{ draftFlag() }} {{ draftCity() }}, {{ draftCountry() }}</p>
           @if (profile.me().memberNumber; as memberNumber) {
             <p class="mt-1 font-mono text-xs tracking-widest text-bone/50">
               {{ 'profile.memberNumber' | translate: { number: memberNumber } }}
@@ -37,7 +33,7 @@
           }
         </div>
       </div>
-      <div class="flex flex-col items-start gap-2 sm:items-end">
+      <div class="flex w-full items-center justify-center gap-2 sm:w-auto sm:justify-end">
         <button
           type="button"
           (click)="logout()"
@@ -45,7 +41,7 @@
         >
           {{ 'profile.logout' | translate }}
         </button>
-        @if (!auth.isObserver()) {
+        @if (!auth.isObserver() && !auth.isGoogleAccount()) {
           <button
             type="button"
             (click)="changingPassword.set(true)"
@@ -56,44 +52,8 @@
         }
       </div>
     </div>
-
-    <div class="mt-8 grid grid-cols-2 gap-6 border-t border-bone/15 pt-6 sm:grid-cols-4">
-      <ui-stat [value]="winCount()" [label]="'stats.wins' | translate" />
-      <ui-stat [value]="completedCount()" [label]="'stats.matches' | translate" />
-      <ui-stat [value]="courts.myCaptureCount()" [label]="'stats.courts' | translate" />
-      <ui-stat [value]="courts.myCountryCount()" [label]="'stats.countries' | translate" />
-    </div>
   </div>
 </section>
-
-<section class="mb-10 grid gap-4 sm:grid-cols-2">
-  <div class="rounded-2xl border border-border bg-card p-5">
-    <p class="text-eyebrow text-muted-foreground">{{ 'profile.winRate' | translate }}</p>
-    <p class="text-stat mt-2 text-4xl">{{ winRatePct() }}%</p>
-    <p class="mt-2 text-xs text-muted-foreground">
-      {{
-        'profile.winRateNote'
-          | translate: { wins: winCount(), matches: completedCount(), surface: bestSurfaceLabel(), pct: winRatePct() }
-      }}
-    </p>
-  </div>
-  <a
-    routerLink="/passport"
-    class="rounded-2xl border border-border bg-ink p-5 text-bone transition-transform hover:-translate-y-0.5"
-  >
-    <p class="text-eyebrow text-bone/60">{{ 'profile.milestonesEyebrow' | translate }}</p>
-    <p class="mt-2 font-display text-lg font-extrabold tracking-tight uppercase">
-      {{ 'profile.tennisPassport' | translate }}
-    </p>
-    <p class="mt-2 text-xs text-bone/70">
-      {{ courts.myCountryCount() }} {{ 'profile.countriesSuffix' | translate }} ·
-      {{ courts.myCaptureCount() }} {{ 'courts.courtsSuffix' | translate }}
-    </p>
-    <p class="mt-4 text-xs font-bold text-lime">{{ 'profile.openPassport' | translate }} →</p>
-  </a>
-</section>
-
-<rally-my-trips-section />
 
 <section class="mb-10">
   <ui-section-header
@@ -118,6 +78,25 @@
   }
 </section>
 
+<rally-my-trips-section />
+
+<section class="mb-10">
+  <a
+    routerLink="/passport"
+    class="block rounded-2xl border border-border bg-ink p-5 text-bone transition-transform hover:-translate-y-0.5"
+  >
+    <p class="text-eyebrow text-bone/60">{{ 'profile.milestonesEyebrow' | translate }}</p>
+    <p class="mt-2 font-display text-lg font-extrabold tracking-tight uppercase">
+      {{ 'profile.tennisPassport' | translate }}
+    </p>
+    <p class="mt-2 text-xs text-bone/70">
+      {{ courts.myCountryCount() }} {{ 'profile.countriesSuffix' | translate }} ·
+      {{ courts.myCaptureCount() }} {{ 'courts.courtsSuffix' | translate }}
+    </p>
+    <p class="mt-4 text-xs font-bold text-lime">{{ 'profile.openPassport' | translate }} →</p>
+  </a>
+</section>
+
 @if (!auth.isObserver()) {
   <section class="mb-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
     <div class="mb-6">
@@ -138,7 +117,7 @@
         />
       </label>
       <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.genderQuestion' | translate }}</p>
+        <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.genderQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (g of genders; track g.value) {
             <ui-chip [clickable]="true" [active]="draftGender() === g.value" (toggled)="draftGender.set(g.value)"
@@ -148,7 +127,7 @@
         </div>
       </div>
       <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.dominantHand' | translate }}</p>
+        <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.dominantHand' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (h of hands; track h.value) {
             <ui-chip
@@ -180,18 +159,14 @@
           name="bio"
           rows="3"
           maxlength="280"
-          class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-foreground"
+          [placeholder]="'auth.bioPlaceholder' | translate"
+          class="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-foreground"
         ></textarea>
         <span class="mt-1.5 block text-right text-xs text-muted-foreground">{{ draftBio().length }}/280</span>
       </label>
     </div>
 
     <div class="mt-6 flex items-center justify-end gap-3">
-      @if (isSaved('traits')) {
-        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground"
-          >🎾 {{ 'profile.saved' | translate }}</span
-        >
-      }
       <button
         type="button"
         (click)="resetTraits()"
@@ -204,9 +179,13 @@
         type="button"
         (click)="saveTraits()"
         [disabled]="isSaving('traits') || !canSaveTraits()"
+        [class.animate-tennis-pop]="isSaved('traits')"
         class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ (isSaving('traits') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+        {{ isSaved('traits') ? '🎾 ' : '' }}{{
+          (isSaving('traits') ? 'profile.saving' : isSaved('traits') ? 'profile.saved' : 'profile.saveChanges')
+            | translate
+        }}
       </button>
     </div>
   </section>
@@ -217,9 +196,32 @@
       <p class="mt-1 text-sm text-muted-foreground">{{ 'auth.taglines.location' | translate }}</p>
     </div>
     <div class="space-y-5">
+      <div>
+        <p class="mb-1 text-xs font-semibold text-muted-foreground">
+          {{ 'auth.locationPermissionQuestion' | translate }}
+        </p>
+        <p class="mb-2 text-xs text-muted-foreground">{{ 'auth.locationPermissionHint' | translate }}</p>
+        <div class="flex flex-wrap gap-2">
+          <ui-chip
+            [clickable]="true"
+            [active]="draftLocationConsent() === true"
+            (toggled)="requestDraftLocation()"
+            >📍
+            {{ (draftLocatingConsent() ? 'auth.locationLocating' : 'auth.locationAllow') | translate }}</ui-chip
+          >
+          <ui-chip
+            [clickable]="true"
+            [active]="draftLocationConsent() === false"
+            (toggled)="draftLocationConsent.set(false)"
+            >🙅 {{ 'auth.locationDeny' | translate }}</ui-chip
+          >
+        </div>
+      </div>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label class="block">
-          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{ 'auth.country' | translate }}</span>
+          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+            >* {{ 'auth.country' | translate }}</span
+          >
           <ui-autocomplete
             [value]="draftCountry()"
             (valueChange)="setDraftCountry($event)"
@@ -230,7 +232,9 @@
           />
         </label>
         <label class="block">
-          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{ 'auth.city' | translate }}</span>
+          <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+            >* {{ 'auth.city' | translate }}</span
+          >
           <ui-autocomplete
             [value]="draftCity()"
             (valueChange)="draftCity.set($event)"
@@ -242,23 +246,34 @@
         </label>
       </div>
       <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.maxDistanceQuestion' | translate }}</p>
-        <div class="flex flex-wrap gap-2">
-          @for (d of maxDistanceOptions; track d) {
-            <ui-chip [clickable]="true" [active]="draftMaxDistanceKm() === d" (toggled)="draftMaxDistanceKm.set(d)"
-              >{{ d }}{{ d === 100 ? '+' : '' }} km</ui-chip
+        <p class="mb-2 text-xs font-semibold text-muted-foreground">
+          {{ 'auth.maxDistanceSliderQuestion' | translate }}
+        </p>
+        <div class="rounded-xl border border-border bg-background px-4 py-3">
+          <div class="mb-2 text-center">
+            <span class="text-stat text-xl"
+              >{{ draftMaxDistanceKm() }}{{ draftMaxDistanceKm() === 100 ? '+' : '' }} km</span
             >
-          }
+          </div>
+          <input
+            type="range"
+            min="0"
+            [max]="maxDistanceOptions.length - 1"
+            step="1"
+            [value]="maxDistanceIndex()"
+            (input)="draftMaxDistanceKm.set(maxDistanceOptions[$any($event.target).valueAsNumber])"
+            class="w-full cursor-pointer accent-lime-deep"
+          />
+          <div class="mt-1 flex justify-between text-[10px] text-muted-foreground">
+            @for (d of maxDistanceOptions; track d) {
+              <span>{{ d }}{{ d === 100 ? '+' : '' }} km</span>
+            }
+          </div>
         </div>
       </div>
     </div>
 
     <div class="mt-6 flex items-center justify-end gap-3">
-      @if (isSaved('location')) {
-        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground"
-          >🎾 {{ 'profile.saved' | translate }}</span
-        >
-      }
       <button
         type="button"
         (click)="resetLocation()"
@@ -271,9 +286,13 @@
         type="button"
         (click)="saveLocation()"
         [disabled]="isSaving('location') || !canSaveLocation()"
+        [class.animate-tennis-pop]="isSaved('location')"
         class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ (isSaving('location') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+        {{ isSaved('location') ? '🎾 ' : '' }}{{
+          (isSaving('location') ? 'profile.saving' : isSaved('location') ? 'profile.saved' : 'profile.saveChanges')
+            | translate
+        }}
       </button>
     </div>
   </section>
@@ -285,19 +304,9 @@
     </div>
     <div class="space-y-6">
       <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.level' | translate }}</p>
-        <div class="flex flex-wrap gap-2">
-          @for (l of levels; track l) {
-            <ui-chip [clickable]="true" [active]="draftLevel() === l" (toggled)="draftLevel.set(l)">{{
-              'enums.level.' + l | translate
-            }}</ui-chip>
-          }
-        </div>
-      </div>
-      <div>
-        <span class="mb-1.5 block text-xs font-semibold text-muted-foreground">{{
-          'auth.yearsPlaying' | translate
-        }}</span>
+        <span class="mb-1.5 block text-xs font-semibold text-muted-foreground"
+          >* {{ 'auth.yearsPlaying' | translate }}</span
+        >
         <div class="inline-flex items-center gap-4 rounded-xl border border-border bg-background px-4 py-2">
           <button
             type="button"
@@ -307,9 +316,7 @@
           >
             −
           </button>
-          <span class="text-stat w-16 text-center text-xl">{{
-            draftYears() === null ? '—' : draftYears() === 40 ? '40+' : draftYears()
-          }}</span>
+          <span class="text-stat w-16 text-center text-xl">{{ draftYears() === 40 ? '40+' : draftYears() }}</span>
           <button
             type="button"
             (click)="incrementDraftYears()"
@@ -320,19 +327,31 @@
           </button>
         </div>
       </div>
-      <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.styleQuestion' | translate }}</p>
-        <div class="flex flex-wrap gap-2">
-          @for (st of playStyles; track st.value) {
-            <ui-chip
-              [clickable]="true"
-              [active]="draftPlayStyle() === st.value"
-              (toggled)="draftPlayStyle.set(st.value)"
-              >{{ st.emoji }} {{ st.key | translate }}</ui-chip
-            >
-          }
+      @if ((draftYears() ?? 0) > 0) {
+        <div>
+          <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.level' | translate }}</p>
+          <div class="flex flex-wrap gap-2">
+            @for (l of levels; track l) {
+              <ui-chip [clickable]="true" [active]="draftLevel() === l" (toggled)="draftLevel.set(l)">{{
+                'enums.level.' + l | translate
+              }}</ui-chip>
+            }
+          </div>
         </div>
-      </div>
+        <div>
+          <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.styleQuestion' | translate }}</p>
+          <div class="flex flex-wrap gap-2">
+            @for (st of playStyles; track st.value) {
+              <ui-chip
+                [clickable]="true"
+                [active]="draftPlayStyle() === st.value"
+                (toggled)="draftPlayStyle.set(st.value)"
+                >{{ st.emoji }} {{ st.key | translate }}</ui-chip
+              >
+            }
+          </div>
+        </div>
+      }
       <div>
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.format' | translate }}</p>
         <div class="flex flex-wrap gap-2">
@@ -344,18 +363,15 @@
         </div>
       </div>
       <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.surface' | translate }}</p>
+        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.courtTypeQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (s of surfaces; track s) {
             <ui-chip [clickable]="true" [active]="draftSurface() === s" (toggled)="draftSurface.set(s)">{{
-              s
+              surfaceLabelKey(s) | translate
             }}</ui-chip>
           }
         </div>
-      </div>
-      <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.courtPrefQuestion' | translate }}</p>
-        <div class="flex flex-wrap gap-2">
+        <div class="mt-2 flex flex-wrap gap-2">
           @for (c of courtPrefs; track c.value) {
             <ui-chip [clickable]="true" [active]="draftCourtPref() === c.value" (toggled)="draftCourtPref.set(c.value)"
               >{{ c.emoji }} {{ c.key | translate }}</ui-chip
@@ -366,11 +382,6 @@
     </div>
 
     <div class="mt-6 flex items-center justify-end gap-3">
-      @if (isSaved('game')) {
-        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground"
-          >🎾 {{ 'profile.saved' | translate }}</span
-        >
-      }
       <button
         type="button"
         (click)="resetGame()"
@@ -383,9 +394,13 @@
         type="button"
         (click)="saveGame()"
         [disabled]="isSaving('game') || !canSaveGame()"
+        [class.animate-tennis-pop]="isSaved('game')"
         class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ (isSaving('game') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+        {{ isSaved('game') ? '🎾 ' : '' }}{{
+          (isSaving('game') ? 'profile.saving' : isSaved('game') ? 'profile.saved' : 'profile.saveChanges')
+            | translate
+        }}
       </button>
     </div>
   </section>
@@ -397,20 +412,7 @@
     </div>
     <div class="space-y-6">
       <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.frequency' | translate }}</p>
-        <div class="flex flex-wrap gap-2">
-          @for (f of frequencies; track f.value) {
-            <ui-chip
-              [clickable]="true"
-              [active]="draftFrequency() === f.value"
-              (toggled)="draftFrequency.set(draftFrequency() === f.value ? null : f.value)"
-              >{{ f.key | translate }}</ui-chip
-            >
-          }
-        </div>
-      </div>
-      <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.coachedQuestion' | translate }}</p>
+        <p class="mb-2 text-xs font-semibold text-muted-foreground">* {{ 'auth.coachedQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           <ui-chip [clickable]="true" [active]="draftCoached() === true" (toggled)="setDraftCoached(true)"
             >🎾 {{ 'auth.coachedYes' | translate }}</ui-chip
@@ -421,7 +423,7 @@
         </div>
         @if (draftCoached() === true) {
           <p class="mt-4 mb-2 text-xs font-semibold text-muted-foreground">
-            {{ 'auth.coachedFrequencyQuestion' | translate }}
+            * {{ 'auth.coachedFrequencyQuestion' | translate }}
           </p>
           <div class="flex flex-wrap gap-2">
             @for (f of frequencies; track f.value) {
@@ -436,6 +438,19 @@
         }
       </div>
       <div>
+        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.frequency' | translate }}</p>
+        <div class="flex flex-wrap gap-2">
+          @for (f of frequencies; track f.value) {
+            <ui-chip
+              [clickable]="true"
+              [active]="draftFrequency() === f.value"
+              (toggled)="draftFrequency.set(draftFrequency() === f.value ? null : f.value)"
+              >{{ f.key | translate }}</ui-chip
+            >
+          }
+        </div>
+      </div>
+      <div>
         <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.timeOfDayQuestion' | translate }}</p>
         <div class="flex flex-wrap gap-2">
           @for (t of timesOfDayOptions; track t.value) {
@@ -448,27 +463,9 @@
           }
         </div>
       </div>
-      <div>
-        <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'auth.availability' | translate }}</p>
-        <div class="flex flex-wrap gap-2">
-          @for (a of availabilityOptions; track a.value) {
-            <ui-chip
-              [clickable]="true"
-              [active]="draftAvailability().includes(a.value)"
-              (toggled)="toggleDraftAvailability(a.value)"
-              >{{ a.key | translate }}</ui-chip
-            >
-          }
-        </div>
-      </div>
     </div>
 
     <div class="mt-6 flex items-center justify-end gap-3">
-      @if (isSaved('schedule')) {
-        <span class="animate-tennis-pop text-xs font-semibold text-muted-foreground"
-          >🎾 {{ 'profile.saved' | translate }}</span
-        >
-      }
       <button
         type="button"
         (click)="resetSchedule()"
@@ -481,9 +478,13 @@
         type="button"
         (click)="saveSchedule()"
         [disabled]="isSaving('schedule') || !canSaveSchedule()"
+        [class.animate-tennis-pop]="isSaved('schedule')"
         class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ (isSaving('schedule') ? 'profile.saving' : 'profile.saveChanges') | translate }}
+        {{ isSaved('schedule') ? '🎾 ' : '' }}{{
+          (isSaving('schedule') ? 'profile.saving' : isSaved('schedule') ? 'profile.saved' : 'profile.saveChanges')
+            | translate
+        }}
       </button>
     </div>
   </section>

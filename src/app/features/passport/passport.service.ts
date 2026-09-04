@@ -1,11 +1,19 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { RallyDataService } from '../../core/data/rally-data.service';
+import { TranslationService } from '../../core/i18n/translation.service';
 import { Player } from '../../core/models';
 import { CourtsService } from '../courts/courts.service';
 import { MatchesService } from '../matches/matches.service';
 
 export const PASSPORT_TABS = ['passport.tabCountries', 'passport.tabCourts', 'passport.tabPlayers'] as const;
+
+export interface PlayerMetSummary {
+  player: Player;
+  timesPlayed: number;
+  /** Locale-formatted month/year, e.g. "set. de 2026" — same convention as a country's firstPlayed. */
+  lastPlayedAt: string;
+}
 
 /**
  * The passport is now entirely real: every number on it traces back to a row someone had to earn.
@@ -19,6 +27,7 @@ export class PassportService {
   private readonly courts = inject(CourtsService);
   private readonly matches = inject(MatchesService);
   private readonly auth = inject(AuthService);
+  private readonly translation = inject(TranslationService);
 
   readonly tabs = PASSPORT_TABS;
   readonly activeTab = signal<string>(PASSPORT_TABS[0]);
@@ -45,26 +54,45 @@ export class PassportService {
   });
 
   /**
-   * Everyone you have actually shared a court with. Only completed matches count: you meet someone
-   * by playing, not by being invited. Live, since MatchesService keeps its lists fresh over Realtime.
+   * Everyone you have actually shared a court with, plus how often and when you last did — only
+   * completed matches count: you meet someone by playing, not by being invited. Live, since
+   * MatchesService keeps its lists fresh over Realtime. Sorted most-recently-played first.
    */
-  readonly playersMet = computed<Player[]>(() => {
+  readonly playersMet = computed<PlayerMetSummary[]>(() => {
     const uid = this.auth.currentUserId();
     if (!uid) {
       return [];
     }
-    const ids = new Set<string>();
+    const seen = new Map<string, { count: number; lastDate: string }>();
     for (const match of this.matches.completed()) {
-      for (const id of [match.playerA, match.playerB, ...(match.participantIds ?? [])]) {
-        if (id && id !== uid) {
-          ids.add(id);
-        }
+      const ids = new Set(
+        [match.playerA, match.playerB, ...(match.participantIds ?? [])].filter(
+          (id): id is string => !!id && id !== uid
+        )
+      );
+      for (const id of ids) {
+        const entry = seen.get(id);
+        seen.set(id, {
+          count: (entry?.count ?? 0) + 1,
+          lastDate: !entry || match.matchDate > entry.lastDate ? match.matchDate : entry.lastDate
+        });
       }
     }
-    return [...ids].map(id => this.matches.playerById(id)).filter((p): p is Player => !!p);
+    return [...seen.entries()]
+      .map(([id, entry]) => ({ ...entry, player: this.matches.playerById(id) }))
+      .filter((entry): entry is { count: number; lastDate: string; player: Player } => !!entry.player)
+      .sort((a, b) => b.lastDate.localeCompare(a.lastDate))
+      .map(({ player, count, lastDate }) => ({ player, timesPlayed: count, lastPlayedAt: this.formatMonth(lastDate) }));
   });
 
   selectTab(tab: string): void {
     this.activeTab.set(tab);
+  }
+
+  // Mirrors CourtsService's own formatMonth() — same "short month, numeric year" convention as a
+  // country's firstPlayed, so date copy reads the same everywhere in the passport.
+  private formatMonth(iso: string): string {
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(this.translation.locale(), { month: 'short', year: 'numeric' });
   }
 }

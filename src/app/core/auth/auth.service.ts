@@ -49,6 +49,13 @@ export class AuthService {
   readonly isAuthenticated = computed(() => this._isObserver() || this._session() !== null);
   /** The signed-in Supabase user's id, or undefined for an observer / logged-out session. */
   readonly currentUserId = computed(() => this._session()?.user.id);
+  /**
+   * True for an account that first signed up via Google — used to hide password-only UI (the
+   * "Alterar password" action) for a session that has no Rally password to change. Supabase sets
+   * `app_metadata.provider` to whichever provider created the account and never changes it
+   * afterwards, so this stays accurate even if the user later links email/password too.
+   */
+  readonly isGoogleAccount = computed(() => this._session()?.user.app_metadata.provider === 'google');
   /** Observers ("olheiros") can browse the app but can't perform any write action. */
   readonly isObserver = this._isObserver.asReadonly();
   readonly ready = this._ready.asReadonly();

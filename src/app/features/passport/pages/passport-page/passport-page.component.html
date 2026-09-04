@@ -159,8 +159,12 @@
         </div>
       } @else if (passport.playersMet().length) {
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          @for (p of passport.playersMet(); track p.id) {
-            <rally-player-card [player]="p" />
+          @for (entry of passport.playersMet(); track entry.player.id) {
+            <rally-player-met-card
+              [player]="entry.player"
+              [timesPlayed]="entry.timesPlayed"
+              [lastPlayedAt]="entry.lastPlayedAt"
+            />
           }
         </div>
       } @else {

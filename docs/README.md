@@ -46,7 +46,7 @@ sem testes a cobri-lo é condição necessária para ✅, não suficiente.
 
 | #   | Ecrã                      | Rota               | Ficheiro                                         | Estado |
 | --- | ------------------------- | ------------------ | ------------------------------------------------ | ------ |
-| 1   | Registo                   | `/register`        | [`register.md`](flows/register.md)               | 📝     |
+| 1   | Registo                   | `/register`        | [`register.md`](flows/register.md)               | ✅     |
 | 2   | Login                     | `/login`           | [`login.md`](flows/login.md)                     | ✅     |
 | 3   | Esqueceste-te da password | `/forgot-password` | [`forgot-password.md`](flows/forgot-password.md) | ✅     |
 | 4   | Repor a password          | `/reset-password`  | [`reset-password.md`](flows/reset-password.md)   | ✅     |
@@ -63,7 +63,7 @@ sem testes a cobri-lo é condição necessária para ✅, não suficiente.
 | 10  | Detalhe de partida        | `/matches/:matchId`  | —                                         | [`match-detail.md`](flows/match-detail.md)   | ⬜     |
 | 11  | Explorar (Mundo)          | `/world`             | —                                         | [`world.md`](flows/world.md)                 | ⬜     |
 | 12  | Passaporte                | `/passport`          | `noObserverGuard`                         | [`passport.md`](flows/passport.md)           | ⬜     |
-| 13  | O meu perfil              | `/profile`           | `noObserverGuard` + `unsavedChangesGuard` | [`profile.md`](flows/profile.md)             | ⬜     |
+| 13  | O meu perfil              | `/profile`           | `noObserverGuard` + `unsavedChangesGuard` | [`profile.md`](flows/profile.md)             | 📝     |
 
 Todas as rotas autenticadas passam primeiro por `authGuard` (sem sessão real nem de observador →
 `/login`); a coluna "Guards extra" só lista o que se soma a esse.

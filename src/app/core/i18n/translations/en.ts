@@ -514,7 +514,8 @@ export const en = {
     allCourts: 'All courts',
     playersMetEyebrow: "People I've met",
     playersMetTitle: "Players I've played with",
-    playersMetEmpty: "You haven't played anyone yet — this list grows with every match."
+    playersMetEmpty: "You haven't played anyone yet — this list grows with every match.",
+    playersMetSummary: 'Played {count} times · last on {date}'
   },
   profile: {
     yourProfile: 'Your profile',
@@ -529,8 +530,6 @@ export const en = {
     tennisPassport: 'Tennis passport',
     countriesSuffix: 'countries',
     openPassport: 'Open passport',
-    winRate: 'Win rate',
-    winRateNote: '{wins} wins from {matches} matches. Best surface: {surface} ({pct}%).',
     changeAvatar: 'Avatar',
     bioLabel: 'Bio',
     saveChanges: 'Save changes',

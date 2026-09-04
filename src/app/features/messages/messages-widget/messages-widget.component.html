@@ -1,6 +1,10 @@
 <div class="fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-end lg:right-6 lg:bottom-8">
-  @if (widget.isOpen()) {
-    <div class="mb-3 flex h-[28rem] w-80 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
+  @if (panelVisible()) {
+    <div
+      class="origin-bottom-right mb-3 flex h-[28rem] w-80 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+      [class.animate-tennis-pop]="!closing()"
+      [class.animate-tennis-pop-out]="closing()"
+    >
       @if (activePlayer(); as p) {
         <div class="flex items-center gap-3 border-b border-border bg-ink px-4 py-3 text-bone">
           <button type="button" (click)="widget.backToList()" [attr.aria-label]="'common.back' | translate" class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-bone/10">←</button>
@@ -12,8 +16,8 @@
         <div class="no-scrollbar flex-1 space-y-2 overflow-y-auto p-4">
           @for (m of activeConversation()?.messages ?? []; track m.id) {
             <div class="flex" [class.justify-end]="m.senderId === messages.myId()">
-              <div class="max-w-[80%] rounded-2xl px-3 py-2 text-sm" [class]="m.senderId === messages.myId() ? 'bg-lime text-ink' : 'bg-muted text-foreground'">
-                <p>{{ m.text }}</p>
+              <div class="max-w-[80%] min-w-0 rounded-2xl px-3 py-2 text-sm break-words" [class]="m.senderId === messages.myId() ? 'bg-lime text-ink' : 'bg-muted text-foreground'">
+                <p class="whitespace-pre-wrap">{{ m.text }}</p>
                 <p class="mt-0.5 text-[10px] opacity-60">{{ m.createdAt | date: 'HH:mm' }}</p>
               </div>
             </div>

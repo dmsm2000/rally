@@ -24,6 +24,7 @@ import {
   PLAY_STYLES,
   PlayStyle,
   SURFACES,
+  surfaceLabelKey,
   TimeOfDay,
   TIMES_OF_DAY
 } from '../../../../core/data/player-profile-options';
@@ -76,6 +77,7 @@ export class RegisterPageComponent {
   protected readonly levels = LEVELS;
   protected readonly formats = FORMATS;
   protected readonly surfaces = SURFACES;
+  protected readonly surfaceLabelKey = surfaceLabelKey;
   protected readonly frequencies = FREQUENCIES;
   protected readonly maxDistanceOptions = MAX_DISTANCE_OPTIONS;
   protected readonly countries = this.countryData.countries;
@@ -292,12 +294,6 @@ export class RegisterPageComponent {
 
   protected back(): void {
     this.step.update(s => Math.max(0, s - 1));
-  }
-
-  protected surfaceLabelKey(surface: Surface): string {
-    // "Carpet" reads as "Outro" for a player's own preference — real court listings still show
-    // the honest "Alcatifa"/"Carpet" label via enums.surface, this is this question's copy only.
-    return surface === 'Carpet' ? 'auth.surfaceOther' : `enums.surface.${surface}`;
   }
 
   protected async onSubmit(): Promise<void> {

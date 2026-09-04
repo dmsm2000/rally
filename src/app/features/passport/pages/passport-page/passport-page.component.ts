@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { PlayerCardComponent } from '../../../../shared/components';
+import { PlayerMetCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { EmptyStateComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
 import { PassportService } from '../../passport.service';
@@ -12,7 +12,7 @@ import { PassportService } from '../../passport.service';
     StatComponent,
     SectionHeaderComponent,
     EmptyStateComponent,
-    PlayerCardComponent,
+    PlayerMetCardComponent,
     TranslatePipe
   ],
   templateUrl: './passport-page.component.html',

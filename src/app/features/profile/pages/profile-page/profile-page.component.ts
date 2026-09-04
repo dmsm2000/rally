@@ -4,7 +4,6 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CountryDataService } from '../../../../core/data/country-data.service';
 import {
-  AVAILABILITY_OPTIONS,
   AvailabilityOption,
   Backhand,
   BACKHANDS,
@@ -23,6 +22,7 @@ import {
   PLAY_STYLES,
   PlayStyle,
   SURFACES,
+  surfaceLabelKey,
   TimeOfDay,
   TIMES_OF_DAY
 } from '../../../../core/data/player-profile-options';
@@ -31,17 +31,12 @@ import { TranslationService } from '../../../../core/i18n/translation.service';
 import { Format, Level, Player, Surface } from '../../../../core/models';
 import { AVATAR_STYLES, AvatarStyleId } from '../../../../core/services/avatar.service';
 import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.service';
+import { GeolocationService } from '../../../../core/services/geolocation.service';
+import { ReverseGeocodeService } from '../../../../core/services/reverse-geocode.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { AvatarPickerComponent, MatchCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import {
-  AutocompleteComponent,
-  AvatarComponent,
-  ChipComponent,
-  DatePickerComponent,
-  SectionHeaderComponent,
-  StatComponent
-} from '../../../../shared/ui';
+import { AutocompleteComponent, AvatarComponent, ChipComponent, DatePickerComponent, SectionHeaderComponent } from '../../../../shared/ui';
 import { CourtsService } from '../../../courts/courts.service';
 import { MatchesService } from '../../../matches/matches.service';
 import { ChangePasswordDialogComponent } from '../../change-password-dialog/change-password-dialog.component';
@@ -57,7 +52,6 @@ type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule';
     RouterLink,
     AvatarComponent,
     ChipComponent,
-    StatComponent,
     SectionHeaderComponent,
     AvatarPickerComponent,
     MatchCardComponent,
@@ -80,52 +74,22 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly router = inject(Router);
   private readonly countryData = inject(CountryDataService);
+  private readonly geolocation = inject(GeolocationService);
+  private readonly reverseGeocode = inject(ReverseGeocodeService);
 
   // MatchesService's upcoming()/completed() are already scoped to the signed-in player.
   private readonly myMatches = computed(() => [...this.matchesService.upcoming(), ...this.matchesService.completed()]);
   protected readonly recentMatches = computed(() => this.myMatches().slice(0, 6));
-  private readonly myCompletedMatches = computed(() => this.matchesService.completed());
-  private readonly myWins = computed(() => this.myCompletedMatches().filter(m => m.winner === this.auth.currentUserId()));
-  protected readonly winRatePct = computed(() =>
-    this.myCompletedMatches().length ? Math.round((this.myWins().length / this.myCompletedMatches().length) * 100) : 0
-  );
-  protected readonly winCount = computed(() => this.myWins().length);
-  protected readonly completedCount = computed(() => this.myCompletedMatches().length);
-
-  // Surface the player has won on most often, to back up the win-rate stat with something concrete.
-  protected readonly bestSurface = computed(() => {
-    const bySurface = new Map<string, number>();
-    for (const m of this.myWins()) {
-      const surface = this.matchesService.courtById(m.courtId)?.surface;
-      if (surface) {
-        bySurface.set(surface, (bySurface.get(surface) ?? 0) + 1);
-      }
-    }
-    let best: string | undefined;
-    let max = 0;
-    for (const [surface, count] of bySurface) {
-      if (count > max) {
-        max = count;
-        best = surface;
-      }
-    }
-    return best;
-  });
-
-  protected readonly bestSurfaceLabel = computed(() => {
-    const surface = this.bestSurface();
-    return surface ? this.translation.t('enums.surface.' + surface) : '—';
-  });
 
   protected readonly levels = LEVELS;
   protected readonly formats = FORMATS;
   protected readonly surfaces = SURFACES;
   protected readonly frequencies = FREQUENCIES;
-  protected readonly availabilityOptions = AVAILABILITY_OPTIONS;
   protected readonly maxDistanceOptions = MAX_DISTANCE_OPTIONS;
   protected readonly countries = this.countryData.countries;
   protected readonly countryNames = computed(() => this.countries().map(c => c.name));
-  protected readonly maxBirthDate = new Date().toISOString().slice(0, 10);
+  // Players must be at least 6 years old — same lock as registration.
+  protected readonly maxBirthDate = new Date(new Date().setFullYear(new Date().getFullYear() - 6)).toISOString().slice(0, 10);
   protected readonly countryFlags = computed(() => Object.fromEntries(this.countries().map(c => [c.name, c.flag])));
   protected readonly cityOptions = signal<string[]>([]);
   protected readonly hands = HANDS;
@@ -134,6 +98,7 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly playStyles = PLAY_STYLES;
   protected readonly courtPrefs = COURT_PREFS;
   protected readonly timesOfDayOptions = TIMES_OF_DAY;
+  protected readonly surfaceLabelKey = surfaceLabelKey;
 
   protected readonly draftBirthDate = signal(this.profile.me().birthDate ?? '');
   protected readonly draftGender = signal<Gender | null>((this.profile.me().gender as Gender) ?? null);
@@ -141,7 +106,10 @@ export class ProfilePageComponent implements CanComponentDeactivate {
   protected readonly draftBackhand = signal<Backhand | null>((this.profile.me().backhand as Backhand) ?? null);
   protected readonly draftCity = signal(this.profile.me().city);
   protected readonly draftCountry = signal(this.profile.me().country);
-  protected readonly draftMaxDistanceKm = signal<number | null>(this.profile.me().maxDistanceKm ?? null);
+  protected readonly draftLocationConsent = signal<boolean | null>(null);
+  protected readonly draftLocatingConsent = signal(false);
+  // Falls back to the same 20 km default registration starts at, for a profile that predates this field.
+  protected readonly draftMaxDistanceKm = signal<number | null>(this.profile.me().maxDistanceKm ?? MAX_DISTANCE_OPTIONS[2]);
   protected readonly draftLevel = signal<Level | null>(this.profile.me().level);
   protected readonly draftYears = signal<number | null>(this.profile.me().years);
   protected readonly draftPlayStyle = signal<PlayStyle | null>((this.profile.me().playStyle as PlayStyle) ?? null);
@@ -175,7 +143,12 @@ export class ProfilePageComponent implements CanComponentDeactivate {
     () => this.draftCountry().length > 0 && this.draftCity().length > 0 && this.draftMaxDistanceKm() !== null
   );
 
-  protected readonly canSaveGame = computed(() => !!this.draftLevel() && this.draftYears() !== null);
+  protected readonly maxDistanceIndex = computed(() => Math.max(0, this.maxDistanceOptions.indexOf(this.draftMaxDistanceKm() ?? -1)));
+
+  // 0 years is a complete answer on its own — "Nível de jogo" is only required once years > 0.
+  protected readonly canSaveGame = computed(
+    () => this.draftYears() !== null && (this.draftYears() === 0 || !!this.draftLevel())
+  );
 
   protected readonly canSaveSchedule = computed(
     () => this.draftCoached() !== null && (this.draftCoached() === false || !!this.draftCoachedFrequency())
@@ -246,9 +219,29 @@ export class ProfilePageComponent implements CanComponentDeactivate {
     this.draftYears.set(Math.max(0, (this.draftYears() ?? 1) - 1));
   }
 
-  protected toggleDraftAvailability(option: AvailabilityOption): void {
-    const current = this.draftAvailability();
-    this.draftAvailability.set(current.includes(option) ? current.filter(a => a !== option) : [...current, option]);
+  protected async requestDraftLocation(): Promise<void> {
+    this.draftLocatingConsent.set(true);
+    try {
+      const fix = await this.geolocation.locate();
+      this.draftLocationConsent.set(true);
+      await this.fillDraftLocationFromFix(fix.lat, fix.lng);
+    } catch {
+      this.draftLocationConsent.set(false);
+    } finally {
+      this.draftLocatingConsent.set(false);
+    }
+  }
+
+  // Best-effort only — a failed or unmatched lookup leaves country/city exactly as manual fields.
+  private async fillDraftLocationFromFix(lat: number, lng: number): Promise<void> {
+    const [result, countries] = await Promise.all([this.reverseGeocode.lookup(lat, lng), this.countryData.loadCountries()]);
+    const match = result && countries.find(c => c.iso2.toUpperCase() === result.countryCode);
+    if (match) {
+      this.setDraftCountry(match.name);
+    }
+    if (result?.city) {
+      this.draftCity.set(result.city);
+    }
   }
 
   protected toggleDraftTimeOfDay(option: TimeOfDay): void {
@@ -358,7 +351,8 @@ export class ProfilePageComponent implements CanComponentDeactivate {
     const me = this.profile.me();
     this.draftCity.set(me.city);
     this.draftCountry.set(me.country);
-    this.draftMaxDistanceKm.set(me.maxDistanceKm ?? null);
+    this.draftMaxDistanceKm.set(me.maxDistanceKm ?? MAX_DISTANCE_OPTIONS[2]);
+    this.draftLocationConsent.set(null);
   }
 
   protected resetGame(): void {

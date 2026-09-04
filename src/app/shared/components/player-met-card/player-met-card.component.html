@@ -1,0 +1,21 @@
+<a
+  [routerLink]="['/players', player().id]"
+  class="group flex items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg"
+>
+  <ui-avatar
+    [initials]="player().initials"
+    [accent]="player().accent"
+    [seed]="player().avatarSeed"
+    [avatarStyle]="player().avatarStyle"
+    [badgeClass]="genderClass(player().gender)"
+    [badgeIcon]="genderIcon(player().gender)"
+    size="md"
+  />
+  <div class="min-w-0 flex-1">
+    <p class="truncate font-display text-base font-extrabold tracking-tight">{{ player().name }}</p>
+    <p class="truncate text-xs text-muted-foreground">{{ player().flag }} {{ player().city }}</p>
+    <p class="mt-1 text-xs text-muted-foreground">
+      {{ 'passport.playersMetSummary' | translate: { count: timesPlayed(), date: lastPlayedAt() } }}
+    </p>
+  </div>
+</a>

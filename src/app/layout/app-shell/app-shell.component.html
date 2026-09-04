@@ -1,7 +1,11 @@
 <div class="flex h-dvh flex-col overflow-hidden">
   <rally-topbar [hideOffset]="topbarHideOffset()" [menuOpen]="drawerOpen()" (menuToggled)="toggleDrawer()" />
   <main class="no-scrollbar flex-1 overflow-y-auto pt-16" (scroll)="onMainScroll($event)">
-    <div class="mx-auto max-w-7xl px-5 py-6">
+    <div
+      class="mx-auto max-w-7xl px-5 pt-6"
+      [class.pb-6]="auth.isObserver()"
+      [class.pb-28]="!auth.isObserver()"
+    >
       <router-outlet />
     </div>
   </main>

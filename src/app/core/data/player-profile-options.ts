@@ -95,3 +95,12 @@ export const TIMES_OF_DAY: ChipOption<TimeOfDay>[] = [
   { value: 'Afternoon', emoji: '🌤️', key: 'auth.afternoon' },
   { value: 'Evening', emoji: '🌙', key: 'auth.evening' }
 ];
+
+/**
+ * "Carpet" reads as "Outro" for a player's own preferred-surface question (registration and
+ * profile editing) — real court listings still show the honest "Alcatifa"/"Carpet" label via
+ * `enums.surface`, this is this question's copy only.
+ */
+export function surfaceLabelKey(surface: Surface): string {
+  return surface === 'Carpet' ? 'auth.surfaceOther' : `enums.surface.${surface}`;
+}
