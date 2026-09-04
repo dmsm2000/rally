@@ -17,7 +17,7 @@ const SPLASH_SHOWN_KEY = 'rally.splashShown';
 const HIDDEN_PATHS = ['/login', '/register', '/forgot-password', '/reset-password'];
 
 // The Google OAuth round-trip lands here for a beat while it decides where the session goes next —
-// the brand intro doubles as its loading screen every time, unlike the once-per-tab intro below.
+// the brand intro doubles as its loading screen, every time, regardless of the once-per-tab throttle.
 const AUTH_CALLBACK_PATH = '/auth/callback';
 
 const COURT_PHOTOS = [
@@ -35,9 +35,12 @@ const COURT_PHOTOS = [
  * from those pages (since the root component never remounts on SPA navigation, we
  * replay it manually here) — and only once per browser tab session either way.
  *
- * `/auth/callback` (the Google OAuth round-trip) is the one exception: it shows the same intro
- * every time, for as long as that route is active, regardless of the once-per-session throttle —
- * it's standing in for that page's own loading state, not replaying the brand moment.
+ * `/auth/callback` (the Google OAuth round-trip) is the one exception: landing there always plays
+ * the full animation, bypassing the once-per-session throttle. Crucially, once started it runs to
+ * completion on its own fixed timers (`play()`'s `FADE_START_MS`/`REMOVE_MS`) — `AuthCallbackPageComponent`
+ * typically resolves and navigates away well under that, but since this component lives outside the
+ * router-outlet it isn't unmounted by that navigation, so the animation keeps covering whatever
+ * loads underneath instead of being cut short the instant auth resolves.
  */
 @Component({
   selector: 'rally-splash-screen',
@@ -47,7 +50,6 @@ const COURT_PHOTOS = [
 export class SplashScreenComponent implements OnInit, OnDestroy {
   protected readonly visible = signal(false);
   protected readonly fading = signal(false);
-  protected readonly onAuthCallback = signal(false);
   protected readonly photoSrc = COURT_PHOTOS[Math.floor(Math.random() * COURT_PHOTOS.length)];
 
   private readonly router = inject(Router);
@@ -60,9 +62,12 @@ export class SplashScreenComponent implements OnInit, OnDestroy {
   private wasOnHiddenRoute = false;
 
   async ngOnInit(): Promise<void> {
-    // Set synchronously, before the whenReady() await below — /auth/callback should show the brand
-    // intro for the whole time it's deciding where the session goes, not just after that's resolved.
-    this.setOnAuthCallback(this.location.path().startsWith(AUTH_CALLBACK_PATH));
+    // Checked synchronously, before the whenReady() await below, so the animation starts the moment
+    // the page paints rather than after auth/profile resolution — it's the loading screen for that
+    // wait, not a reward for it finishing.
+    if (this.location.path().startsWith(AUTH_CALLBACK_PATH)) {
+      this.play();
+    }
 
     await this.auth.whenReady();
 
@@ -78,7 +83,6 @@ export class SplashScreenComponent implements OnInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(event => {
-        this.setOnAuthCallback(event.urlAfterRedirects.startsWith(AUTH_CALLBACK_PATH));
         const onHiddenRoute = HIDDEN_PATHS.some(path => event.urlAfterRedirects.startsWith(path));
         if (this.wasOnHiddenRoute && !onHiddenRoute && this.auth.isAuthenticated() && this.shouldPlay()) {
           this.play();
@@ -93,12 +97,6 @@ export class SplashScreenComponent implements OnInit, OnDestroy {
 
   private shouldPlay(): boolean {
     return sessionStorage.getItem(SPLASH_SHOWN_KEY) !== '1';
-  }
-
-  private setOnAuthCallback(value: boolean): void {
-    this.onAuthCallback.set(value);
-    // Independent of play()'s own timer-driven lock — this route can outlast or undercut 3s either way.
-    this.lockBodyScroll(value || this.visible());
   }
 
   private play(): void {

@@ -5,11 +5,12 @@
 `AuthService` fica pronto (ver Fluxo 10) — só uma sessão de observador fica no formulário, porque
 essa é a única forma de sair do modo observador para uma conta real.
 **Componentes:** `LoginPageComponent`, `AuthCallbackPageComponent` (o passo intermédio do login com
-Google, em `/auth/callback`, fora da app shell tal como este ecrã). Visualmente, enquanto essa rota
-estiver ativa, o brand intro (`SplashScreenComponent`, montado sempre em `app.html`) cobre-a por
-completo — ver "Nota de UI" mais abaixo. O próprio `AuthCallbackPageComponent` continua a renderizar
-um texto simples ("A concluir início de sessão…") por baixo, mas só como suporte; na prática nunca
-chega a ser visível.
+Google, em `/auth/callback`, fora da app shell tal como este ecrã). Visualmente, aterrar em
+`/auth/callback` dispara sempre a animação completa do brand intro (`SplashScreenComponent`, montado
+em `app.html`), que a cobre por inteiro do princípio ao fim (~3s, mesmo que a navegação para `/` ou
+`/register` aconteça bem antes disso) — ver "Nota de UI" mais abaixo. O próprio
+`AuthCallbackPageComponent` continua a renderizar um texto simples ("A concluir início de
+sessão…") por baixo, mas só como suporte; na prática nunca chega a ser visível.
 **Depende de:** `AuthService.login()`, `AuthService.loginWithGoogle()`, `AuthService.loginAsObserver()`,
 `AuthService.hasProfile()`, `ToastService`
 
@@ -132,13 +133,16 @@ Cada fluxo é uma sequência de ações concretas — o mapeamento para um teste
 
 > **Nota de UI — brand intro cobre `/auth/callback`:** `SplashScreenComponent` normalmente só toca
 > uma vez por sessão de separador (`sessionStorage['rally.splashShown']`), na transição de uma rota
-> pré-autenticação para uma autenticada. `/auth/callback` é a exceção: enquanto essa rota estiver
-> ativa, o brand intro fica visível **sempre**, sem o limite de uma vez por sessão e sem o temporizador
-> de 3s que a versão normal usa — é controlado por um sinal próprio (`onAuthCallback`, ligado a
-> `router.events`), não pelos temporizadores de `play()`. Assim que `AuthCallbackPageComponent`
-> navega para `/` ou `/register`, o sinal muda e o brand intro desaparece de imediato, revelando o
-> ecrã seguinte. Sem isto, os Fluxos 12–14 mostrariam por instantes um ecrã de texto simples ("A
-> concluir início de sessão…") em vez do brand intro.
+> pré-autenticação para uma autenticada. `/auth/callback` é a exceção: aterrar aí dispara sempre a
+> animação (mesmo sinal de `play()`, incluindo marcar `sessionStorage` — não volta a tocar sozinha
+> a seguir, ao chegar a `/`), ignorando o limite de uma vez por sessão. Uma vez disparada, corre até
+> ao fim pelos seus próprios temporizadores fixos (~2.5s antes de começar a esbater, ~3s até
+> desaparecer) — **não** é cortada a meio quando `AuthCallbackPageComponent` decide mais depressa
+> para onde navegar. Como o `SplashScreenComponent` vive fora do `router-outlet` (montado em
+> `app.html`), a navegação para `/` ou `/register` acontece por baixo sem o desmontar, por isso a
+> animação continua a cobrir o que quer que carregue a seguir até se esbater sozinha. Sem isto, os
+> Fluxos 12–14 mostrariam por instantes um ecrã de texto simples ("A concluir início de sessão…") em
+> vez do brand intro, ou cortariam a animação a meio assim que a navegação acontecesse.
 
 ### Fluxo 12 — Login com Google, membro já registado
 **Perfil:** já tem `profiles` row associada a esta conta Google (já entrou por Google antes, ou
