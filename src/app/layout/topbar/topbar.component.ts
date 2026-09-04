@@ -3,11 +3,13 @@ import { Component, ElementRef, computed, effect, inject, input, output, signal,
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { AvatarComponent, IconComponent } from '../../shared/ui';
 import { LanguageSwitcherComponent, ThemeToggleComponent } from '../../shared/components';
 import { NotificationsBellComponent } from '../../features/notifications/notifications-bell/notifications-bell.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { detailRouteFallback } from '../detail-route';
 import { NAV_ITEMS, NavItem, isNavItemActive } from '../nav-items';
 
 const PRIMARY_PATHS = ['/', '/world'];
@@ -27,6 +29,7 @@ export class TopbarComponent {
 
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
+  private readonly backNav = inject(BackNavigationService);
 
   // Home and World render first; observers additionally lose the passport link since they can't hold one.
   protected readonly primary = computed(() => NAV_ITEMS.filter((i) => PRIMARY_PATHS.includes(i.path)));
@@ -46,6 +49,12 @@ export class TopbarComponent {
     ),
     { initialValue: this.router.url }
   );
+
+  // On a detail page (a player, a court, a match) the hamburger has nothing to do below `lg` — the
+  // drawer it opens duplicates the bottom nav that's already on screen — so it becomes a back arrow
+  // instead. Above `lg` the nav is always inline and this slot doesn't render at all; desktop's
+  // equivalent is `ui-back-link` on the page itself.
+  protected readonly detailFallback = computed(() => detailRouteFallback(this.currentUrl()));
 
   // Matches DOM order: primary items render before secondary ones, same as NAV_ITEMS itself.
   private readonly navLinks = viewChildren<ElementRef<HTMLAnchorElement>>('navLink');
@@ -71,6 +80,15 @@ export class TopbarComponent {
 
   protected isActive(item: NavItem): boolean {
     return isNavItemActive(this.currentUrl(), item);
+  }
+
+  protected handleMenuButton(): void {
+    const fallback = this.detailFallback();
+    if (fallback) {
+      this.backNav.back(fallback);
+    } else {
+      this.menuToggled.emit();
+    }
   }
 
   protected async exitObserverMode(): Promise<void> {

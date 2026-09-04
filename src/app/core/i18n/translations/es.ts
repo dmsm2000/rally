@@ -21,6 +21,7 @@ export const es = {
     exitObserver: 'Dejar de observar',
     openMenu: 'Abrir menú',
     closeMenu: 'Cerrar menú',
+    goBack: 'Volver',
   },
   stats: {
     wins: 'Victorias',
@@ -101,6 +102,7 @@ export const es = {
     noResultsTitle: 'Ninguna pista coincide',
     noResultsBody: 'Prueba otra superficie o borra la búsqueda.',
     notFound: 'Pista no encontrada.',
+    backToCourts: 'Volver a las pistas',
 
     registerEyebrow: 'Registrar una pista',
     registerFabLabel: 'Registrar una pista',

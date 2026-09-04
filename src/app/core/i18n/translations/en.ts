@@ -20,6 +20,7 @@ export const en = {
     exitObserver: 'Stop observing',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
+    goBack: 'Go back',
   },
   stats: {
     wins: 'Wins',
@@ -100,6 +101,7 @@ export const en = {
     noResultsTitle: 'No courts match that',
     noResultsBody: 'Try a different surface, or clear the search.',
     notFound: 'Court not found.',
+    backToCourts: 'Back to courts',
 
     registerEyebrow: 'Register a court',
     registerFabLabel: 'Register a court',

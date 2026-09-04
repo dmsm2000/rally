@@ -9,6 +9,7 @@ export type IconName =
   | 'passport'
   | 'matches'
   | 'chevron-down'
+  | 'arrow-left'
   | 'error-circle'
   | 'eye'
   | 'calendar'
@@ -41,6 +42,7 @@ const ICON_URLS: Record<IconName, string> = {
   passport: 'assets/icons/passport.svg',
   matches: 'assets/icons/matches.svg',
   'chevron-down': 'assets/icons/chevron-down.svg',
+  'arrow-left': 'assets/icons/arrow-left.svg',
   'error-circle': 'assets/icons/error-circle.svg',
   eye: 'assets/icons/eye.svg',
   calendar: 'assets/icons/calendar.svg',

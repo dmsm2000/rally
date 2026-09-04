@@ -1,3 +1,4 @@
+<ui-back-link label="matches.backToMatches" fallback="/matches" />
 @if (loading()) {
   <p class="text-muted-foreground">{{ 'matches.loading' | translate }}</p>
 } @else if (match(); as m) {

@@ -8,14 +8,23 @@ import { ConfirmDialogService } from '../../../../core/services/confirm-dialog.s
 import { TranslationService } from '../../../../core/i18n/translation.service';
 import { MapMarker, RallyMapComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { ChipComponent, IconComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
+import { BackLinkComponent, ChipComponent, IconComponent, SectionHeaderComponent, StatComponent } from '../../../../shared/ui';
 import { CourtsService } from '../../courts.service';
 
 const MAX_PHOTOS = 3;
 
 @Component({
   selector: 'rally-court-detail-page',
-  imports: [RouterLink, StatComponent, ChipComponent, IconComponent, SectionHeaderComponent, RallyMapComponent, TranslatePipe],
+  imports: [
+    RouterLink,
+    StatComponent,
+    ChipComponent,
+    IconComponent,
+    SectionHeaderComponent,
+    RallyMapComponent,
+    BackLinkComponent,
+    TranslatePipe
+  ],
   templateUrl: './court-detail-page.component.html',
   styleUrl: './court-detail-page.component.scss'
 })

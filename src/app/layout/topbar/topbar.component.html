@@ -6,12 +6,12 @@
       <div class="col-start-1 row-start-1 flex min-w-0 items-center lg:hidden">
         <button
           type="button"
-          (click)="menuToggled.emit()"
-          [attr.aria-label]="(menuOpen() ? 'nav.closeMenu' : 'nav.openMenu') | translate"
-          [attr.aria-expanded]="menuOpen()"
+          (click)="handleMenuButton()"
+          [attr.aria-label]="(detailFallback() ? 'nav.goBack' : menuOpen() ? 'nav.closeMenu' : 'nav.openMenu') | translate"
+          [attr.aria-expanded]="detailFallback() ? null : menuOpen()"
           class="-ml-1.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-foreground hover:bg-muted"
         >
-          <ui-icon [name]="menuOpen() ? 'close' : 'menu'" className="size-5" />
+          <ui-icon [name]="detailFallback() ? 'arrow-left' : menuOpen() ? 'close' : 'menu'" className="size-5" />
         </button>
       </div>
 

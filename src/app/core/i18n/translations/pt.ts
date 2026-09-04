@@ -21,6 +21,7 @@ export const pt = {
     exitObserver: 'Deixar de observar',
     openMenu: 'Abrir menu',
     closeMenu: 'Fechar menu',
+    goBack: 'Voltar',
   },
   stats: {
     wins: 'Vitórias',
@@ -101,6 +102,7 @@ export const pt = {
     noResultsTitle: 'Nenhum campo corresponde',
     noResultsBody: 'Experimenta outro piso, ou limpa a pesquisa.',
     notFound: 'Campo não encontrado.',
+    backToCourts: 'Voltar aos courts',
 
     registerEyebrow: 'Registar um campo',
     registerFabLabel: 'Registar um campo',

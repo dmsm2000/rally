@@ -1,5 +1,6 @@
 export * from './autocomplete/autocomplete.component';
 export * from './avatar/avatar.component';
+export * from './back-link/back-link.component';
 export * from './chip/chip.component';
 export * from './confirm-dialog/confirm-dialog.component';
 export * from './date-picker/date-picker.component';

@@ -5,7 +5,7 @@ import { map } from 'rxjs';
 import { MatchesService } from '../../matches.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { Match } from '../../../../core/models';
-import { AvatarComponent, IconComponent } from '../../../../shared/ui';
+import { AvatarComponent, BackLinkComponent, IconComponent } from '../../../../shared/ui';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 // Same gender-badge mapping as the public player detail page — the tennis ball stays the fallback
@@ -23,7 +23,7 @@ const GENDER_ICONS: Record<string, 'gender-male' | 'gender-female' | 'gender-non
 
 @Component({
   selector: 'rally-match-detail-page',
-  imports: [RouterLink, AvatarComponent, IconComponent, TranslatePipe],
+  imports: [RouterLink, AvatarComponent, IconComponent, BackLinkComponent, TranslatePipe],
   templateUrl: './match-detail-page.component.html',
   styleUrl: './match-detail-page.component.scss',
 })

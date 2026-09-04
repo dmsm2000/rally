@@ -12,6 +12,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import {
   AutocompleteComponent,
   AvatarComponent,
+  BackLinkComponent,
   ChipComponent,
   DatePickerComponent,
   EmptyStateComponent,
@@ -68,6 +69,7 @@ const GENDER_ICONS: Record<string, 'gender-male' | 'gender-female' | 'gender-non
     RouterLink,
     FormsModule,
     AvatarComponent,
+    BackLinkComponent,
     ChipComponent,
     DatePickerComponent,
     TimePickerComponent,
