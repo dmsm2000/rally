@@ -437,7 +437,7 @@
         }
 
         <div class="mt-8 flex items-center justify-between gap-3">
-          @if (step() > 0) {
+          @if (step() > (googleMode() ? 1 : 0)) {
             <button
               type="button"
               (click)="back()"

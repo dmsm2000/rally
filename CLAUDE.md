@@ -127,7 +127,7 @@ supabase/migrations/
 
 ## Auth and Permissions
 
-`core/auth/AuthService` wraps real Supabase email/password auth:
+`core/auth/AuthService` wraps real Supabase email/password auth, plus Google OAuth:
 
 - `isAuthenticated()` is true for either a Supabase session or observer mode.
 - `isObserver()` is a read-only guest mode. Observers can access the app shell, explore players, and open public player details. They cannot write, message, invite, access `/profile`, or access `/passport`.
@@ -135,6 +135,9 @@ supabase/migrations/
 - `noObserverGuard` protects own-profile and passport routes.
 - Email confirmation may leave `signUp()` without a session. Registration profiles are stored in `localStorage['rally.pendingProfile']` and written after confirmation/sign-in.
 - Never expose an `sb_secret_...` key or any service-role credential. The browser uses only the publishable/anon key from ignored environment files.
+- `LoginPageComponent` redirects a real signed-in session straight to `/` on load (an observer session is exempt — that's the one way to leave observer mode for a real account). See `docs/flows/login.md` for every flow this screen supports; it's the source of truth for this screen's behaviour, not this section.
+- **Google sign-in:** `AuthService.loginWithGoogle()` calls `supabase.auth.signInWithOAuth()`, which redirects the whole page to Google and back to `/auth/callback` (`AuthCallbackPageComponent`, public, outside the shell like `/login`). That page is the only thing that decides where the new session goes: `/` if `AuthService.hasProfile()` finds an existing `profiles` row, `/register` in profile-completion mode (`completeGoogleProfile` nav state) otherwise. `RegisterPageComponent` reads that state to skip its email/password step (Google already supplied the email, there's no password to set), prefilling first/last name from `AuthService.googleProfileHint()` — **never** the Google account photo, since Rally avatars are always seed-generated, never uploaded (see Assets and External Data). `AuthService.completeProfile()` writes the `profiles` row directly for that case (no `signUp()` — the session already exists). Known gap: reloading `/register` mid-completion loses `completeGoogleProfile` (it's only navigation-extras state, not persisted) and falls back to the full wizard; narrow enough it's left as-is for now (see `docs/flows/login.md`, Fluxo 13's note). The Google provider itself is configured entirely in the Supabase dashboard + Google Cloud Console — no code enables it; see the "Pré-requisitos fora do código" section at the end of `docs/flows/login.md`.
+- Known Supabase Auth error messages are mapped to translated copy by `core/auth/auth-errors.ts` (`authErrorKey()`) — currently "Invalid login credentials" and "Email not confirmed" for the login form. Anything not in that short list still passes through as Supabase's raw English text, same as before this mapping existed.
 
 Environment files are deliberately gitignored:
 

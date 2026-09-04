@@ -37,7 +37,7 @@ código real), marca o estado abaixo.
 | #   | Ecrã                      | Rota               | Ficheiro                                         | Estado |
 | --- | ------------------------- | ------------------ | ------------------------------------------------ | ------ |
 | 1   | Registo                   | `/register`        | [`register.md`](flows/register.md)               | ⬜     |
-| 2   | Login                     | `/login`           | [`login.md`](flows/login.md)                     | 📝     |
+| 2   | Login                     | `/login`           | [`login.md`](flows/login.md)                     | ✅     |
 | 3   | Esqueceste-te da password | `/forgot-password` | [`forgot-password.md`](flows/forgot-password.md) | 📝     |
 | 4   | Repor a password          | `/reset-password`  | [`reset-password.md`](flows/reset-password.md)   | 📝     |
 

@@ -8,6 +8,10 @@ export const routes: Routes = [
   { path: 'register', loadChildren: async () => (await import('./features/auth/auth.routes')).AUTH_ROUTES },
   { path: 'login', loadChildren: async () => (await import('./features/auth/auth.routes')).LOGIN_ROUTES },
   {
+    path: 'auth/callback',
+    loadChildren: async () => (await import('./features/auth/auth.routes')).AUTH_CALLBACK_ROUTES
+  },
+  {
     path: 'forgot-password',
     loadChildren: async () => (await import('./features/auth/auth.routes')).FORGOT_PASSWORD_ROUTES
   },

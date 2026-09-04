@@ -96,7 +96,15 @@ export class RegisterPageComponent {
     { label: 'auth.steps.finish', tagline: 'auth.taglines.finish' }
   ];
 
-  protected readonly step = signal(0);
+  // Set when we're routed here by AuthCallbackPageComponent after a first Google sign-in: a real
+  // session already exists with no `profiles` row yet, so the account step (email/password) is
+  // skipped — Google already supplied the email, and there's no password to set.
+  protected readonly googleMode = signal(
+    !!(this.router.getCurrentNavigation()?.extras.state as { completeGoogleProfile?: boolean } | undefined)
+      ?.completeGoogleProfile
+  );
+
+  protected readonly step = signal(this.googleMode() ? 1 : 0);
   protected readonly submitting = signal(false);
   protected readonly confirmationPending = signal(false);
   protected readonly emailFieldError = signal(false);
@@ -179,6 +187,12 @@ export class RegisterPageComponent {
       }
       this.countryData.citiesFor(match.iso2).then(cities => this.cityOptions.set(cities));
     });
+
+    if (this.googleMode()) {
+      const hint = this.auth.googleProfileHint();
+      this.firstName.set(hint?.firstName ?? '');
+      this.lastName.set(hint?.lastName ?? '');
+    }
   }
 
   protected setEmail(value: string): void {
@@ -246,7 +260,9 @@ export class RegisterPageComponent {
   }
 
   protected back(): void {
-    this.step.update(s => Math.max(0, s - 1));
+    // In Google mode there's no account step to go back to — email/password were never asked.
+    const floor = this.googleMode() ? 1 : 0;
+    this.step.update(s => Math.max(floor, s - 1));
   }
 
   protected async onSubmit(): Promise<void> {
@@ -254,7 +270,7 @@ export class RegisterPageComponent {
       return;
     }
     this.submitting.set(true);
-    const result = await this.auth.register(this.email(), this.password(), {
+    const profile = {
       name: this.fullName(),
       firstName: this.firstName().trim(),
       lastName: this.lastName().trim(),
@@ -279,7 +295,10 @@ export class RegisterPageComponent {
       bio: this.bio(),
       avatarSeed: this.avatarSeed(),
       avatarStyle: this.avatarStyle()
-    });
+    };
+    const result = this.googleMode()
+      ? await this.auth.completeProfile(profile)
+      : await this.auth.register(this.email(), this.password(), profile);
     this.submitting.set(false);
     if (!result.success) {
       this.emailFieldError.set(true);

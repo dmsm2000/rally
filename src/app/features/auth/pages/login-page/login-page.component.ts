@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -7,7 +7,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { ThemeService } from '../../../../core/theme/theme.service';
 import { LanguageSwitcherComponent, ThemeToggleComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { PasswordToggleComponent } from '../../../../shared/ui';
+import { IconComponent, PasswordToggleComponent } from '../../../../shared/ui';
 
 @Component({
   selector: 'rally-login-page',
@@ -17,7 +17,8 @@ import { PasswordToggleComponent } from '../../../../shared/ui';
     LanguageSwitcherComponent,
     ThemeToggleComponent,
     TranslatePipe,
-    PasswordToggleComponent
+    PasswordToggleComponent,
+    IconComponent
   ],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss'
@@ -34,12 +35,24 @@ export class LoginPageComponent {
   protected readonly submitting = signal(false);
   protected readonly fieldError = signal(false);
   protected readonly showPassword = signal(false);
+  protected readonly googleLoading = signal(false);
 
   private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   protected readonly canSubmit = computed(
     () => !this.submitting() && this.emailPattern.test(this.email()) && this.password().length > 0
   );
+
+  constructor() {
+    // A real session visiting /login directly (back button, bookmark, typed URL) has nothing to do
+    // here — send it on to the Feed instead of showing the form again. Observers are exempt: one of
+    // them landing here is most likely trying to sign in for real, which the form has to stay for.
+    effect(() => {
+      if (this.auth.ready() && this.auth.currentUserId()) {
+        this.router.navigateByUrl('/');
+      }
+    });
+  }
 
   protected setEmail(value: string): void {
     this.email.set(value);
@@ -69,5 +82,15 @@ export class LoginPageComponent {
   protected enterAsObserver(): void {
     this.auth.loginAsObserver();
     this.router.navigateByUrl('/');
+  }
+
+  protected async loginWithGoogle(): Promise<void> {
+    this.googleLoading.set(true);
+    const result = await this.auth.loginWithGoogle();
+    // On success the browser is already navigating away to Google — nothing left to do here.
+    if (!result.success) {
+      this.googleLoading.set(false);
+      this.toast.error(this.i18n.t(result.error ?? 'auth.errorGeneric'));
+    }
   }
 }

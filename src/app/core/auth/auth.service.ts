@@ -3,6 +3,7 @@ import { Session } from '@supabase/supabase-js';
 import { ProfileRepositoryService } from '../data/profile-repository.service';
 import { RallyDataService } from '../data/rally-data.service';
 import { Player } from '../models';
+import { authErrorKey } from './auth-errors';
 import { supabase } from './supabase.client';
 
 export interface AuthResult {
@@ -105,10 +106,63 @@ export class AuthService {
   async login(email: string, password: string): Promise<AuthResult> {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      return { success: false, error: authErrorKey(error.message) };
+    }
+    this._isObserver.set(false);
+    return { success: true };
+  }
+
+  /**
+   * Redirects the whole page to Google, then back to `/auth/callback` once Supabase has a session —
+   * there's no in-page promise to await beyond a synchronous setup error (e.g. the provider isn't
+   * enabled yet), since a successful call navigates away before anything else in this tab runs.
+   */
+  async loginWithGoogle(): Promise<AuthResult> {
+    const redirectTo = new URL('auth/callback', document.baseURI).toString();
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+    if (error) {
       return { success: false, error: error.message };
     }
     this._isObserver.set(false);
     return { success: true };
+  }
+
+  /** Whether the signed-in user already has a `profiles` row — false right after a first Google sign-in. */
+  async hasProfile(userId: string): Promise<boolean> {
+    return (await this.profiles.getByUserId(userId)) !== null;
+  }
+
+  /**
+   * Writes the profile row for a session that already exists but has none yet — a first Google
+   * sign-in, routed here by `AuthCallbackPageComponent`. Unlike `register()`, there's no `signUp()`
+   * call: the session is already real.
+   */
+  async completeProfile(profile: RegisterProfile): Promise<AuthResult> {
+    const userId = this.currentUserId();
+    if (!userId) {
+      return { success: false, error: 'auth.errorGeneric' };
+    }
+    this.data.updateMe(profile);
+    await this.saveProfileRow(userId, profile);
+    return { success: true };
+  }
+
+  /**
+   * First/last name Google (or any future OAuth provider) handed us, for prefilling the profile
+   * completion form — never an avatar image, since Rally's avatars are seed-generated, not uploaded
+   * (see CLAUDE.md). Undefined once there's no such metadata (email/password sessions, mainly).
+   */
+  googleProfileHint(): { firstName?: string; lastName?: string } | null {
+    const meta = this._session()?.user.user_metadata;
+    if (!meta) {
+      return null;
+    }
+    const fullName = typeof meta['full_name'] === 'string' ? meta['full_name'] : (meta['name'] as string | undefined);
+    const [firstFromFull, ...restFromFull] = (fullName ?? '').trim().split(/\s+/).filter(Boolean);
+    return {
+      firstName: (meta['given_name'] as string | undefined) ?? firstFromFull,
+      lastName: (meta['family_name'] as string | undefined) ?? (restFromFull.length ? restFromFull.join(' ') : undefined)
+    };
   }
 
   /** Permanently deletes the signed-in user's account (see supabase/migrations/0002_delete_own_account.sql). */
