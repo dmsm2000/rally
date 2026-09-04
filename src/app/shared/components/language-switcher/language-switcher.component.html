@@ -8,7 +8,7 @@
   >
     <img [src]="twemoji.urlFor(flags[i18n.locale()])" alt="" class="size-4 shrink-0" />
     <span class="hidden sm:inline">{{ labels[i18n.locale()] }}</span>
-    <ui-icon name="chevron-down" className="size-3" />
+    <ui-icon name="chevron-down" [className]="dropUp() ? 'size-3 rotate-180' : 'size-3'" />
   </button>
 
   @if (open()) {

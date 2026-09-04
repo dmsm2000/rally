@@ -166,7 +166,7 @@
       </label>
     </div>
 
-    <div class="mt-6 flex items-center justify-end gap-3">
+    <div class="mt-6 flex items-center justify-between gap-3 sm:justify-end">
       <button
         type="button"
         (click)="resetTraits()"
@@ -179,13 +179,9 @@
         type="button"
         (click)="saveTraits()"
         [disabled]="isSaving('traits') || !canSaveTraits()"
-        [class.animate-tennis-pop]="isSaved('traits')"
         class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ isSaved('traits') ? '🎾 ' : '' }}{{
-          (isSaving('traits') ? 'profile.saving' : isSaved('traits') ? 'profile.saved' : 'profile.saveChanges')
-            | translate
-        }}
+        {{ 'profile.save' | translate }}
       </button>
     </div>
   </section>
@@ -273,7 +269,7 @@
       </div>
     </div>
 
-    <div class="mt-6 flex items-center justify-end gap-3">
+    <div class="mt-6 flex items-center justify-between gap-3 sm:justify-end">
       <button
         type="button"
         (click)="resetLocation()"
@@ -286,13 +282,9 @@
         type="button"
         (click)="saveLocation()"
         [disabled]="isSaving('location') || !canSaveLocation()"
-        [class.animate-tennis-pop]="isSaved('location')"
         class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ isSaved('location') ? '🎾 ' : '' }}{{
-          (isSaving('location') ? 'profile.saving' : isSaved('location') ? 'profile.saved' : 'profile.saveChanges')
-            | translate
-        }}
+        {{ 'profile.save' | translate }}
       </button>
     </div>
   </section>
@@ -381,7 +373,7 @@
       </div>
     </div>
 
-    <div class="mt-6 flex items-center justify-end gap-3">
+    <div class="mt-6 flex items-center justify-between gap-3 sm:justify-end">
       <button
         type="button"
         (click)="resetGame()"
@@ -394,13 +386,9 @@
         type="button"
         (click)="saveGame()"
         [disabled]="isSaving('game') || !canSaveGame()"
-        [class.animate-tennis-pop]="isSaved('game')"
         class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ isSaved('game') ? '🎾 ' : '' }}{{
-          (isSaving('game') ? 'profile.saving' : isSaved('game') ? 'profile.saved' : 'profile.saveChanges')
-            | translate
-        }}
+        {{ 'profile.save' | translate }}
       </button>
     </div>
   </section>
@@ -465,7 +453,7 @@
       </div>
     </div>
 
-    <div class="mt-6 flex items-center justify-end gap-3">
+    <div class="mt-6 flex items-center justify-between gap-3 sm:justify-end">
       <button
         type="button"
         (click)="resetSchedule()"
@@ -478,13 +466,9 @@
         type="button"
         (click)="saveSchedule()"
         [disabled]="isSaving('schedule') || !canSaveSchedule()"
-        [class.animate-tennis-pop]="isSaved('schedule')"
         class="cursor-pointer rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase disabled:pointer-events-none disabled:opacity-40"
       >
-        {{ isSaved('schedule') ? '🎾 ' : '' }}{{
-          (isSaving('schedule') ? 'profile.saving' : isSaved('schedule') ? 'profile.saved' : 'profile.saveChanges')
-            | translate
-        }}
+        {{ 'profile.save' | translate }}
       </button>
     </div>
   </section>

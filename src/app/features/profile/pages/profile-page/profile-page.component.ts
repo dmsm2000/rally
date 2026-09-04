@@ -45,6 +45,9 @@ import { ProfileService } from '../../profile.service';
 
 type ProfileSection = 'avatar' | 'traits' | 'location' | 'game' | 'schedule';
 
+const sameArray = (a: readonly string[], b: readonly string[] | undefined): boolean =>
+  [...a].sort().join('|') === [...(b ?? [])].sort().join('|');
+
 @Component({
   selector: 'rally-profile-page',
   imports: [
@@ -135,57 +138,79 @@ export class ProfilePageComponent implements CanComponentDeactivate {
     () => this.countries().find(c => c.name === this.draftCountry())?.flag ?? this.profile.me().flag
   );
 
+  // Split out of hasUnsavedChanges below so each section's Save button can gate on just its own
+  // fields — "Guardar alterações" should stay disabled until that section actually differs from
+  // what's persisted, not just because its required fields happen to be filled in.
+  protected readonly traitsDirty = computed(() => {
+    const me = this.profile.me();
+    return (
+      this.draftBirthDate() !== (me.birthDate ?? '') ||
+      this.draftGender() !== ((me.gender as Gender | undefined) ?? null) ||
+      this.draftDominantHand() !== ((me.dominantHand as Hand | undefined) ?? null) ||
+      this.draftBackhand() !== ((me.backhand as Backhand | undefined) ?? null) ||
+      this.draftBio() !== me.bio
+    );
+  });
+
+  protected readonly locationDirty = computed(() => {
+    const me = this.profile.me();
+    return (
+      this.draftCity() !== me.city ||
+      this.draftCountry() !== me.country ||
+      this.draftMaxDistanceKm() !== (me.maxDistanceKm ?? null)
+    );
+  });
+
+  protected readonly gameDirty = computed(() => {
+    const me = this.profile.me();
+    return (
+      this.draftLevel() !== me.level ||
+      this.draftYears() !== me.years ||
+      this.draftPlayStyle() !== ((me.playStyle as PlayStyle | undefined) ?? null) ||
+      this.draftFormat() !== me.format ||
+      this.draftSurface() !== me.surface ||
+      this.draftCourtPref() !== ((me.courtPref as CourtPref | undefined) ?? null)
+    );
+  });
+
+  protected readonly scheduleDirty = computed(() => {
+    const me = this.profile.me();
+    return (
+      this.draftFrequency() !== ((me.frequency as Frequency | undefined) ?? null) ||
+      this.draftCoached() !== (me.coached ?? null) ||
+      this.draftCoachedFrequency() !== ((me.coachedFrequency as Frequency | undefined) ?? null) ||
+      !sameArray(this.draftTimesOfDay(), me.timesOfDay) ||
+      !sameArray(this.draftAvailability(), me.availability)
+    );
+  });
+
   protected readonly canSaveTraits = computed(
-    () => this.draftBirthDate().length > 0 && !!this.draftGender() && !!this.draftDominantHand()
+    () => this.traitsDirty() && this.draftBirthDate().length > 0 && !!this.draftGender() && !!this.draftDominantHand()
   );
 
   protected readonly canSaveLocation = computed(
-    () => this.draftCountry().length > 0 && this.draftCity().length > 0 && this.draftMaxDistanceKm() !== null
+    () => this.locationDirty() && this.draftCountry().length > 0 && this.draftCity().length > 0 && this.draftMaxDistanceKm() !== null
   );
 
   protected readonly maxDistanceIndex = computed(() => Math.max(0, this.maxDistanceOptions.indexOf(this.draftMaxDistanceKm() ?? -1)));
 
   // 0 years is a complete answer on its own — "Nível de jogo" is only required once years > 0.
   protected readonly canSaveGame = computed(
-    () => this.draftYears() !== null && (this.draftYears() === 0 || !!this.draftLevel())
+    () => this.gameDirty() && this.draftYears() !== null && (this.draftYears() === 0 || !!this.draftLevel())
   );
 
   protected readonly canSaveSchedule = computed(
-    () => this.draftCoached() !== null && (this.draftCoached() === false || !!this.draftCoachedFrequency())
+    () => this.scheduleDirty() && this.draftCoached() !== null && (this.draftCoached() === false || !!this.draftCoachedFrequency())
   );
 
-  // Feeds the unsaved-changes route guard — compares every draft signal against the persisted profile.
-  protected readonly hasUnsavedChanges = computed(() => {
-    const me = this.profile.me();
-    const sameArray = (a: readonly string[], b: readonly string[] | undefined) =>
-      [...a].sort().join('|') === [...(b ?? [])].sort().join('|');
-    return (
-      this.draftBirthDate() !== (me.birthDate ?? '') ||
-      this.draftGender() !== ((me.gender as Gender | undefined) ?? null) ||
-      this.draftDominantHand() !== ((me.dominantHand as Hand | undefined) ?? null) ||
-      this.draftBackhand() !== ((me.backhand as Backhand | undefined) ?? null) ||
-      this.draftCity() !== me.city ||
-      this.draftCountry() !== me.country ||
-      this.draftMaxDistanceKm() !== (me.maxDistanceKm ?? null) ||
-      this.draftLevel() !== me.level ||
-      this.draftYears() !== me.years ||
-      this.draftPlayStyle() !== ((me.playStyle as PlayStyle | undefined) ?? null) ||
-      this.draftFormat() !== me.format ||
-      this.draftSurface() !== me.surface ||
-      this.draftCourtPref() !== ((me.courtPref as CourtPref | undefined) ?? null) ||
-      this.draftFrequency() !== ((me.frequency as Frequency | undefined) ?? null) ||
-      this.draftCoached() !== (me.coached ?? null) ||
-      this.draftCoachedFrequency() !== ((me.coachedFrequency as Frequency | undefined) ?? null) ||
-      !sameArray(this.draftTimesOfDay(), me.timesOfDay) ||
-      !sameArray(this.draftAvailability(), me.availability) ||
-      this.draftBio() !== me.bio
-    );
-  });
+  // Feeds the unsaved-changes route guard — true the moment any one section differs from what's persisted.
+  protected readonly hasUnsavedChanges = computed(
+    () => this.traitsDirty() || this.locationDirty() || this.gameDirty() || this.scheduleDirty()
+  );
 
   // Each profile-page section saves independently, so editing one doesn't require scrolling to a
-  // single button at the bottom — savingSection/savedSection track which one is currently in flight.
+  // single button at the bottom — savingSection tracks which one is currently in flight.
   protected readonly savingSection = signal<ProfileSection | null>(null);
-  protected readonly savedSection = signal<ProfileSection | null>(null);
 
   protected readonly changingAvatar = signal(false);
 
@@ -258,10 +283,6 @@ export class ProfilePageComponent implements CanComponentDeactivate {
 
   protected isSaving(section: ProfileSection): boolean {
     return this.savingSection() === section;
-  }
-
-  protected isSaved(section: ProfileSection): boolean {
-    return this.savedSection() === section;
   }
 
   protected openAvatarDialog(): void {
@@ -382,12 +403,6 @@ export class ProfilePageComponent implements CanComponentDeactivate {
       this.toast.error(this.translation.t(result.error ?? 'auth.errorGeneric'));
       return false;
     }
-    this.savedSection.set(section);
-    setTimeout(() => {
-      if (this.savedSection() === section) {
-        this.savedSection.set(null);
-      }
-    }, 2000);
     return true;
   }
 
