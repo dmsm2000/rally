@@ -1,5 +1,6 @@
 <div
-  class="fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 sm:items-center sm:p-4"
+  class="fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 transition-opacity duration-[180ms] ease-in sm:items-center sm:p-4"
+  [class.opacity-0]="closing()"
   role="presentation"
   (click)="onBackdropClick($event)"
 >
@@ -8,7 +9,7 @@
       <p class="text-eyebrow text-muted-foreground">{{ eyebrow() }}</p>
       <button
         type="button"
-        (click)="closed.emit()"
+        (click)="requestClose()"
         [attr.aria-label]="'common.close' | translate"
         class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
       >

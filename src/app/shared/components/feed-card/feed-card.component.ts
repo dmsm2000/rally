@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, OnDestroy, computed, inject, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CountryDataService } from '../../../core/data/country-data.service';
@@ -12,16 +12,31 @@ import { AvatarComponent, ChipComponent, IconComponent } from '../../ui';
 // depend on the matches feature (the parent resolves participant Players via the `participants` input).
 const DOUBLES_CAPACITY = 4;
 
+// A tap within this window of the previous one counts as a double-tap, Instagram-style. The first
+// tap is held back for exactly this long before it falls through to the single-tap action, so a
+// following second tap can still cancel it.
+const DOUBLE_TAP_WINDOW_MS = 300;
+// Matches the `animate-tennis-pop` keyframe duration (styles.css) — the burst overlay is removed
+// the instant the pop finishes rather than lingering in its 'both' fill-mode end state.
+const LIKE_BURST_MS = 450;
+
 @Component({
   selector: 'rally-feed-card',
   imports: [AvatarComponent, ChipComponent, IconComponent, RouterLink, TranslatePipe, DatePipe],
   templateUrl: './feed-card.component.html',
   styleUrl: './feed-card.component.scss',
 })
-export class FeedCardComponent {
+export class FeedCardComponent implements OnDestroy {
   protected readonly auth = inject(AuthService);
   private readonly lightbox = inject(MediaLightboxService);
   private readonly countryData = inject(CountryDataService);
+
+  private tapTimer: ReturnType<typeof setTimeout> | null = null;
+  private burstTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastTapAt = 0;
+
+  protected readonly likeBurst = signal(false);
+  protected readonly likeButtonPop = signal(false);
 
   readonly post = input.required<Post>();
   readonly player = input<Player | undefined>();
@@ -50,6 +65,10 @@ export class FeedCardComponent {
   // those are only ever deleted by deleting the trip) — this still needs to say "yes, mine" so the
   // like button stays blocked on your own trip announcement the same as on any other own post.
   protected readonly isOwnPost = computed(() => this.post().authorId === this.auth.currentUserId());
+
+  // Same eligibility the like button already gated on inline — pulled out so the media
+  // double-tap gesture can check it too without duplicating the two conditions.
+  protected readonly canLike = computed(() => !this.auth.isObserver() && !this.isOwnPost());
 
   // Only shown to players who could realistically host — same country-level match as the World
   // page's own "host requests for my country" list, not the stricter exact-city match.
@@ -106,10 +125,71 @@ export class FeedCardComponent {
     this.countryData.loadCountries();
   }
 
+  ngOnDestroy(): void {
+    if (this.tapTimer) {
+      clearTimeout(this.tapTimer);
+    }
+    if (this.burstTimer) {
+      clearTimeout(this.burstTimer);
+    }
+  }
+
   protected openMedia(): void {
     const post = this.post();
     if (post.mediaUrl && post.mediaType) {
       this.lightbox.open({ url: post.mediaUrl, type: post.mediaType });
     }
+  }
+
+  // Distinguishes a single tap (open the lightbox) from a double tap (like), the way every
+  // photo-feed app does it: the first tap is held back for DOUBLE_TAP_WINDOW_MS in case a second
+  // one lands and cancels it. Skipped entirely when liking isn't possible (observer/own post) so
+  // a single tap there still opens the lightbox immediately, with no artificial delay.
+  protected onMediaTap(): void {
+    if (!this.canLike()) {
+      this.openMedia();
+      return;
+    }
+    const now = Date.now();
+    const sinceLastTap = now - this.lastTapAt;
+    this.lastTapAt = now;
+    if (this.tapTimer && sinceLastTap < DOUBLE_TAP_WINDOW_MS) {
+      clearTimeout(this.tapTimer);
+      this.tapTimer = null;
+      this.lastTapAt = 0;
+      this.likeFromDoubleTap();
+      return;
+    }
+    this.tapTimer = setTimeout(() => {
+      this.tapTimer = null;
+      this.openMedia();
+    }, DOUBLE_TAP_WINDOW_MS);
+  }
+
+  private likeFromDoubleTap(): void {
+    // Mirrors Instagram: a double tap always shows the burst, but only ever adds a like — it
+    // never unlikes an already-liked post.
+    if (!this.post().likedByMe) {
+      this.liked.emit();
+    }
+    this.playLikeBurst();
+  }
+
+  protected onLikeButtonClick(): void {
+    const alreadyLiked = this.post().likedByMe;
+    this.liked.emit();
+    if (!alreadyLiked) {
+      this.likeButtonPop.set(false);
+      requestAnimationFrame(() => this.likeButtonPop.set(true));
+    }
+  }
+
+  private playLikeBurst(): void {
+    if (this.burstTimer) {
+      clearTimeout(this.burstTimer);
+    }
+    this.likeBurst.set(false);
+    requestAnimationFrame(() => this.likeBurst.set(true));
+    this.burstTimer = setTimeout(() => this.likeBurst.set(false), LIKE_BURST_MS);
   }
 }
