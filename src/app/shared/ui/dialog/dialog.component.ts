@@ -12,6 +12,12 @@ import { IconComponent } from '../icon/icon.component';
  * `closed` emit back for CLOSE_ANIMATION_MS so the panel/backdrop can animate out first, then lets
  * the caller's own `@if` do the actual removal — mirrors MessagesWidgetComponent's `closing`
  * signal, just without an `open` input for it to watch.
+ *
+ * `requestClose()` is public rather than protected: a composer that hides the header close button
+ * (`[showClose]="false"`, e.g. one that puts its own "Cancel" button in the projected content
+ * instead) still needs a way to trigger the same animated close, and the only route to that from
+ * projected content is a template reference variable on the host tag (`#dlg`, then
+ * `dlg.requestClose()` on a button inside `<ui-dialog #dlg>...</ui-dialog>`).
  */
 @Component({
   selector: 'ui-dialog',
@@ -26,6 +32,8 @@ export class DialogComponent implements OnDestroy {
   readonly eyebrow = input('');
   /** Most composer bodies are taller than the viewport; a short one opts out of the scroll cap. */
   readonly scrollable = input(true);
+  /** The header row (eyebrow + close button) disappears entirely once both are unused. */
+  readonly showClose = input(true);
   readonly closed = output<void>();
 
   protected readonly closing = signal(false);
@@ -59,7 +67,7 @@ export class DialogComponent implements OnDestroy {
   }
 
   /** Guarded against re-entry so a second tap mid-animation can't restart the exit timer. */
-  protected requestClose(): void {
+  requestClose(): void {
     if (this.closing()) {
       return;
     }

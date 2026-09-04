@@ -103,7 +103,7 @@
     } @empty {
       @if (feed.loading()) {
         @for (i of skeletonRows; track i) {
-          <article class="animate-pulse overflow-hidden bg-card sm:rounded-2xl sm:border sm:border-border sm:shadow-sm">
+          <article class="animate-pulse overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <div class="flex items-start gap-3 p-4">
               <div class="size-9 shrink-0 rounded-full bg-muted"></div>
               <div class="min-w-0 flex-1 space-y-2 pt-0.5">
@@ -141,32 +141,21 @@
   <ui-fab [ariaLabel]="'feed.composerFabLabel' | translate" (action)="feed.openComposer()">➕</ui-fab>
 
   @if (feed.composerOpen()) {
-    <ui-dialog [eyebrow]="'feed.composerTitle' | translate" [scrollable]="false" (closed)="feed.closeComposer()">
-      <div class="mt-4 flex gap-3">
-        <ui-avatar
-          [initials]="feed.me().initials"
-          [accent]="feed.me().accent"
-          [seed]="feed.me().avatarSeed"
-          [avatarStyle]="feed.me().avatarStyle"
-          size="sm"
-        />
-        <div class="min-w-0 flex-1">
-          <textarea
-            [ngModel]="feed.composerText()"
-            (ngModelChange)="feed.composerText.set($event)"
-            [placeholder]="'feed.composerPlaceholder' | translate"
-            rows="3"
-            maxlength="280"
-            class="w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
-          ></textarea>
-          <span class="mt-1 block text-right text-xs text-muted-foreground"
-            >{{ feed.composerText().length }}/280</span
+    <ui-dialog #feedComposerDialog [scrollable]="false" [showClose]="false" (closed)="feed.closeComposer()">
+      <div class="flex flex-wrap gap-2">
+        @for (type of postTypes; track type) {
+          <ui-chip
+            [clickable]="true"
+            [active]="feed.composerType() === type"
+            (toggled)="feed.setComposerType(type)"
           >
-        </div>
+            {{ postTypeEmoji[type] }} {{ 'feed.type.' + type | translate }}
+          </ui-chip>
+        }
       </div>
 
       @if (feed.composerPreviewUrl()) {
-        <div class="relative mt-3 overflow-hidden rounded-xl border border-border">
+        <div class="relative mt-4 overflow-hidden rounded-xl border border-border">
           @if (feed.composerMediaType() === 'video') {
             <video [src]="feed.composerPreviewUrl()" controls class="max-h-64 w-full bg-ink object-contain"></video>
           } @else {
@@ -180,38 +169,48 @@
             {{ 'feed.removeMedia' | translate }}
           </button>
         </div>
+      } @else {
+        <!-- A big dashed drop-zone rather than a small pill button — the old version read as just
+             another secondary action, easy to miss as the actual "add media" control. -->
+        <label
+          for="feed-composer-file"
+          class="mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border px-4 py-5 text-muted-foreground transition-colors hover:border-lime-deep hover:bg-lime/5 hover:text-foreground"
+        >
+          <ui-icon name="camera" className="size-5" />
+          <span class="text-xs font-extrabold tracking-wide uppercase">{{ 'feed.composerAddMedia' | translate }}</span>
+        </label>
       }
+      <!-- Native label[for] activation, not a scripted .click() — avoids user-activation edge cases inside this modal. -->
+      <input
+        id="feed-composer-file"
+        type="file"
+        accept="image/*,video/*"
+        class="hidden"
+        (change)="onMediaSelected($event)"
+      />
 
       <div class="mt-4">
-        <p class="text-eyebrow text-muted-foreground">{{ 'feed.typeLabel' | translate }}</p>
-        <div class="mt-2 flex flex-wrap gap-2">
-          @for (type of postTypes; track type) {
-            <ui-chip
-              [clickable]="true"
-              [active]="feed.composerType() === type"
-              (toggled)="feed.setComposerType(type)"
-            >
-              {{ 'feed.type.' + type | translate }}
-            </ui-chip>
-          }
-        </div>
+        <textarea
+          [ngModel]="feed.composerText()"
+          (ngModelChange)="feed.composerText.set($event)"
+          [placeholder]="'feed.composerPlaceholder' | translate"
+          rows="3"
+          maxlength="280"
+          class="w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-lime-deep focus:ring-2 focus:ring-lime/25"
+        ></textarea>
+        <span class="mt-1 block text-right text-xs text-muted-foreground"
+          >{{ feed.composerText().length }}/280</span
+        >
       </div>
 
       <div class="mt-4 flex items-center justify-between gap-3">
-        <label
-          for="feed-composer-file"
-          class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
+        <button
+          type="button"
+          (click)="feedComposerDialog.requestClose()"
+          class="cursor-pointer rounded-full border border-border px-6 py-2.5 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
         >
-          📷 {{ 'feed.composerAddMedia' | translate }}
-        </label>
-        <!-- Native label[for] activation, not a scripted .click() — avoids user-activation edge cases inside this modal. -->
-        <input
-          id="feed-composer-file"
-          type="file"
-          accept="image/*,video/*"
-          class="hidden"
-          (change)="onMediaSelected($event)"
-        />
+          {{ 'common.cancel' | translate }}
+        </button>
         <button
           type="button"
           [disabled]="!feed.canPublish() || feed.publishing()"

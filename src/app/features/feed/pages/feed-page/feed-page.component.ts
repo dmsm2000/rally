@@ -5,7 +5,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { POST_TYPES, PostType } from '../../../../core/models';
 import { FeedCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { AvatarComponent, ChipComponent, DialogComponent, EmptyStateComponent, FabComponent, IconComponent } from '../../../../shared/ui';
+import { ChipComponent, DialogComponent, EmptyStateComponent, FabComponent, IconComponent } from '../../../../shared/ui';
 import { FeedScope } from '../../data/posts.repository';
 import { FeedService } from '../../feed.service';
 
@@ -28,7 +28,6 @@ const NEAR_TOP_THRESHOLD_PX = 24;
   imports: [
     RouterLink,
     FormsModule,
-    AvatarComponent,
     IconComponent,
     ChipComponent,
     DialogComponent,
@@ -46,7 +45,18 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
   // "World" is the main/default tab, kept in the center — city and country flank it. Observers
   // have no own city/country to filter by, so they only ever get the world tab.
   protected readonly scopes = computed<readonly FeedScope[]>(() => (this.auth.isObserver() ? ['world'] : ['city', 'world', 'country']));
-  protected readonly postTypes: readonly PostType[] = POST_TYPES;
+  // "Other" stays a valid PostType (existing posts can carry it, see feed.model.ts) — it's just
+  // not offered as a composer choice, since it's a meaningless default next to four real ones.
+  protected readonly postTypes: readonly PostType[] = POST_TYPES.filter(type => type !== 'other');
+  // Pairs each post type with an emoji, matching how feed cards already tag match/trip/venue
+  // posts (🎾/🧳/🛡️) — language-neutral, so unlike everything else here it isn't translated.
+  protected readonly postTypeEmoji: Record<PostType, string> = {
+    outfit: '👕',
+    material: '🎒',
+    highlight: '⭐',
+    spot: '📍',
+    other: '✨'
+  };
   // Placeholder rows shown in place of the empty state while the first page of a scope is loading.
   protected readonly skeletonRows = [0, 1, 2];
 

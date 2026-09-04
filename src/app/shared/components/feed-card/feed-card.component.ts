@@ -66,9 +66,13 @@ export class FeedCardComponent implements OnDestroy {
   // like button stays blocked on your own trip announcement the same as on any other own post.
   protected readonly isOwnPost = computed(() => this.post().authorId === this.auth.currentUserId());
 
+  // Match/trip/venue posts are system-generated announcements, not authored content — no reaction
+  // feature on them at all, for anyone (see canLike below).
+  protected readonly isAutomaticPost = computed(() => !!(this.post().match || this.post().trip || this.post().venue));
+
   // Same eligibility the like button already gated on inline — pulled out so the media
-  // double-tap gesture can check it too without duplicating the two conditions.
-  protected readonly canLike = computed(() => !this.auth.isObserver() && !this.isOwnPost());
+  // double-tap gesture can check it too without duplicating the conditions.
+  protected readonly canLike = computed(() => !this.auth.isObserver() && !this.isOwnPost() && !this.isAutomaticPost());
 
   // Only shown to players who could realistically host — same country-level match as the World
   // page's own "host requests for my country" list, not the stricter exact-city match.

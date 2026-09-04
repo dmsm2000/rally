@@ -234,7 +234,11 @@
     <ui-dialog [eyebrow]="'world.tripEyebrow' | translate" (closed)="world.closeTripComposer()">
       <h2 class="text-display mt-2 text-xl">{{ 'world.tripTitle' | translate }}</h2>
 
-      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      <p class="mt-4 mb-2 flex items-center gap-1.5 text-eyebrow text-muted-foreground">
+        <ui-icon name="map-pin" className="size-3.5" />
+        {{ 'world.tripDestinationLabel' | translate }}
+      </p>
+      <div class="grid gap-3 sm:grid-cols-2">
         <ui-autocomplete
           [value]="world.tripCountry()"
           (valueChange)="world.setTripCountry($event)"
@@ -252,7 +256,12 @@
           [placeholder]="(world.tripCountry() ? 'world.tripSelectCity' : 'world.tripSelectCountryFirst') | translate"
         />
       </div>
-      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+
+      <p class="mt-4 mb-2 flex items-center gap-1.5 text-eyebrow text-muted-foreground">
+        <ui-icon name="calendar" className="size-3.5" />
+        {{ 'world.tripWhenLabel' | translate }}
+      </p>
+      <div class="grid gap-3 sm:grid-cols-2">
         <ui-date-picker
           [value]="world.tripFromDate()"
           (valueChange)="world.tripFromDate.set($event)"
@@ -274,7 +283,7 @@
         [ngModel]="world.tripNote()"
         (ngModelChange)="world.tripNote.set($event)"
         [placeholder]="'world.tripNotePlaceholder' | translate"
-        class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
+        class="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-lime-deep focus:ring-2 focus:ring-lime/25"
       />
       <button
         type="button"
