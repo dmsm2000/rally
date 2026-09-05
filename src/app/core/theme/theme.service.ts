@@ -37,8 +37,8 @@ export class ThemeService {
         return stored;
       }
     } catch {
-      // ignore and fall back to system preference
+      // ignore and fall back to the app default
     }
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return 'dark';
   }
 }
