@@ -1,8 +1,12 @@
-# Rally: Product and Business Context
+# RALLY: Product and Business Context
+
+## Brand Identity
+
+The app name is always displayed in full capitals, **RALLY**, never "Rally" or "rally" in any user-facing text or business writing. In Portuguese, RALLY takes the feminine grammatical gender ("a RALLY", "da RALLY", "na RALLY" — never "o Rally"). This does not apply to code identifiers (`RallyDataService`, the `rally-` component selector prefix, `rally.pendingProfile`, etc.), which stay as they are — this is a brand-copy rule, not a refactor.
 
 ## Product Definition
 
-Rally is a social tennis app built around a simple outcome: make it easy to find the right person to play tennis with, at the right time and place.
+RALLY is a social tennis app built around a simple outcome: make it easy to find the right person to play tennis with, at the right time and place.
 
 It is not a rankings app, a professional networking product, or a generic social feed. Its central promise is practical tennis connection: find players, discover courts, arrange games, and record a real tennis history.
 

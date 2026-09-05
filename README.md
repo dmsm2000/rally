@@ -1,8 +1,8 @@
-# 🎾 Rally
+# 🎾 RALLY
 
 **Your next tennis partner is closer than you think.**
 
-Rally is a social network built around a simple idea: tennis is better with company. It's the app for finding someone to play with tonight, discovering a new court on your next trip, and keeping track of every country you've ever hit a ball in — like a passport, but for tennis.
+RALLY is a social network built around a simple idea: tennis is better with company. It's the app for finding someone to play with tonight, discovering a new court on your next trip, and keeping track of every country you've ever hit a ball in — like a passport, but for tennis.
 
 This repository is the full working prototype of that experience: no server, no real accounts behind the scenes, but everything behaves as if there were. Every screen, animation and interaction was designed to feel like a product ready to ship.
 
@@ -10,7 +10,7 @@ This repository is the full working prototype of that experience: no server, no 
 
 ## 🧠 The idea
 
-Social tennis isn't really about rankings and results — it's about finding the right people, on the right courts, at the right time. Rally is built around four questions every player asks themselves:
+Social tennis isn't really about rankings and results — it's about finding the right people, on the right courts, at the right time. RALLY is built around four questions every player asks themselves:
 
 - **"Who can play with me right now?"** → player discovery by level, format, availability and distance.
 - **"Where can I play around here?"** → a living map of courts discovered by the community, with ratings and real photos.
@@ -68,4 +68,4 @@ npm run lint    # lint the codebase
 
 ---
 
-*Rally is a demo prototype — every player, match and conversation in it is fictional (but hopefully inspiring).*
+*RALLY is a demo prototype — every player, match and conversation in it is fictional (but hopefully inspiring).*

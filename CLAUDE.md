@@ -1,8 +1,8 @@
-# Rally: Technical Context for Claude
+# RALLY: Technical Context for Claude
 
 ## Read This First
 
-Rally is a Portuguese-first social tennis web app. Read `PRODUCT.md` as well for product intent, user rules, and UX decisions. This file is the technical source of truth.
+RALLY is a Portuguese-first social tennis web app. Read `PRODUCT.md` as well for product intent, user rules, and UX decisions — including the brand capitalisation/gender rule for the app name in user-facing and business copy. This file is the technical source of truth.
 
 The app is an Angular 22 standalone-components SPA with Tailwind CSS v4. It is gradually moving from mock data to Supabase. Do not assume a feature is fully real just because the UI looks complete.
 
