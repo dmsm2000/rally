@@ -14,6 +14,11 @@ import { FeedScope, PostsRepository } from './data/posts.repository';
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+// A fast reload (a warm connection, a small page) can otherwise resolve in a few dozen ms — too
+// quick for the skeleton to actually register as "loading", so a scope switch reads as an
+// instant, unexplained jump-cut rather than a section change. Floors reload()'s visible duration
+// so the skeleton always has time to be seen.
+const MIN_RELOAD_MS = 350;
 
 @Injectable({ providedIn: 'root' })
 export class FeedService {
@@ -416,7 +421,8 @@ export class FeedService {
     // Clear the previous scope's posts up front so the empty-state skeleton actually shows
     // during the fetch, instead of leaving stale posts on screen until the new ones arrive.
     this._posts.set([]);
-    const { posts, hasMore } = await this.repository.list(this.scope(), 0);
+    const minDelay = new Promise(resolve => setTimeout(resolve, MIN_RELOAD_MS));
+    const [{ posts, hasMore }] = await Promise.all([this.repository.list(this.scope(), 0), minDelay]);
     this._posts.set(posts);
     this.hasMore.set(hasMore);
     this.loading.set(false);

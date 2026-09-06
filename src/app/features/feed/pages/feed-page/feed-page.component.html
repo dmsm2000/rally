@@ -39,53 +39,71 @@
 <div class="mx-auto max-w-2xl pt-16">
   <div class="space-y-5">
     @if (!welcomeDismissed() && !auth.isObserver()) {
-      <article class="animate-slide-in relative overflow-hidden rounded-2xl border border-border bg-ink">
-        <img
-          [src]="feed.heroImage"
-          [alt]="'feed.heroImageAlt' | translate"
-          class="absolute inset-0 size-full object-cover opacity-30"
-        />
-        <button
-          type="button"
-          (click)="dismissWelcome()"
-          [attr.aria-label]="'feed.dismissWelcome' | translate"
-          class="absolute top-3 right-3 z-10 flex cursor-pointer items-center justify-center rounded-full bg-ink/50 p-1.5 text-bone hover:bg-ink/70"
-        >
-          <ui-icon name="close" className="size-4" />
-        </button>
-        <div class="court-grid-ink relative p-6 sm:p-8">
-          <p class="text-eyebrow text-bone/70">
-            {{ 'feed.greeting' | translate }}, {{ feed.me().name.split(' ')[0] }} · {{ feed.me().flag }}
-            {{ feed.me().city }}
-          </p>
-          <h2 class="text-display mt-3 max-w-lg text-2xl text-bone sm:text-4xl">
-            @if (feed.openMatchCount(); as count) {
-              <!-- A real number when there is one to show; "Há 0 partidas" would be a sad headline,
-                   so an empty scope falls back to the generic invitation below. -->
-              {{ (count === 1 ? 'feed.heroMatchesOne' : 'feed.heroMatchesMany') | translate: { count } }}
-              <span class="text-lime">{{ 'feed.heroMatchesScope.' + feed.scope() | translate }}</span>
-            } @else {
-              {{ 'feed.heroTitleLine1' | translate }} {{ 'feed.heroTitleLine2.' + feed.scope() | translate }}
-              <span class="text-lime">{{ 'feed.heroTitleLine3' | translate }}</span>
-            }
-          </h2>
-          <p class="mt-3 max-w-md text-sm text-bone/80">{{ 'feed.heroCopy.' + feed.scope() | translate }}</p>
-          <div class="mt-5 flex flex-wrap gap-3">
-            <a
-              routerLink="/matches"
-              class="inline-flex items-center gap-2 rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5"
-            >
-              {{ 'feed.findGame' | translate }} →
-            </a>
-            <a
-              routerLink="/world"
-              class="inline-flex items-center gap-2 rounded-full border border-bone/30 px-5 py-2.5 text-xs font-extrabold tracking-wide text-bone uppercase hover:bg-bone/10"
-            >
-              {{ 'feed.exploreWorld' | translate }}
-            </a>
+      @if (feed.loading()) {
+        <!-- The hero's own headline/copy are scope-dependent (see heroTitleLine2/heroCopy below)
+             but update instantly — this skeleton exists purely so the top of the page, not just the
+             post list further down, visibly reacts to a scope switch. -->
+        <article class="animate-pulse overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div class="p-6 sm:p-8">
+            <div class="h-2.5 w-40 rounded-full bg-muted"></div>
+            <div class="mt-4 h-7 w-3/4 rounded-full bg-muted sm:h-9"></div>
+            <div class="mt-2 h-7 w-1/2 rounded-full bg-muted sm:h-9"></div>
+            <div class="mt-4 h-3 w-full max-w-sm rounded-full bg-muted"></div>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <div class="h-10 w-32 rounded-full bg-muted"></div>
+              <div class="h-10 w-36 rounded-full bg-muted"></div>
+            </div>
           </div>
-        </div>
-      </article>
+        </article>
+      } @else {
+        <article class="animate-slide-in relative overflow-hidden rounded-2xl border border-border bg-ink">
+          <img
+            [src]="feed.heroImage"
+            [alt]="'feed.heroImageAlt' | translate"
+            class="absolute inset-0 size-full object-cover opacity-30"
+          />
+          <button
+            type="button"
+            (click)="dismissWelcome()"
+            [attr.aria-label]="'feed.dismissWelcome' | translate"
+            class="absolute top-3 right-3 z-10 flex cursor-pointer items-center justify-center rounded-full bg-ink/50 p-1.5 text-bone hover:bg-ink/70"
+          >
+            <ui-icon name="close" className="size-4" />
+          </button>
+          <div class="court-grid-ink relative p-6 sm:p-8">
+            <p class="text-eyebrow text-bone/70">
+              {{ 'feed.greeting' | translate }}, {{ feed.me().name.split(' ')[0] }} · {{ feed.me().flag }}
+              {{ feed.me().city }}
+            </p>
+            <h2 class="text-display mt-3 max-w-lg text-2xl text-bone sm:text-4xl">
+              @if (feed.openMatchCount(); as count) {
+                <!-- A real number when there is one to show; "Há 0 partidas" would be a sad headline,
+                     so an empty scope falls back to the generic invitation below. -->
+                {{ (count === 1 ? 'feed.heroMatchesOne' : 'feed.heroMatchesMany') | translate: { count } }}
+                <span class="text-lime">{{ 'feed.heroMatchesScope.' + feed.scope() | translate }}</span>
+              } @else {
+                {{ 'feed.heroTitleLine1' | translate }} {{ 'feed.heroTitleLine2.' + feed.scope() | translate }}
+                <span class="text-lime">{{ 'feed.heroTitleLine3' | translate }}</span>
+              }
+            </h2>
+            <p class="mt-3 max-w-md text-sm text-bone/80">{{ 'feed.heroCopy.' + feed.scope() | translate }}</p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <a
+                routerLink="/matches"
+                class="inline-flex items-center gap-2 rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5"
+              >
+                {{ 'feed.findGame' | translate }} →
+              </a>
+              <a
+                routerLink="/world"
+                class="inline-flex items-center gap-2 rounded-full border border-bone/30 px-5 py-2.5 text-xs font-extrabold tracking-wide text-bone uppercase hover:bg-bone/10"
+              >
+                {{ 'feed.exploreWorld' | translate }}
+              </a>
+            </div>
+          </div>
+        </article>
+      }
     }
     @for (f of feed.posts(); track feed.scope() + f.id) {
       <rally-feed-card
