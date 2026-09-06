@@ -1,14 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { TopbarMetricsService } from '../../core/services/topbar-metrics.service';
 import { MessagesWidgetComponent } from '../../features/messages/messages-widget/messages-widget.component';
 import { NavDrawerComponent } from '../nav-drawer/nav-drawer.component';
 import { TopbarComponent } from '../topbar/topbar.component';
 
 // Below this viewport width the topbar auto-hides on scroll (mobile-only behaviour).
 const MOBILE_BREAKPOINT_PX = 1024;
-// Matches the topbar's h-16 height — the max distance it can slide out of view.
-const TOPBAR_HEIGHT_PX = 64;
 
 @Component({
   selector: 'rally-shell',
@@ -21,6 +20,7 @@ export class AppShellComponent {
   protected readonly topbarHideOffset = signal(0);
   protected readonly drawerOpen = signal(false);
 
+  private readonly topbarMetrics = inject(TopbarMetricsService);
   private lastScrollTop = 0;
 
   protected toggleDrawer(): void {
@@ -41,7 +41,7 @@ export class AppShellComponent {
       this.topbarHideOffset.set(0);
     } else {
       const delta = scrollTop - this.lastScrollTop;
-      this.topbarHideOffset.set(Math.min(TOPBAR_HEIGHT_PX, Math.max(0, this.topbarHideOffset() + delta)));
+      this.topbarHideOffset.set(Math.min(this.topbarMetrics.heightPx(), Math.max(0, this.topbarHideOffset() + delta)));
     }
     this.lastScrollTop = scrollTop;
   }

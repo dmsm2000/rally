@@ -1,10 +1,11 @@
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Component, ElementRef, computed, effect, inject, input, output, signal, viewChildren } from '@angular/core';
+import { Component, ElementRef, afterNextRender, computed, effect, inject, input, output, signal, viewChild, viewChildren } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { ThemeService } from '../../core/theme/theme.service';
+import { TopbarMetricsService } from '../../core/services/topbar-metrics.service';
 import { AvatarComponent, IconComponent } from '../../shared/ui';
 import { LanguageSwitcherComponent, ThemeToggleComponent } from '../../shared/components';
 import { NotificationsBellComponent } from '../../features/notifications/notifications-bell/notifications-bell.component';
@@ -30,6 +31,7 @@ export class TopbarComponent {
   protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
   private readonly backNav = inject(BackNavigationService);
+  private readonly topbarMetrics = inject(TopbarMetricsService);
 
   // Home and World render first; observers additionally lose the passport link since they can't hold one.
   protected readonly primary = computed(() => NAV_ITEMS.filter((i) => PRIMARY_PATHS.includes(i.path)));
@@ -59,6 +61,11 @@ export class TopbarComponent {
   // Matches DOM order: primary items render before secondary ones, same as NAV_ITEMS itself.
   private readonly navLinks = viewChildren<ElementRef<HTMLAnchorElement>>('navLink');
 
+  // Includes `pt-[env(safe-area-inset-top)]`, so its real on-screen height isn't just h-16 — reported
+  // to TopbarMetricsService once rendered, for anything that needs to sit flush below it or cap how
+  // far it can translate off-screen on scroll.
+  private readonly headerEl = viewChild.required<ElementRef<HTMLElement>>('headerEl');
+
   protected readonly indicatorLeft = signal(0);
   protected readonly indicatorWidth = signal(0);
 
@@ -75,6 +82,10 @@ export class TopbarComponent {
       }
       this.indicatorLeft.set(el.offsetLeft);
       this.indicatorWidth.set(el.offsetWidth);
+    });
+
+    afterNextRender(() => {
+      this.topbarMetrics.setHeightPx(this.headerEl().nativeElement.getBoundingClientRect().height);
     });
   }
 

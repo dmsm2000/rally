@@ -1,4 +1,6 @@
 import { Injectable, signal } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation, type PositionOptions } from '@capacitor/geolocation';
 
 export interface GeoFix {
   lat: number;
@@ -31,13 +33,18 @@ export const MAX_FIX_ACCURACY_M = 2000;
 
 const OPTIONS: PositionOptions = { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 };
 
-/** Wraps the browser geolocation API in something the UI can await and show state for. */
+/**
+ * Wraps `@capacitor/geolocation` in something the UI can await and show state for. That plugin
+ * ships both a native implementation (real GPS via Android/iOS location services, with its own
+ * permission-request flow) and a web one (falls back to `navigator.geolocation` in a plain
+ * browser/PWA), so this class works unchanged on native and web.
+ */
 @Injectable({ providedIn: 'root' })
 export class GeolocationService {
   private readonly _locating = signal(false);
   readonly locating = this._locating.asReadonly();
 
-  readonly supported = typeof navigator !== 'undefined' && 'geolocation' in navigator;
+  readonly supported = Capacitor.isNativePlatform() || (typeof navigator !== 'undefined' && 'geolocation' in navigator);
 
   /** Rejects with a `GeoError` whose `code` the caller maps to a translated message. */
   async locate(): Promise<GeoFix> {
@@ -46,14 +53,14 @@ export class GeolocationService {
     }
     this._locating.set(true);
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, error => reject(this.toGeoError(error)), OPTIONS);
+      const position = await Geolocation.getCurrentPosition(OPTIONS).catch(error => {
+        throw this.toGeoError(error);
       });
       return {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
-        // Some browsers omit accuracy entirely; treating that as "unknown, therefore unusable" is
-        // the safe reading, since every threshold downstream is an upper bound.
+        // Some browsers/devices omit accuracy entirely; treating that as "unknown, therefore
+        // unusable" is the safe reading, since every threshold downstream is an upper bound.
         accuracyM: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : Number.POSITIVE_INFINITY
       };
     } finally {
@@ -69,14 +76,20 @@ export class GeolocationService {
     return fix.accuracyM <= MAX_FIX_ACCURACY_M;
   }
 
-  private toGeoError(error: GeolocationPositionError): GeoError {
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
-        return new GeoError('denied');
-      case error.TIMEOUT:
-        return new GeoError('timeout');
-      default:
-        return new GeoError('unavailable');
+  /**
+   * On web this rejects with the browser's own `GeolocationPositionError` (numeric `code` 1-3).
+   * On native it rejects with a Capacitor error carrying a string `code` like `OS-PLUG-GLOC-0003`
+   * (denied) or `-0010` (timeout) — see `@capacitor/geolocation`'s Android/iOS sources, which
+   * share the same numbering. Anything else falls back to 'unavailable', same as before.
+   */
+  private toGeoError(error: unknown): GeoError {
+    const code = (error as { code?: unknown } | undefined)?.code;
+    if (code === 1 || code === 'OS-PLUG-GLOC-0003') {
+      return new GeoError('denied');
     }
+    if (code === 3 || code === 'OS-PLUG-GLOC-0010') {
+      return new GeoError('timeout');
+    }
+    return new GeoError('unavailable');
   }
 }

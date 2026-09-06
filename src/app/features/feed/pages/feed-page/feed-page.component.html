@@ -1,5 +1,5 @@
 <div
-  class="fixed inset-x-0 top-16 z-30 h-12 border-b border-border bg-background/95 backdrop-blur-md"
+  class="fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] z-30 h-12 border-b border-border bg-background/95 backdrop-blur-md"
   [style.transform]="'translateY(-' + tabsHideOffset() + 'px)'"
 >
   <div class="mx-auto flex h-12 max-w-2xl">
@@ -21,7 +21,7 @@
 </div>
 
 @if (feed.hasNewPosts()) {
-  <div class="fixed inset-x-0 top-28 z-30 flex justify-center px-4">
+  <div class="fixed inset-x-0 top-[calc(7rem+env(safe-area-inset-top))] z-30 flex justify-center px-4">
     <button
       type="button"
       (click)="showNewPosts()"

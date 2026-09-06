@@ -1,4 +1,6 @@
 import { Injectable, effect, signal } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 export type Theme = 'light' | 'dark';
 
@@ -13,7 +15,13 @@ export class ThemeService {
 
   constructor() {
     effect(() => {
-      document.documentElement.classList.toggle('dark', this._theme() === 'dark');
+      const dark = this._theme() === 'dark';
+      document.documentElement.classList.toggle('dark', dark);
+      // Without this the native status bar keeps its OS-default style, which can land as
+      // unreadable (e.g. light text on our light theme's pale background).
+      if (Capacitor.isNativePlatform()) {
+        void StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light });
+      }
     });
   }
 

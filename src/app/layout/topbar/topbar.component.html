@@ -1,5 +1,11 @@
+<!-- Sits behind the topbar, covering only the status-bar/notch strip, and never moves. The topbar
+     itself still slides fully off-screen on scroll exactly as before (same travel distance) — this
+     is purely a fallback backdrop so the native clock/battery always have one behind them once the
+     topbar has slid past them, instead of whatever page content has scrolled up underneath. -->
+<div class="fixed inset-x-0 top-0 z-30 h-[env(safe-area-inset-top)] border-b border-border bg-background"></div>
 <header
-  class="topbar fixed inset-x-0 top-0 z-40 h-16 border-b border-border bg-background/85 backdrop-blur-md"
+  #headerEl
+  class="topbar fixed inset-x-0 top-0 z-40 border-b border-border bg-background pt-[env(safe-area-inset-top)]"
   [style.transform]="'translateY(-' + hideOffset() + 'px)'"
 >
   <div class="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-3 sm:gap-6 sm:px-5">

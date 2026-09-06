@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { POST_TYPES, PostType } from '../../../../core/models';
+import { TopbarMetricsService } from '../../../../core/services/topbar-metrics.service';
 import { FeedCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { ChipComponent, DialogComponent, EmptyStateComponent, FabComponent, IconComponent } from '../../../../shared/ui';
@@ -14,10 +15,11 @@ const WELCOME_DISMISSED_KEY = 'rally.feed.welcomeDismissed';
 // Below this viewport width the tab bar stays put, mirroring the topbar's own auto-hide behaviour
 // (see AppShellComponent's MOBILE_BREAKPOINT_PX).
 const MOBILE_BREAKPOINT_PX = 1024;
-// Topbar height (64px) + this tab bar's own height (48px, h-12): the tab bar sits fixed right below
-// the topbar, so it only needs to travel past its own height once the topbar has already scrolled
-// fully out of view above it — both are driven by the same raw scroll delta, so they move in lockstep.
-const TABS_TRACK_MAX_PX = 64 + 48;
+// This tab bar's own height (48px, h-12): the tab bar sits fixed right below the topbar, so it only
+// needs to travel past its own height once the topbar has already scrolled fully out of view above
+// it — both are driven by the same raw scroll delta, so they move in lockstep. Added to the topbar's
+// real (safe-area-inclusive) height from TopbarMetricsService, not a second hardcoded guess at it.
+const TABS_BAR_HEIGHT_PX = 48;
 // Below this scroll offset, a live-arriving post is pulled straight into the list instead of
 // surfacing the "new posts" banner — the viewer is already looking at the top, so there's nothing
 // to interrupt.
@@ -42,6 +44,7 @@ const NEAR_TOP_THRESHOLD_PX = 24;
 export class FeedPageComponent implements AfterViewInit, OnDestroy {
   protected readonly feed = inject(FeedService);
   protected readonly auth = inject(AuthService);
+  private readonly topbarMetrics = inject(TopbarMetricsService);
   // "World" is the main/default tab, kept in the center — city and country flank it. Observers
   // have no own city/country to filter by, so they only ever get the world tab.
   protected readonly scopes = computed<readonly FeedScope[]>(() => (this.auth.isObserver() ? ['world'] : ['city', 'world', 'country']));
@@ -119,7 +122,8 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
       this.tabsHideOffset.set(0);
     } else {
       const delta = scrollTop - this.lastScrollTop;
-      this.tabsHideOffset.set(Math.min(TABS_TRACK_MAX_PX, Math.max(0, this.tabsHideOffset() + delta)));
+      const tabsTrackMaxPx = this.topbarMetrics.heightPx() + TABS_BAR_HEIGHT_PX;
+      this.tabsHideOffset.set(Math.min(tabsTrackMaxPx, Math.max(0, this.tabsHideOffset() + delta)));
     }
     this.lastScrollTop = scrollTop;
   };
