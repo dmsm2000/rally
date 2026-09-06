@@ -4,7 +4,6 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CountryDataService } from '../../../core/data/country-data.service';
 import { Player, Post } from '../../../core/models';
-import { MediaLightboxService } from '../../../core/services/media-lightbox.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AvatarComponent, ChipComponent, IconComponent } from '../../ui';
 
@@ -12,9 +11,8 @@ import { AvatarComponent, ChipComponent, IconComponent } from '../../ui';
 // depend on the matches feature (the parent resolves participant Players via the `participants` input).
 const DOUBLES_CAPACITY = 4;
 
-// A tap within this window of the previous one counts as a double-tap, Instagram-style. The first
-// tap is held back for exactly this long before it falls through to the single-tap action, so a
-// following second tap can still cancel it.
+// A tap within this window of a previous one counts as a double-tap, Instagram-style, and likes
+// the post. Media is deliberately not tappable to expand/zoom for now — a single tap does nothing.
 const DOUBLE_TAP_WINDOW_MS = 300;
 // Matches the `animate-tennis-pop` keyframe duration (styles.css) — the burst overlay is removed
 // the instant the pop finishes rather than lingering in its 'both' fill-mode end state.
@@ -28,10 +26,8 @@ const LIKE_BURST_MS = 450;
 })
 export class FeedCardComponent implements OnDestroy {
   protected readonly auth = inject(AuthService);
-  private readonly lightbox = inject(MediaLightboxService);
   private readonly countryData = inject(CountryDataService);
 
-  private tapTimer: ReturnType<typeof setTimeout> | null = null;
   private burstTimer: ReturnType<typeof setTimeout> | null = null;
   private lastTapAt = 0;
 
@@ -130,44 +126,24 @@ export class FeedCardComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.tapTimer) {
-      clearTimeout(this.tapTimer);
-    }
     if (this.burstTimer) {
       clearTimeout(this.burstTimer);
     }
   }
 
-  protected openMedia(): void {
-    const post = this.post();
-    if (post.mediaUrl && post.mediaType) {
-      this.lightbox.open({ url: post.mediaUrl, type: post.mediaType });
-    }
-  }
-
-  // Distinguishes a single tap (open the lightbox) from a double tap (like), the way every
-  // photo-feed app does it: the first tap is held back for DOUBLE_TAP_WINDOW_MS in case a second
-  // one lands and cancels it. Skipped entirely when liking isn't possible (observer/own post) so
-  // a single tap there still opens the lightbox immediately, with no artificial delay.
+  // Media has no single-tap action for now (see DOUBLE_TAP_WINDOW_MS) — only a fast second tap
+  // within the window does anything, and only when liking is actually possible.
   protected onMediaTap(): void {
     if (!this.canLike()) {
-      this.openMedia();
       return;
     }
     const now = Date.now();
     const sinceLastTap = now - this.lastTapAt;
     this.lastTapAt = now;
-    if (this.tapTimer && sinceLastTap < DOUBLE_TAP_WINDOW_MS) {
-      clearTimeout(this.tapTimer);
-      this.tapTimer = null;
+    if (sinceLastTap < DOUBLE_TAP_WINDOW_MS) {
       this.lastTapAt = 0;
       this.likeFromDoubleTap();
-      return;
     }
-    this.tapTimer = setTimeout(() => {
-      this.tapTimer = null;
-      this.openMedia();
-    }, DOUBLE_TAP_WINDOW_MS);
   }
 
   private likeFromDoubleTap(): void {

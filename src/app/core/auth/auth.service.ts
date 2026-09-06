@@ -89,6 +89,18 @@ export class AuthService {
   }
 
   async register(email: string, password: string, profile?: RegisterProfile): Promise<AuthResult> {
+    // A retry after this same call's profile write failed below: signUp() already created the
+    // account and a session for it, so calling signUp() again would fail with "already registered"
+    // for what is, in fact, this user. Skip straight to (re)writing the profile row instead.
+    const existingSession = this._session();
+    if (existingSession && existingSession.user.email === email) {
+      if (profile && !(await this.saveProfileRow(existingSession.user.id, profile))) {
+        return { success: false, error: 'auth.errorProfileSave' };
+      }
+      this._isObserver.set(false);
+      return { success: true };
+    }
+
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       return { success: false, error: error.message };
@@ -97,8 +109,14 @@ export class AuthService {
       this.data.updateMe(profile);
       if (data.user) {
         if (data.session) {
-          // Already authenticated (email confirmation disabled) — safe to write now.
-          await this.saveProfileRow(data.user.id, profile);
+          // Already authenticated (email confirmation disabled) — safe to write now. A failure here
+          // still leaves a real, signed-in account behind (see the retry branch above), so it must
+          // be reported rather than swallowed — otherwise the caller navigates on as if the profile
+          // existed, and every profile-dependent write (e.g. liking a post) later fails with an
+          // opaque FK violation.
+          if (!(await this.saveProfileRow(data.user.id, profile))) {
+            return { success: false, error: 'auth.errorProfileSave' };
+          }
         } else {
           // No session yet — stash it and finish writing once the user actually confirms + signs in.
           localStorage.setItem(PENDING_PROFILE_KEY, JSON.stringify({ userId: data.user.id, profile }));
@@ -111,11 +129,18 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<AuthResult> {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       return { success: false, error: authErrorKey(error.message) };
     }
     this._isObserver.set(false);
+    // Awaited here rather than left to the onAuthStateChange handler's fire-and-forget call below —
+    // that one can't safely await (Supabase auth callbacks can deadlock on further await auth.*
+    // calls), but that also means LoginPageComponent's immediate post-login navigateByUrl('/') would
+    // otherwise render the Feed against the still-mock `ME` ("João Silva") until it happened to land.
+    if (data.session) {
+      await this.refreshProfile(data.session.user.id);
+    }
     return { success: true };
   }
 
@@ -150,7 +175,9 @@ export class AuthService {
       return { success: false, error: 'auth.errorGeneric' };
     }
     this.data.updateMe(profile);
-    await this.saveProfileRow(userId, profile);
+    if (!(await this.saveProfileRow(userId, profile))) {
+      return { success: false, error: 'auth.errorProfileSave' };
+    }
     return { success: true };
   }
 
@@ -182,14 +209,17 @@ export class AuthService {
     return { success: true };
   }
 
-  /** Best-effort: a failed insert (e.g. table/RLS not set up yet) shouldn't block the rest of the app. */
-  private async saveProfileRow(userId: string, profile: RegisterProfile): Promise<void> {
+  /** Returns whether the insert succeeded — callers must surface a failure, not swallow it (see register()). */
+  private async saveProfileRow(userId: string, profile: RegisterProfile): Promise<boolean> {
     const result = await this.profiles.insert(userId, profile);
     if (!result.success) {
       console.error('Failed to save profile row:', result.error);
-    } else if (result.memberNumber) {
+      return false;
+    }
+    if (result.memberNumber) {
       this.data.updateMe({ memberNumber: result.memberNumber });
     }
+    return true;
   }
 
   /** Loads the real profile row (if one exists yet) so login always shows the actual saved profile. */

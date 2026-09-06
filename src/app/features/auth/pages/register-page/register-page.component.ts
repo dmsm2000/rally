@@ -100,13 +100,13 @@ export class RegisterPageComponent {
     { label: 'auth.steps.finish', tagline: 'auth.taglines.finish' }
   ];
 
-  // Set when we're routed here by AuthCallbackPageComponent after a first Google sign-in: a real
-  // session already exists with no `profiles` row yet, so the account step still asks for the
-  // (editable, pre-filled) name but skips email/password — Google already supplied the email, and
-  // there's no password to set.
-  protected readonly googleMode = signal(
-    !!(this.router.getCurrentNavigation()?.extras.state as { completeGoogleProfile?: boolean } | undefined)
-      ?.completeGoogleProfile
+  // Set when we're routed here with a real session that already exists but has no `profiles` row
+  // yet — either AuthCallbackPageComponent after a first Google sign-in, or authGuard catching any
+  // other session left without a profile (an interrupted registration, a write that failed after
+  // signUp() already succeeded, ...). The account step still asks for the (editable, pre-filled for
+  // Google) name but skips email/password — there's already a session, so nothing to set there.
+  protected readonly completingProfile = signal(
+    !!(this.router.getCurrentNavigation()?.extras.state as { completeProfile?: boolean } | undefined)?.completeProfile
   );
 
   protected readonly step = signal(0);
@@ -164,7 +164,7 @@ export class RegisterPageComponent {
   protected readonly canContinue = computed(() => {
     switch (this.step()) {
       case 0:
-        if (this.googleMode()) {
+        if (this.completingProfile()) {
           return this.firstName().trim().length > 1 && this.lastName().trim().length > 1;
         }
         return (
@@ -201,7 +201,7 @@ export class RegisterPageComponent {
       this.countryData.citiesFor(match.iso2).then(cities => this.cityOptions.set(cities));
     });
 
-    if (this.googleMode()) {
+    if (this.completingProfile()) {
       const hint = this.auth.googleProfileHint();
       this.firstName.set(hint?.firstName ?? '');
       this.lastName.set(hint?.lastName ?? '');
@@ -327,7 +327,7 @@ export class RegisterPageComponent {
       avatarSeed: this.avatarSeed(),
       avatarStyle: this.avatarStyle()
     };
-    const result = this.googleMode()
+    const result = this.completingProfile()
       ? await this.auth.completeProfile(profile)
       : await this.auth.register(this.email(), this.password(), profile);
     this.submitting.set(false);

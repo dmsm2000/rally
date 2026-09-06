@@ -25,6 +25,14 @@ const TABS_BAR_HEIGHT_PX = 48;
 // to interrupt.
 const NEAR_TOP_THRESHOLD_PX = 24;
 
+// A touch starting within this many px of the left edge is left alone here — that's
+// AppShellComponent's own swipe-to-open-the-drawer gesture (mirror this constant there if either
+// changes), and the two must never fight over the same drag.
+const EDGE_SWIPE_ZONE_PX = 24;
+// How far a horizontal drag has to travel, twice as much as it drifts vertically, to count as a
+// deliberate "change tab" swipe rather than an incidental wobble during a vertical scroll.
+const TAB_SWIPE_MIN_DISTANCE_PX = 60;
+
 @Component({
   selector: 'rally-feed-page',
   imports: [
@@ -70,14 +78,21 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
   private readonly hostRef = inject(ElementRef<HTMLElement>);
   private mainEl: HTMLElement | null = null;
   private lastScrollTop = 0;
+  private touchStartX = 0;
+  private touchStartY = 0;
+  private trackingTabSwipe = false;
 
   ngAfterViewInit(): void {
     this.mainEl = this.hostRef.nativeElement.closest('main');
     this.mainEl?.addEventListener('scroll', this.onMainScroll, { passive: true });
+    this.mainEl?.addEventListener('touchstart', this.onTouchStart, { passive: true });
+    this.mainEl?.addEventListener('touchend', this.onTouchEnd, { passive: true });
   }
 
   ngOnDestroy(): void {
     this.mainEl?.removeEventListener('scroll', this.onMainScroll);
+    this.mainEl?.removeEventListener('touchstart', this.onTouchStart);
+    this.mainEl?.removeEventListener('touchend', this.onTouchEnd);
   }
 
   protected dismissWelcome(): void {
@@ -126,5 +141,38 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
       this.tabsHideOffset.set(Math.min(tabsTrackMaxPx, Math.max(0, this.tabsHideOffset() + delta)));
     }
     this.lastScrollTop = scrollTop;
+  };
+
+  // Swiping over the feed switches scope tab, Twitter-style — but a touch starting near the left
+  // edge is left untouched (see EDGE_SWIPE_ZONE_PX) so it can open the nav drawer instead, and the
+  // composer sheet gets the same pass so a swipe inside it can't reach through to the tabs behind it.
+  private readonly onTouchStart = (event: TouchEvent): void => {
+    const touch = event.touches[0];
+    this.trackingTabSwipe = !!touch && touch.clientX > EDGE_SWIPE_ZONE_PX && !this.feed.composerOpen();
+    if (this.trackingTabSwipe) {
+      this.touchStartX = touch.clientX;
+      this.touchStartY = touch.clientY;
+    }
+  };
+
+  private readonly onTouchEnd = (event: TouchEvent): void => {
+    if (!this.trackingTabSwipe) {
+      return;
+    }
+    this.trackingTabSwipe = false;
+    const touch = event.changedTouches[0];
+    if (!touch) {
+      return;
+    }
+    const deltaX = touch.clientX - this.touchStartX;
+    const deltaY = touch.clientY - this.touchStartY;
+    if (Math.abs(deltaX) < TAB_SWIPE_MIN_DISTANCE_PX || Math.abs(deltaX) < Math.abs(deltaY) * 2) {
+      return;
+    }
+    const list = this.scopes();
+    const nextIndex = list.indexOf(this.feed.scope()) + (deltaX < 0 ? 1 : -1);
+    if (nextIndex >= 0 && nextIndex < list.length) {
+      this.onScopeClick(list[nextIndex]);
+    }
   };
 }

@@ -2,21 +2,24 @@
   class="fixed inset-x-0 top-[calc(4rem+env(safe-area-inset-top))] z-30 h-12 border-b border-border bg-background/95 backdrop-blur-md"
   [style.transform]="'translateY(-' + tabsHideOffset() + 'px)'"
 >
-  <div class="mx-auto flex h-12 max-w-2xl">
+  <div class="relative mx-auto flex h-12 max-w-2xl">
     @for (s of scopes(); track s) {
       <button
         type="button"
         (click)="onScopeClick(s)"
         class="flex-1 cursor-pointer text-center text-sm font-semibold transition-colors"
-        [class]="
-          feed.scope() === s
-            ? 'border-b-2 border-lime-deep text-foreground'
-            : 'text-muted-foreground hover:text-foreground'
-        "
+        [class]="feed.scope() === s ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'"
       >
         {{ 'feed.scope.' + s | translate }}
       </button>
     }
+    <!-- A single sliding indicator rather than each button drawing its own border — makes a tab
+         change (tap or swipe) read as a motion, not a jump-cut, which a per-button border can't do. -->
+    <div
+      class="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-lime-deep transition-transform duration-300 ease-out"
+      [style.width.%]="100 / scopes().length"
+      [style.transform]="'translateX(' + scopes().indexOf(feed.scope()) * 100 + '%)'"
+    ></div>
   </div>
 </div>
 
@@ -104,14 +107,14 @@
       @if (feed.loading()) {
         @for (i of skeletonRows; track i) {
           <article class="animate-pulse overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-            <div class="flex items-start gap-3 p-4">
+            <div class="flex items-center gap-3 p-3.5">
               <div class="size-9 shrink-0 rounded-full bg-muted"></div>
-              <div class="min-w-0 flex-1 space-y-2 pt-0.5">
+              <div class="min-w-0 flex-1 space-y-2">
                 <div class="h-3 w-28 rounded-full bg-muted"></div>
                 <div class="h-2.5 w-16 rounded-full bg-muted"></div>
               </div>
             </div>
-            <div class="space-y-2 px-4 pb-4">
+            <div class="space-y-2 border-t border-border px-3.5 py-3">
               <div class="h-3 w-full rounded-full bg-muted"></div>
               <div class="h-3 w-4/5 rounded-full bg-muted"></div>
             </div>

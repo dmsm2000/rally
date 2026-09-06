@@ -20,7 +20,7 @@ export const en = {
     exitObserver: 'Stop observing',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
-    goBack: 'Go back',
+    goBack: 'Go back'
   },
   stats: {
     wins: 'Wins',
@@ -116,11 +116,14 @@ export const en = {
     geoFailedTitle: 'We could not locate you',
     geoTooVague: 'Your location is too imprecise to register anything. Try outdoors, with GPS on.',
     fixAccuracy: 'Location accurate to',
-    lowAccuracyWarning: 'This fix is vague. You can still register, but the court stays unconfirmed until someone with a better signal verifies it.',
-    willBeDraft: 'With this accuracy the court will be saved as unconfirmed: no points, no feed post, and only visible to players standing next to it.',
+    lowAccuracyWarning:
+      'This fix is vague. You can still register, but the court stays unconfirmed until someone with a better signal verifies it.',
+    willBeDraft:
+      'With this accuracy the court will be saved as unconfirmed: no points, no feed post, and only visible to players standing next to it.',
 
     nearbyTitle: 'What is already here',
-    nearbyBody: 'Check the list before adding. If your court is one of these, open it and add the specific court instead.',
+    nearbyBody:
+      'Check the list before adding. If your court is one of these, open it and add the specific court instead.',
     nothingNearby: 'Nothing registered within 3 km of you.',
     registerNewPlace: 'None of these — register a new place',
     addCourtHere: 'Add a court here',
@@ -145,7 +148,8 @@ export const en = {
     hasLights: 'Floodlights',
 
     duplicateTitle: 'This may already exist',
-    duplicateBody: 'There is something with a similar name right next to you. Adding a duplicate splits everyone\'s passport in two.',
+    duplicateBody:
+      "There is something with a similar name right next to you. Adding a duplicate splits everyone's passport in two.",
     useThis: 'It is this one',
     noneOfThese: 'None of these — register anyway',
 
@@ -156,7 +160,8 @@ export const en = {
     captured: 'Captured',
     captureEyebrow: 'Collection',
     captureTitle: 'Capture this court',
-    captureBody: 'You have to be here. One visit captures one court — playing a RALLY match here captures it too, for free.',
+    captureBody:
+      'You have to be here. One visit captures one court — playing a RALLY match here captures it too, for free.',
     capturedToast: 'Court captured.',
     capturedPending: 'Court captured. {n} more confirmation to publish this place.',
     verifiedToast: 'Confirmed. This place is now public and its finder has been credited.',
@@ -259,7 +264,8 @@ export const en = {
     resultLogged: 'Result logged',
     markFinished: 'Mark as played',
     markFinishedTitle: 'Finish this match',
-    markFinishedBody: 'Doubles has no teams yet, so there is no result to log. Marking it played adds the court to everyone\'s passport.',
+    markFinishedBody:
+      "Doubles has no teams yet, so there is no result to log. Marking it played adds the court to everyone's passport.",
     markFinishedConfirm: 'It was played',
     logResult: 'Log result',
     whoWon: 'Who won?',
@@ -284,7 +290,8 @@ export const en = {
     composerCityPlaceholder: 'City (e.g. Porto)',
     composerDuration: 'Expected duration',
     durationUncertain: 'Not sure',
-    courtNotBooked: 'Picking a court does not book it. RALLY has no link to the club\'s booking system — agree between you who reserves it.',
+    courtNotBooked:
+      "Picking a court does not book it. RALLY has no link to the club's booking system — agree between you who reserves it.",
     composerRegisterCourt: 'Register a new court',
     composerCourtHint: 'Only registered courts appear here. Playing a match at one captures it for your passport.',
     composerCourt: 'Pick a court',
@@ -370,14 +377,14 @@ export const en = {
         detail: '{city} · {matchDate} · {matchTime}'
       },
       courtVerified: {
-      text: 'confirmed {venueName} — the court you registered is now public',
-      detail: '{city}'
-    },
-    courtAddedNearby: {
-      text: 'a new court was confirmed in {city}: {venueName}',
-      detail: '{country}'
-    },
-    matchOpenNearby: {
+        text: 'confirmed {venueName} — the court you registered is now public',
+        detail: '{city}'
+      },
+      courtAddedNearby: {
+        text: 'a new court was confirmed in {city}: {venueName}',
+        detail: '{country}'
+      },
+      matchOpenNearby: {
         text: '{name} published an open match in {city}',
         detail: '{matchDate} · {matchTime}'
       }
@@ -419,7 +426,7 @@ export const en = {
   },
   feed: {
     heroImageAlt: 'Two players in a rally on a rooftop court above a Mediterranean city',
-    greeting: 'Good evening',
+    greeting: 'Hello',
     heroMatchesOne: 'There is 1 match waiting for you',
     heroMatchesMany: 'There are {count} matches waiting for you',
     heroMatchesScope: {
@@ -633,7 +640,7 @@ export const en = {
     availWeekends: 'Weekends',
     bio: 'Short bio',
     avatarQuestion: 'Pick your avatar',
-    bioPlaceholder: "E.g. Playing for 3 years, love coming to the net, looking for doubles partners on weekends…",
+    bioPlaceholder: 'E.g. Playing for 3 years, love coming to the net, looking for doubles partners on weekends…',
     birthDate: 'Date of birth',
     birthDatePlaceholder: 'dd/mm/yyyy',
     genderQuestion: 'Gender',
@@ -686,6 +693,7 @@ export const en = {
     errorGeneric: 'Something went wrong. Please try again.',
     errorInvalidCredentials: 'Incorrect email or password.',
     errorEmailNotConfirmed: 'Confirm your email before signing in — check your inbox for the link.',
+    errorProfileSave: "Your account was created, but we couldn't save your profile. Please try again.",
     checkEmailEyebrow: 'Almost there',
     checkEmailTitle: 'Check your inbox',
     checkEmailLead: 'We sent a confirmation link to {email}. Confirm it, then sign in.',

@@ -419,7 +419,7 @@ export const pt = {
   },
   feed: {
     heroImageAlt: 'Dois jogadores num rally num court no terraço, sobre uma cidade mediterrânica',
-    greeting: 'Boa noite',
+    greeting: 'Olá',
     heroMatchesOne: 'Há 1 partida à tua espera',
     heroMatchesMany: 'Há {count} partidas à tua espera',
     heroMatchesScope: {
@@ -686,6 +686,7 @@ export const pt = {
     errorGeneric: 'Algo correu mal. Tenta novamente.',
     errorInvalidCredentials: 'Email ou password incorretos.',
     errorEmailNotConfirmed: 'Confirma o teu email antes de iniciar sessão — vê a caixa de correio para o link.',
+    errorProfileSave: 'A tua conta foi criada, mas não foi possível guardar o teu perfil. Tenta novamente.',
     checkEmailEyebrow: 'Quase lá',
     checkEmailTitle: 'Verifica o teu email',
     checkEmailLead: 'Enviámos um link de confirmação para {email}. Confirma-o e depois inicia sessão.',

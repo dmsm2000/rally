@@ -2,7 +2,7 @@
 
 ## Read This First
 
-RALLY is a Portuguese-first social tennis web app. Read `PRODUCT.md` as well for product intent, user rules, and UX decisions — including the brand capitalisation/gender rule for the app name in user-facing and business copy. This file is the technical source of truth.
+RALLY is a Portuguese-first social tennis app, shipped from one Angular codebase to three targets: web, and native iOS/Android via Capacitor. As of 2026-09-06, treat mobile as at least as important as web, not an afterthought — see "Mobile Platforms" below before touching anything fixed-position. Read `PRODUCT.md` as well for product intent, user rules, and UX decisions — including the brand capitalisation/gender rule for the app name in user-facing and business copy. This file is the technical source of truth.
 
 The app is an Angular 22 standalone-components SPA with Tailwind CSS v4. It is gradually moving from mock data to Supabase. Do not assume a feature is fully real just because the UI looks complete.
 
@@ -18,6 +18,53 @@ npm run lint
 - Use `npm run build` as the source of truth after TypeScript/template changes.
 - `ng lint` currently has numerous pre-existing warnings but should have no errors.
 - Do not commit unless explicitly asked.
+
+## Mobile Platforms (iOS/Android via Capacitor)
+
+Same Angular build, three targets: web (`ng serve` / GitHub Pages) and native iOS/Android wrapped
+by Capacitor (`ios/`, `android/`). The founder now tests primarily on a real iPhone via Xcode, so a
+change to anything fixed-position (topbar, bottom nav, dialogs, toasts, the media lightbox, the FAB)
+needs checking on web **and** iOS **and** Android before it counts as done — all three render the
+same CSS/DOM, but the platforms genuinely disagree on `env(safe-area-inset-*)`.
+
+```bash
+npm run build && npx cap sync   # both platforms
+npm run cap:ios                 # build + sync + open Xcode
+npm run cap:android             # build + sync + open Android Studio
+```
+
+In Xcode: pick a simulator or a paired physical device from the run-destination dropdown, Cmd+R. A
+free (non-paid) Apple ID works for a physical device, but the install expires after 7 days and needs
+re-running from Xcode to renew.
+
+**Hard-won lessons from the 2026-09-06 safe-area debugging pass** — read before touching safe-area
+CSS again, it took several wrong turns to land on these:
+
+- `env(safe-area-inset-top/bottom)` genuinely resolves to `0` on web (no notch — correct) and to the
+  real device value on iOS/Android. Verified by measuring `getComputedStyle(el).paddingTop` live on
+  a physical device. **Trust it.** Don't wrap it in a hardcoded `max(Xrem, env(...))` floor as a
+  "safety net" — that forces unwanted empty space on web and on notch-less Android, which is a worse
+  bug than whatever it was meant to guard against. If a gap looks wrong, the bug is almost always
+  somewhere else, not env() failing.
+- Elements that already pair a hardcoded rem amount with `env()` — `calc(2.5rem+env(safe-area-inset-top))`
+  on the auth pages, the toast, dialogs, the feed page's fixed offsets — work correctly on all three
+  platforms as-is and don't need touching.
+- The topbar hides on scroll by translating the whole fixed header, including its own safe-area
+  padding, off-screen. Left alone, that means once it's fully hidden nothing is painted behind the
+  native status bar, so scrolled content (bright photos especially) shows straight through it. Fix
+  in place: a second, separate `fixed top-0` strip sized to just `env(safe-area-inset-top)` sits
+  behind the header and never translates, so the clock/battery always keep a backdrop — see
+  `layout/topbar/topbar.component.html`.
+- What looks like the topbar's buttons "overlapping" the native status bar icons is very often *not*
+  a layout bug — it's the lack of any visual seam between the OS-owned strip and the app's own nav
+  row, both painted the same flat colour. Measure before assuming: a quick on-screen
+  `getComputedStyle(el).paddingTop` readout settles it in one screenshot instead of several rounds
+  of guessing.
+- Tried and reverted (2026-09-06): fading the topbar's icons and the feed's scope-tabs bar via
+  `opacity` while scrolling, so they'd read as "gone" faster than their raw translate distance
+  otherwise implies. Fiddly to tune (how much of the scroll should map to the fade) and never felt
+  right; the user pulled it. Current, intentional behaviour for both bars is plain translate-only
+  hiding, no opacity. Don't re-attempt without an explicit ask.
 
 ## Testing Location-Gated Flows
 

@@ -48,7 +48,7 @@ export class AuthCallbackPageComponent {
 
     const hasProfile = await this.auth.hasProfile(userId);
     await this.router.navigateByUrl(hasProfile ? '/' : '/register', {
-      state: hasProfile ? undefined : { completeGoogleProfile: true }
+      state: hasProfile ? undefined : { completeProfile: true }
     });
   }
 }

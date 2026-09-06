@@ -178,7 +178,7 @@
   }
 
   @if (!post().trip && !post().match && !post().venue && post().mediaType === 'video') {
-    <button type="button" (click)="onMediaTap()" class="relative block w-full cursor-zoom-in bg-ink">
+    <button type="button" (click)="onMediaTap()" class="relative block w-full bg-ink">
       <video
         [src]="post().mediaUrl"
         playsinline
@@ -196,7 +196,7 @@
       }
     </button>
   } @else if (!post().trip && !post().match && !post().venue && post().mediaType === 'image') {
-    <button type="button" (click)="onMediaTap()" class="relative block w-full cursor-zoom-in bg-muted">
+    <button type="button" (click)="onMediaTap()" class="relative block w-full bg-muted">
       <img [src]="post().mediaUrl" alt="" loading="lazy" class="max-h-[32rem] w-full object-contain" />
       @if (likeBurst()) {
         <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
