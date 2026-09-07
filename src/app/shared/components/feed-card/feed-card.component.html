@@ -178,23 +178,20 @@
   }
 
   @if (!post().trip && !post().match && !post().venue && post().mediaType === 'video') {
-    <button type="button" (click)="onMediaTap()" class="relative block w-full bg-ink">
+    <!-- No double-tap-to-like wrapper here (unlike the image below) — a video needs every tap to
+         reach its own native play/scrub controls, which a wrapping click handler would fight with. -->
+    <div class="relative w-full bg-ink">
       <video
         [src]="post().mediaUrl"
+        [poster]="videoPoster()"
+        crossorigin="anonymous"
         playsinline
-        muted
+        controls
         preload="metadata"
+        (loadeddata)="onVideoLoadedData($event)"
         class="max-h-[32rem] w-full object-contain"
       ></video>
-      @if (likeBurst()) {
-        <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <ui-icon
-            name="tennis-ball"
-            className="animate-tennis-pop size-20 text-lime drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]"
-          />
-        </div>
-      }
-    </button>
+    </div>
   } @else if (!post().trip && !post().match && !post().venue && post().mediaType === 'image') {
     <button type="button" (click)="onMediaTap()" class="relative block w-full bg-muted">
       <img [src]="post().mediaUrl" alt="" loading="lazy" class="max-h-[32rem] w-full object-contain" />

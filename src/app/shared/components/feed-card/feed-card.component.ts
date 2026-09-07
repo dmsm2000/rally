@@ -12,7 +12,9 @@ import { AvatarComponent, ChipComponent, IconComponent } from '../../ui';
 const DOUBLES_CAPACITY = 4;
 
 // A tap within this window of a previous one counts as a double-tap, Instagram-style, and likes
-// the post. Media is deliberately not tappable to expand/zoom for now — a single tap does nothing.
+// the post. Images are deliberately not tappable to expand/zoom for now — a single tap does
+// nothing (video has its own native controls instead, so it isn't wrapped in this gesture at all —
+// a single tap there has to reach the play button).
 const DOUBLE_TAP_WINDOW_MS = 300;
 // Matches the `animate-tennis-pop` keyframe duration (styles.css) — the burst overlay is removed
 // the instant the pop finishes rather than lingering in its 'both' fill-mode end state.
@@ -33,6 +35,10 @@ export class FeedCardComponent implements OnDestroy {
 
   protected readonly likeBurst = signal(false);
   protected readonly likeButtonPop = signal(false);
+  // Grabbed client-side from the video's own first frame — user-uploaded posts have no separate
+  // thumbnail asset, and without an explicit `poster` mobile browsers commonly show a plain black
+  // box until playback starts instead of painting that frame themselves.
+  protected readonly videoPoster = signal<string | undefined>(undefined);
 
   readonly post = input.required<Post>();
   readonly player = input<Player | undefined>();
@@ -131,7 +137,7 @@ export class FeedCardComponent implements OnDestroy {
     }
   }
 
-  // Media has no single-tap action for now (see DOUBLE_TAP_WINDOW_MS) — only a fast second tap
+  // The image has no single-tap action for now (see DOUBLE_TAP_WINDOW_MS) — only a fast second tap
   // within the window does anything, and only when liking is actually possible.
   protected onMediaTap(): void {
     if (!this.canLike()) {
@@ -143,6 +149,26 @@ export class FeedCardComponent implements OnDestroy {
     if (sinceLastTap < DOUBLE_TAP_WINDOW_MS) {
       this.lastTapAt = 0;
       this.likeFromDoubleTap();
+    }
+  }
+
+  // Runs once the video's first frame is actually decoded and on-screen — earlier events
+  // (loadedmetadata) only guarantee dimensions/duration, not a paintable frame. `crossorigin` on
+  // the <video> (paired with feed-media's public, CORS-open bucket) is what keeps this canvas read
+  // from being cross-origin-tainted; without it toDataURL() throws instead of returning an image.
+  protected onVideoLoadedData(event: Event): void {
+    if (this.videoPoster()) {
+      return;
+    }
+    const video = event.target as HTMLVideoElement;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      this.videoPoster.set(canvas.toDataURL('image/jpeg', 0.75));
+    } catch {
+      // Codec/CORS edge case — video still plays fine via its own controls, just without a poster.
     }
   }
 

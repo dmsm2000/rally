@@ -54,14 +54,14 @@
   }
 </div>
 
-<section class="mb-8 grid gap-4 sm:grid-cols-3">
-  <div class="rounded-2xl border border-border bg-card p-5">
+<section class="mb-8 grid grid-cols-3 gap-4">
+  <div class="rounded-2xl border border-border bg-card p-5 text-center">
     <ui-stat [value]="courts.totalVenues()" [label]="'courts.venuesStat' | translate" />
   </div>
-  <div class="rounded-2xl border border-border bg-card p-5">
+  <div class="rounded-2xl border border-border bg-card p-5 text-center">
     <ui-stat [value]="courts.countriesWithCourts()" [label]="'courts.countriesWithCourts' | translate" />
   </div>
-  <div class="rounded-2xl border border-border bg-card p-5">
+  <div class="rounded-2xl border border-border bg-card p-5 text-center">
     @if (auth.isObserver()) {
       <ui-stat [value]="courts.indoorShare() + '%'" [label]="'courts.indoorShareStat' | translate" />
     } @else {
