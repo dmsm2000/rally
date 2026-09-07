@@ -22,6 +22,8 @@ export type IconName =
   | 'gender-female'
   | 'gender-nonbinary'
   | 'trash'
+  | 'share'
+  | 'dots'
   | 'tennis-ball'
   | 'map-pin'
   | 'crosshair'
@@ -56,6 +58,8 @@ const ICON_URLS: Record<IconName, string> = {
   'gender-female': 'assets/icons/gender-female.svg',
   'gender-nonbinary': 'assets/icons/gender-nonbinary.svg',
   trash: 'assets/icons/trash.svg',
+  share: 'assets/icons/share.svg',
+  dots: 'assets/icons/dots.svg',
   'tennis-ball': 'assets/icons/tennis-ball.svg',
   'map-pin': 'assets/icons/map-pin.svg',
   crosshair: 'assets/icons/crosshair.svg',

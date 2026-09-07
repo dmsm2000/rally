@@ -4,7 +4,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { supabase } from '../../core/auth/supabase.client';
 import { RallyDataService } from '../../core/data/rally-data.service';
 import { TranslationService } from '../../core/i18n/translation.service';
-import { Match, Player, Post, PostType } from '../../core/models';
+import { Match, Player, Post, PostReportReason, PostType } from '../../core/models';
 import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
 import { ToastService } from '../../core/services/toast.service';
 import { MatchesRepository } from '../matches/data/matches.repository';
@@ -57,6 +57,11 @@ export class FeedService {
   readonly composerType = signal<PostType | null>(null);
   readonly publishing = signal(false);
   readonly canPublish = computed(() => this.composerText().trim().length > 0 || this.composerFile() !== null);
+
+  // A picked image sits here mid-crop, before it becomes the actual composerFile — see
+  // selectMedia()/confirmCrop(). Video has no crop step (re-encoding a trim client-side isn't
+  // practical), so it never touches this.
+  readonly cropSourceFile = signal<File | null>(null);
 
   private readonly deletingPostIds = signal<Set<string>>(new Set());
   private readonly volunteeringPostIds = signal<Set<string>>(new Set());
@@ -142,6 +147,16 @@ export class FeedService {
     return this.players.getById(id);
   }
 
+  async reportPost(post: Post, reason: PostReportReason): Promise<void> {
+    const result = await this.repository.report(post.id, reason);
+    const key = result === 'ok' ? 'feed.reportThanks' : result === 'already' ? 'feed.alreadyReported' : 'feed.reportFailed';
+    if (result === 'failed') {
+      this.toast.error(this.translation.t(key));
+      return;
+    }
+    this.toast.success(this.translation.t(key));
+  }
+
   isDeleting(postId: string): boolean {
     return this.deletingPostIds().has(postId);
   }
@@ -183,6 +198,7 @@ export class FeedService {
     this.composerOpen.set(false);
     this.composerText.set('');
     this.composerType.set(null);
+    this.cancelCrop();
     this.clearMedia();
   }
 
@@ -190,7 +206,32 @@ export class FeedService {
     this.composerType.update(current => (current === type ? null : type));
   }
 
-  attachMedia(file: File): void {
+  // Images go through a crop step first (see FeedImageCropComponent, backed by ngx-image-cropper)
+  // so the poster picks the 4:5 framing, not just whatever CSS object-cover happens to centre.
+  // Video skips straight to attachMedia() — cropping it would mean re-encoding, not just a canvas
+  // draw.
+  selectMedia(file: File): void {
+    if (file.type.startsWith('video/')) {
+      this.attachMedia(file);
+      return;
+    }
+    this.cropSourceFile.set(file);
+  }
+
+  confirmCrop(blob: Blob): void {
+    const source = this.cropSourceFile();
+    this.cancelCrop();
+    if (!source) {
+      return;
+    }
+    this.attachMedia(new File([blob], source.name, { type: 'image/jpeg' }));
+  }
+
+  cancelCrop(): void {
+    this.cropSourceFile.set(null);
+  }
+
+  private attachMedia(file: File): void {
     const isVideo = file.type.startsWith('video/');
     const max = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
     if (file.size > max) {

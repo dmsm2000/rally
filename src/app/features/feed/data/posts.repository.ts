@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { AuthService } from '../../../core/auth/auth.service';
 import { supabase } from '../../../core/auth/supabase.client';
-import { Post, PostType } from '../../../core/models';
+import { Post, PostReportReason, PostType } from '../../../core/models';
 import { CourtsRepository } from '../../courts/data/courts.repository';
 import { MatchesRepository } from '../../matches/data/matches.repository';
 import { PlayersRepository } from '../../players/data/players.repository';
@@ -141,6 +141,52 @@ export class PostsRepository {
     const hasMore = data.length > PAGE_SIZE;
     const posts = await this.hydrate((data as PostRow[]).slice(0, PAGE_SIZE), uid);
     return { posts, hasMore };
+  }
+
+  /**
+   * A single post by id, for the public post page. Deliberately unscoped: posts' select policy is
+   * `using (true)` for every role (0011_posts.sql), so a shared link resolves for a logged-out
+   * visitor too — the feed's city/country scoping is about what gets *surfaced*, not about who may
+   * read a post someone chose to send them.
+   */
+  async getById(postId: string): Promise<Post | null> {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('id,author_id,text,media_url,media_type,type,trip_intent_id,match_id,venue_id,created_at')
+      .eq('id', postId)
+      .maybeSingle();
+    if (error || !data) {
+      if (error) {
+        console.error('Failed to load post:', error.message);
+      }
+      return null;
+    }
+    const [post] = await this.hydrate([data as PostRow], this.auth.currentUserId());
+    return post ?? null;
+  }
+
+  /**
+   * Files a report against a post (0036_post_reports.sql). Returns 'already' rather than failing
+   * on a second report of the same post: the table's unique partial index is what enforces
+   * one-per-reporter, so a duplicate is a mis-tap to acknowledge, not an error to surface.
+   */
+  async report(postId: string, reason: PostReportReason, note?: string): Promise<'ok' | 'already' | 'failed'> {
+    const uid = this.auth.currentUserId();
+    if (!uid) {
+      return 'failed';
+    }
+    const { error } = await supabase
+      .from('post_reports')
+      .insert({ post_id: postId, reporter_id: uid, reason, note: note?.trim() || null });
+    if (error) {
+      // 23505 = unique_violation, i.e. this reporter already has an open report on this post.
+      if (error.code === '23505') {
+        return 'already';
+      }
+      console.error('Failed to report post:', error.message);
+      return 'failed';
+    }
+    return 'ok';
   }
 
   /** Uploads the optional file to the `feed-media` bucket first, then inserts the post row. */

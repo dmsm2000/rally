@@ -19,6 +19,13 @@ export const routes: Routes = [
     path: 'reset-password',
     loadChildren: async () => (await import('./features/auth/auth.routes')).RESET_PASSWORD_ROUTES
   },
+  // Public on purpose, not an oversight: this is the target of the feed's share button, so it has
+  // to open for someone who has no account yet. Posts are readable by `anon` at the RLS level
+  // already (0011_posts.sql), and the page itself offers no action that writes.
+  {
+    path: 'posts',
+    loadChildren: async () => (await import('./features/feed/feed.routes')).POST_DETAIL_ROUTES
+  },
   {
     path: '',
     component: AppShellComponent,

@@ -1,16 +1,19 @@
 import { DatePipe } from '@angular/common';
 import { Component, ElementRef, HostListener, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { MessagesService } from '../messages.service';
+import { ChatMessage } from '../../../core/models';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { MessagesWidgetService } from '../../../core/services/messages-widget.service';
+import { ShareService } from '../../../core/services/share.service';
 import { TranslationService } from '../../../core/i18n/translation.service';
 import { AvatarComponent, FabComponent, IconComponent } from '../../../shared/ui';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'rally-messages-widget',
-  imports: [FormsModule, AvatarComponent, FabComponent, IconComponent, TranslatePipe, DatePipe],
+  imports: [FormsModule, RouterLink, AvatarComponent, FabComponent, IconComponent, TranslatePipe, DatePipe],
   templateUrl: './messages-widget.component.html',
   styleUrl: './messages-widget.component.scss',
 })
@@ -23,6 +26,7 @@ export class MessagesWidgetComponent {
   protected readonly widget = inject(MessagesWidgetService);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly translation = inject(TranslationService);
+  protected readonly shareService = inject(ShareService);
 
   protected readonly rows = computed(() =>
     this.messages.conversations().map(({ conversation, player }) => ({
@@ -102,6 +106,16 @@ export class MessagesWidgetComponent {
     this.draft.set('');
     const conversationId = await this.messages.ensureConversationWithPlayer(playerId);
     this.messages.send(conversationId, text);
+  }
+
+  // The list preview and the thread bubble both need to not show a raw URL for a shared post —
+  // this is the one used by the list; the thread checks shareService.postIdFromShareLink() itself,
+  // since it also needs the id to build the routerLink, not just a yes/no.
+  protected previewText(message: ChatMessage | undefined): string {
+    if (!message) {
+      return this.translation.t('messages.noMessagesYet');
+    }
+    return this.shareService.postIdFromShareLink(message.text) ? this.translation.t('messages.sharedPost') : message.text;
   }
 
   protected async deleteConversation(conversationId: string): Promise<void> {

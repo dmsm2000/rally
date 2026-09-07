@@ -1,5 +1,8 @@
-<article class="animate-slide-in overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-  <div class="flex items-center gap-3 p-3.5">
+<article class="animate-slide-in">
+  <!-- No horizontal padding anywhere in this card: the media is full-bleed to the column's edges,
+       so any inset here would put the avatar and the actions out of line with the photo above and
+       below them. The column's own page gutter (px-5 on the shell) is the only inset. -->
+  <div class="flex items-center gap-3 py-4">
     <!-- `flex` (not just shrink-0) collapses the anchor's own inline line-height box, which was
          rendering ~6px taller than the avatar itself and throwing off the row's vertical centring. -->
     <a [routerLink]="profileLink()" class="flex shrink-0 cursor-pointer">
@@ -25,56 +28,75 @@
       @if (post().type; as type) {
         <ui-chip [subtle]="true">{{ 'feed.type.' + type | translate }}</ui-chip>
       }
-      @if (canDelete()) {
-        <button
-          type="button"
-          (click)="deleted.emit()"
-          [disabled]="deleting()"
-          [attr.aria-label]="'feed.deletePost' | translate"
-          class="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-loss disabled:pointer-events-none disabled:opacity-40"
-        >
-          <ui-icon name="trash" className="size-3.5" />
-        </button>
-      }
     </div>
   </div>
 
   @if (post().match; as match) {
-    <!-- A sibling of the header row, not nested inside it — keeps the avatar centred against just
-         the name/date pair above, whatever height this body ends up being. -->
-    <div class="px-3.5 pb-3.5">
-      <p class="text-sm font-bold">
-        🎾 {{ (isOwnPost() ? 'feed.match.ownHeadline' : 'feed.match.otherHeadline') | translate: { city: match.city } }}
-      </p>
-      <p class="mt-1 text-xs text-muted-foreground">
-        {{ match.city }}, {{ match.country }} · {{ match.matchDate | date: 'd MMM' }} · {{ match.matchTime.slice(0, 5) }}{{ match.matchTimeEnd ? '–' + match.matchTimeEnd.slice(0, 5) : '' }}
-      </p>
-      @if (match.note) {
-        <p class="mt-2 text-sm break-words whitespace-pre-wrap">{{ match.note }}</p>
-      }
+    <!-- Same footprint as a media post (full-bleed, aspect-4/5) rather than a compact inline
+         panel — a system announcement was reading as a throwaway note next to a full photo post
+         above/below it in the scroll. Centred column, flag-in-a-circle instead of a generic icon. -->
+    <div class="relative -mx-5 flex aspect-4/5 w-[calc(100%+2.5rem)] flex-col items-center justify-center gap-3 bg-lime/15 px-8 py-10 text-center sm:mx-0 sm:w-full">
+      <span class="flex size-16 shrink-0 items-center justify-center rounded-full bg-lime text-3xl">
+        {{ matchFlag() }}
+      </span>
+      <div class="max-w-xs">
+        <p class="text-base font-bold">
+          @if (isOwnPost()) {
+            {{ 'feed.match.ownHeadline' | translate }}
+          } @else {
+            {{ 'feed.match.otherHeadline' | translate: { name: player()?.name ?? '' } }}
+          }
+        </p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          {{ 'feed.match.locationLabel' | translate }}: {{ match.city }}, {{ match.country }}
+        </p>
+        <p class="text-xs text-muted-foreground">
+          {{ 'feed.match.dateLabel' | translate }}: {{ match.matchDate | date: 'd MMM' }} · {{ match.matchTime.slice(0, 5)
+          }}{{ match.matchTimeEnd ? '–' + match.matchTimeEnd.slice(0, 5) : '' }}
+        </p>
+        @if (match.note) {
+          <p class="mt-2 text-sm break-words whitespace-pre-wrap">{{ match.note }}</p>
+        }
+      </div>
       @if (match.status === 'cancelled') {
-        <p class="mt-2.5 inline-flex rounded-full border border-border px-3.5 py-1.5 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">
+        <p
+          class="inline-flex rounded-full border border-border px-3.5 py-1.5 text-xs font-extrabold tracking-wide text-muted-foreground uppercase"
+        >
           {{ 'feed.match.cancelled' | translate }}
         </p>
       } @else if (match.status !== 'open') {
-        <p class="mt-2.5 inline-flex rounded-full border border-border px-3.5 py-1.5 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">
+        <p
+          class="inline-flex rounded-full border border-border px-3.5 py-1.5 text-xs font-extrabold tracking-wide text-muted-foreground uppercase"
+        >
           {{ (match.joinedByMe ? 'feed.match.youJoined' : 'feed.match.matched') | translate }}
         </p>
       } @else {
         @if (match.format === 'Doubles') {
-          <div class="mt-2.5 flex items-center gap-1.5">
-            @for (p of participants(); track p?.id) {
-              <ui-avatar [initials]="p?.initials ?? ''" [accent]="p?.accent ?? 'ink'" [seed]="p?.avatarSeed" [avatarStyle]="p?.avatarStyle" size="sm" />
-            }
-            @for (slot of doublesEmptySlots(); track slot) {
-              <div class="flex size-9 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-xs text-muted-foreground">?</div>
-            }
+          <div class="flex flex-col items-center gap-1.5">
+            <div class="flex items-center gap-1.5">
+              @for (p of participants(); track p?.id) {
+                <ui-avatar
+                  [initials]="p?.initials ?? ''"
+                  [accent]="p?.accent ?? 'ink'"
+                  [seed]="p?.avatarSeed"
+                  [avatarStyle]="p?.avatarStyle"
+                  size="sm"
+                />
+              }
+              @for (slot of doublesEmptySlots(); track slot) {
+                <div
+                  class="flex size-9 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-xs text-muted-foreground"
+                >
+                  ?
+                </div>
+              }
+            </div>
+            <p class="text-xs font-bold text-muted-foreground">
+              {{ 'matches.doublesRoster' | translate: { count: match.participantCount ?? 1 } }}
+            </p>
           </div>
-          <p class="mt-2 text-xs font-bold text-muted-foreground">
-            {{ 'matches.doublesRoster' | translate: { count: match.participantCount ?? 1 } }}
-          </p>
         }
-        <div class="mt-2.5 flex items-center gap-2">
+        <div class="flex flex-wrap items-center justify-center gap-2">
           <a
             [routerLink]="['/matches', match.matchId]"
             class="inline-flex cursor-pointer rounded-full border border-lime px-3.5 py-1.5 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink"
@@ -115,20 +137,33 @@
       }
     </div>
   } @else if (post().trip; as trip) {
-    <div class="px-3.5 pb-3.5">
-      <p class="text-sm font-bold">
-        🧳 {{ (isOwnPost() ? 'feed.trip.ownHeadline' : 'feed.trip.otherHeadline') | translate: { city: trip.destinationCity } }}
-      </p>
-      <p class="mt-1 text-xs text-muted-foreground">
-        {{ tripFlag() }} {{ trip.destinationCity }}, {{ trip.destinationCountry }} ·
-        {{ trip.fromDate | date: 'd MMM' }} – {{ trip.toDate | date: 'd MMM' }}
-      </p>
-      @if (trip.note) {
-        <p class="mt-2 text-sm break-words whitespace-pre-wrap">{{ trip.note }}</p>
-      }
+    <div class="relative -mx-5 flex aspect-4/5 w-[calc(100%+2.5rem)] flex-col items-center justify-center gap-3 bg-clay/15 px-8 py-10 text-center sm:mx-0 sm:w-full">
+      <span class="flex size-16 shrink-0 items-center justify-center rounded-full bg-clay text-3xl">
+        {{ tripFlag() }}
+      </span>
+      <div class="max-w-xs">
+        <p class="text-base font-bold">
+          @if (isOwnPost()) {
+            {{ 'feed.trip.ownHeadline' | translate }}
+          } @else {
+            {{ 'feed.trip.otherHeadline' | translate: { name: player()?.name ?? '' } }}
+          }
+        </p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          {{ 'feed.trip.destinationLabel' | translate }}: {{ trip.destinationCity }}, {{ trip.destinationCountry }}
+        </p>
+        <p class="text-xs text-muted-foreground">
+          {{ 'feed.trip.datesLabel' | translate }}: {{ trip.fromDate | date: 'd MMM' }} – {{ trip.toDate | date: 'd MMM' }}
+        </p>
+        @if (trip.note) {
+          <p class="mt-2 text-sm break-words whitespace-pre-wrap">{{ trip.note }}</p>
+        }
+      </div>
       @if (canHost()) {
         @if (trip.volunteeredByMe) {
-          <p class="mt-2.5 inline-flex rounded-full border border-border px-3.5 py-1.5 text-xs font-extrabold tracking-wide text-muted-foreground uppercase">
+          <p
+            class="inline-flex rounded-full border border-border px-3.5 py-1.5 text-xs font-extrabold tracking-wide text-muted-foreground uppercase"
+          >
             {{ 'world.volunteered' | translate }}
           </p>
         } @else {
@@ -136,7 +171,7 @@
             type="button"
             (click)="volunteered.emit()"
             [disabled]="volunteering()"
-            class="mt-2.5 cursor-pointer rounded-full border border-lime px-3.5 py-1.5 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink disabled:pointer-events-none disabled:opacity-40"
+            class="cursor-pointer rounded-full border border-lime px-3.5 py-1.5 text-xs font-extrabold tracking-wide uppercase transition-colors hover:bg-lime hover:text-ink disabled:pointer-events-none disabled:opacity-40"
           >
             {{ 'world.volunteer' | translate }}
           </button>
@@ -146,15 +181,25 @@
   } @else if (post().venue; as venue) {
     <!-- Written by check_in_court() the moment a second player confirms the place on site, and
          credited to whoever discovered it — registering alone never produces this card. -->
-    <div class="px-3.5 pb-3.5">
-      <p class="text-sm font-bold">
-        🛡️ {{ (isOwnPost() ? 'feed.venue.ownHeadline' : 'feed.venue.otherHeadline') | translate: { name: venue.name } }}
-      </p>
-      <p class="mt-1 text-xs text-muted-foreground">
-        {{ venue.flag }} {{ venue.city }}, {{ venue.country }} · {{ venue.courtCount }}
-        {{ 'courts.courtsSuffix' | translate }}
-      </p>
-      <div class="mt-2.5 flex flex-wrap items-center gap-2">
+    <div class="relative -mx-5 flex aspect-4/5 w-[calc(100%+2.5rem)] flex-col items-center justify-center gap-3 bg-cobalt/15 px-8 py-10 text-center sm:mx-0 sm:w-full">
+      <span class="flex size-16 shrink-0 items-center justify-center rounded-full bg-cobalt text-3xl">
+        {{ venue.flag }}
+      </span>
+      <div class="max-w-xs">
+        <p class="text-base font-bold">
+          @if (isOwnPost()) {
+            {{ 'feed.venue.ownHeadline' | translate }}
+          } @else {
+            {{ 'feed.venue.otherHeadline' | translate: { name: player()?.name ?? '' } }}
+          }
+        </p>
+        <p class="mt-1 text-xs text-muted-foreground">{{ 'feed.venue.courtLabel' | translate }}: {{ venue.name }}</p>
+        <p class="text-xs text-muted-foreground">
+          {{ 'feed.venue.locationLabel' | translate }}: {{ venue.city }}, {{ venue.country }} · {{ venue.courtCount }}
+          {{ 'courts.courtsSuffix' | translate }}
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-2">
         @if (venue.courtId) {
           <a
             [routerLink]="['/courts', venue.courtId]"
@@ -172,15 +217,21 @@
       </div>
     </div>
   } @else if (post().text) {
-    <!-- Broken out of the avatar-indented column so it gets the card's full width to wrap in,
-         with a divider standing in for the header it's no longer squeezed underneath. -->
-    <p class="border-t border-border px-3.5 py-3 text-sm break-words whitespace-pre-wrap">{{ post().text }}</p>
+    <!-- Broken out of the avatar-indented column so it gets the card's full width to wrap in. -->
+    <p class="pb-3 text-sm break-words whitespace-pre-wrap">{{ post().text }}</p>
   }
 
   @if (!post().trip && !post().match && !post().venue && post().mediaType === 'video') {
     <!-- No double-tap-to-like wrapper here (unlike the image below) — a video needs every tap to
          reach its own native play/scrub controls, which a wrapping click handler would fight with. -->
-    <div class="relative w-full bg-ink">
+    <!-- -mx-5 cancels the app shell's own px-5 page gutter so the photo runs edge to edge of the
+         phone screen, Instagram-style, while the header and the like row keep that gutter. From sm
+         up the column is narrower than the viewport anyway, so it goes back to the column's width
+         and stays in line with them.
+         The width is stated explicitly (column + the two 20px gutters) rather than left as w-auto:
+         auto is fit-content on a <button>, which sized the box from the photo's own intrinsic
+         width and made narrow photos render as narrow posts. -->
+    <div class="relative -mx-5 aspect-4/5 w-[calc(100%+2.5rem)] bg-ink sm:mx-0 sm:w-full">
       <video
         [src]="post().mediaUrl"
         [poster]="videoPoster()"
@@ -189,12 +240,16 @@
         controls
         preload="metadata"
         (loadeddata)="onVideoLoadedData($event)"
-        class="max-h-[32rem] w-full object-contain"
+        class="size-full object-cover"
       ></video>
     </div>
   } @else if (!post().trip && !post().match && !post().venue && post().mediaType === 'image') {
-    <button type="button" (click)="onMediaTap()" class="relative block w-full bg-muted">
-      <img [src]="post().mediaUrl" alt="" loading="lazy" class="max-h-[32rem] w-full object-contain" />
+    <button
+      type="button"
+      (click)="onMediaTap()"
+      class="relative -mx-5 block aspect-4/5 w-[calc(100%+2.5rem)] bg-muted sm:mx-0 sm:w-full"
+    >
+      <img [src]="post().mediaUrl" alt="" loading="lazy" class="size-full object-cover" />
       @if (likeBurst()) {
         <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
           <ui-icon
@@ -206,21 +261,171 @@
     </button>
   }
 
-  <div class="flex items-center gap-4 px-3.5 pt-2.5 pb-2.5">
-    @if (canLike()) {
+  <!-- py-4 (both sides equal): pt=pb here keeps the icons themselves vertically centred in the
+       row, and pb still matches the header row's own pt-4 on the *next* post, so the divider
+       between two posts keeps equal space on both sides too. -->
+  <div class="flex items-center gap-4 py-4">
+    @if (!isAutomaticPost()) {
+      <!-- Presence comes from size and full-contrast ink, not from a border — a pill here competed
+           with the card's own action buttons ("Ver partida", "Juntar") for the same attention. -->
       <button
         type="button"
         (click)="onLikeButtonClick()"
-        class="flex cursor-pointer items-center gap-1.5 text-sm font-extrabold tracking-wide uppercase"
-        [class]="post().likedByMe ? 'text-clay' : 'text-muted-foreground hover:text-foreground'"
+        [disabled]="!canLike()"
+        class="flex items-center gap-2 text-sm font-extrabold tracking-wide uppercase transition-colors disabled:cursor-default"
+        [class]="likeButtonClass()"
       >
-        <ui-icon name="tennis-ball" [className]="likeButtonPop() ? 'animate-tennis-pop size-5' : 'size-5'" />
+        <ui-icon name="tennis-ball" [className]="likeButtonPop() ? 'animate-tennis-pop size-6' : 'size-6'" />
         {{ post().likeCount || '' }}
       </button>
-    } @else if (post().likeCount) {
-      <span class="flex items-center gap-1.5 text-sm font-extrabold tracking-wide text-muted-foreground uppercase">
-        <ui-icon name="tennis-ball" className="size-5" /> {{ post().likeCount }}
-      </span>
     }
+    <!-- Available to everyone, signed in or not: the link it produces is public (see the post
+         page's route), so there's nothing to gate. -->
+    <button
+      type="button"
+      (click)="openShareStep()"
+      [attr.aria-label]="'feed.share' | translate"
+      class="flex cursor-pointer items-center text-foreground transition-colors hover:text-lime"
+    >
+      <ui-icon name="share" className="size-6" />
+    </button>
+    <!-- ml-auto pushes just this one to the far edge, leaving like and share grouped on the left. -->
+    <button
+      type="button"
+      (click)="openMenu()"
+      [attr.aria-label]="'feed.menuLabel' | translate"
+      class="ml-auto flex cursor-pointer items-center text-foreground transition-colors hover:text-lime"
+    >
+      <ui-icon name="dots" className="size-6" />
+    </button>
   </div>
+
+  <!-- Its own element rather than a border-b on the <article>, so it can carry the media's exact
+       bleed (-mx-5 on a phone, column width from sm up) — a rule that stopped 20px short of the
+       photo above it was what read as misaligned before. -->
+  <div class="-mx-5 border-b border-border sm:mx-0"></div>
 </article>
+
+<!-- A sibling of <article>, not nested inside it — animate-slide-in's animation-fill-mode: both
+     keeps its transform "in effect" (as an identity matrix, not the literal keyword none) for as
+     long as the element exists, which makes it a permanent containing block for position: fixed
+     descendants. Nested here, the dialog rendered confined to the card's own box instead of the
+     viewport — confirmed by walking the ancestor chain in devtools. -->
+@if (menuOpen()) {
+  <ui-dialog [scrollable]="false" [showClose]="false" [centered]="true" (closed)="closeMenu()">
+    @if (menuReporting()) {
+      <p class="text-eyebrow text-muted-foreground">{{ 'feed.reportTitle' | translate }}</p>
+      <p class="mt-2 text-sm text-muted-foreground">{{ 'feed.reportLead' | translate }}</p>
+      <div class="mt-4 flex flex-col">
+        @for (reason of reportReasons; track reason) {
+          <button
+            type="button"
+            (click)="submitReport(reason)"
+            class="cursor-pointer border-b border-border py-3.5 text-left text-sm font-semibold hover:text-lime"
+          >
+            {{ 'feed.reportReasons.' + reason | translate }}
+          </button>
+        }
+      </div>
+      <button
+        type="button"
+        (click)="menuReporting.set(false)"
+        class="mt-4 cursor-pointer text-xs font-extrabold tracking-wide text-muted-foreground uppercase hover:text-foreground"
+      >
+        {{ 'common.back' | translate }}
+      </button>
+    } @else if (menuSharing()) {
+      <p class="text-eyebrow text-muted-foreground">{{ 'feed.shareTo' | translate }}</p>
+      <input
+        type="search"
+        [value]="shareSearch()"
+        (input)="onShareSearchInput($event)"
+        [placeholder]="'feed.shareSearchPlaceholder' | translate"
+        class="mt-3 w-full rounded-full border border-border bg-background px-4 py-2 text-sm outline-none focus:border-lime-deep"
+      />
+      <!-- -mx-5 sm:-mx-6 cancels ui-dialog's own panel padding so the hover background can still
+           run edge to edge, while px-5 sm:px-6 puts that same padding back on the row's content —
+           lining the avatar up with the search input's px-4 text inset above it instead of the
+           panel's bare edge. -->
+      <div class="no-scrollbar -mx-5 mt-3 max-h-72 overflow-y-auto sm:-mx-6">
+        @for (row of shareCandidates(); track row.conversation.id) {
+          <button
+            type="button"
+            (click)="sendToPlayer(row)"
+            class="flex w-full cursor-pointer items-center gap-3 border-b border-border px-5 py-2.5 text-left hover:bg-muted sm:px-6"
+          >
+            <ui-avatar
+              [initials]="row.player.initials"
+              [accent]="row.player.accent"
+              [seed]="row.player.avatarSeed"
+              [avatarStyle]="row.player.avatarStyle"
+              size="sm"
+            />
+            <span class="min-w-0 flex-1 truncate text-sm font-semibold">{{ row.player.name }}</span>
+          </button>
+        } @empty {
+          <p class="py-6 text-center text-sm text-muted-foreground">{{ 'feed.shareNoContacts' | translate }}</p>
+        }
+      </div>
+      <div class="mt-4 flex items-center justify-between gap-3">
+        <button
+          type="button"
+          (click)="menuSharing.set(false)"
+          class="cursor-pointer text-xs font-extrabold tracking-wide text-muted-foreground uppercase hover:text-foreground"
+        >
+          {{ 'common.back' | translate }}
+        </button>
+        <!-- The escape hatch for anyone not already in the list above: hands off to the native
+             share sheet (WhatsApp, Facebook, ...) or the clipboard — see ShareService. -->
+        <button
+          type="button"
+          (click)="share()"
+          class="cursor-pointer text-xs font-extrabold tracking-wide text-foreground uppercase hover:text-lime"
+        >
+          {{ 'feed.shareMore' | translate }}
+        </button>
+      </div>
+    } @else {
+      <div class="flex flex-col">
+        @if (canDelete()) {
+          <button
+            type="button"
+            (click)="submitDelete()"
+            class="cursor-pointer border-b border-border py-3.5 text-left text-sm font-semibold text-loss hover:opacity-80"
+          >
+            {{ 'feed.deletePost' | translate }}
+          </button>
+        } @else if (canReport()) {
+          <button
+            type="button"
+            (click)="menuReporting.set(true)"
+            class="cursor-pointer border-b border-border py-3.5 text-left text-sm font-semibold text-loss hover:opacity-80"
+          >
+            {{ 'feed.report' | translate }}
+          </button>
+        }
+        <a
+          [routerLink]="['/posts', post().id]"
+          (click)="closeMenu()"
+          class="cursor-pointer border-b border-border py-3.5 text-left text-sm font-semibold hover:text-lime"
+        >
+          {{ 'feed.goToPost' | translate }}
+        </a>
+        <button
+          type="button"
+          (click)="openShareStep()"
+          class="cursor-pointer border-b border-border py-3.5 text-left text-sm font-semibold hover:text-lime"
+        >
+          {{ 'feed.shareTo' | translate }}
+        </button>
+        <button
+          type="button"
+          (click)="copyLink()"
+          class="cursor-pointer py-3.5 text-left text-sm font-semibold hover:text-lime"
+        >
+          {{ 'feed.copyLink' | translate }}
+        </button>
+      </div>
+    }
+  </ui-dialog>
+}

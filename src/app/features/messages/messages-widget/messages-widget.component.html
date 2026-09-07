@@ -16,10 +16,26 @@
         <div class="no-scrollbar flex-1 space-y-2 overflow-y-auto p-4">
           @for (m of activeConversation()?.messages ?? []; track m.id) {
             <div class="flex" [class.justify-end]="m.senderId === messages.myId()">
-              <div class="max-w-[80%] min-w-0 rounded-2xl px-3 py-2 text-sm break-words" [class]="m.senderId === messages.myId() ? 'bg-lime text-ink' : 'bg-muted text-foreground'">
-                <p class="whitespace-pre-wrap">{{ m.text }}</p>
-                <p class="mt-0.5 text-[10px] opacity-60">{{ m.createdAt | date: 'HH:mm' }}</p>
-              </div>
+              @if (shareService.postIdFromShareLink(m.text); as sharedPostId) {
+                <!-- A distinct bubble, not the normal lime/muted ones — this is a link to somewhere
+                     in the app, not something the sender typed, and looking identical to a plain
+                     text message hid that behind a raw, untappable-looking URL. -->
+                <div class="max-w-[80%] min-w-0">
+                  <a
+                    [routerLink]="['/posts', sharedPostId]"
+                    class="flex items-center gap-2 rounded-2xl border border-lime bg-lime/10 px-3 py-2 text-sm font-semibold text-lime hover:bg-lime/20"
+                  >
+                    <ui-icon name="share" className="size-4 shrink-0" />
+                    <span class="min-w-0 truncate">{{ 'messages.sharedPost' | translate }}</span>
+                  </a>
+                  <p class="mt-0.5 px-1 text-[10px] text-muted-foreground opacity-60">{{ m.createdAt | date: 'HH:mm' }}</p>
+                </div>
+              } @else {
+                <div class="max-w-[80%] min-w-0 rounded-2xl px-3 py-2 text-sm break-words" [class]="m.senderId === messages.myId() ? 'bg-lime text-ink' : 'bg-muted text-foreground'">
+                  <p class="whitespace-pre-wrap">{{ m.text }}</p>
+                  <p class="mt-0.5 text-[10px] opacity-60">{{ m.createdAt | date: 'HH:mm' }}</p>
+                </div>
+              }
             </div>
           } @empty {
             <p class="text-center text-xs text-muted-foreground">{{ 'messages.noMessagesYet' | translate }}</p>
@@ -63,7 +79,7 @@
                 <ui-avatar [initials]="row.player.initials" [accent]="row.player.accent" [seed]="row.player.avatarSeed" [avatarStyle]="row.player.avatarStyle" size="sm" />
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-sm font-bold">{{ row.player.name }}</p>
-                  <p class="truncate text-xs text-muted-foreground">{{ row.lastMessage?.text ?? ('messages.noMessagesYet' | translate) }}</p>
+                  <p class="truncate text-xs text-muted-foreground">{{ previewText(row.lastMessage) }}</p>
                 </div>
                 @if (row.conversation.unread > 0) {
                   <span class="animate-tennis-pop flex size-5 shrink-0 items-center justify-center rounded-full bg-lime text-[10px] font-extrabold text-ink">{{ row.conversation.unread }}</span>

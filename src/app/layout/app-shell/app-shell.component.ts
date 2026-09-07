@@ -45,6 +45,13 @@ export class AppShellComponent {
   // Tracks the topbar 1:1 with scroll delta so it slides off/on screen with the gesture (mobile only).
   protected onMainScroll(event: Event): void {
     const scrollTop = (event.target as HTMLElement).scrollTop;
+    // iOS momentum scroll keeps firing this after the finger lifts, which otherwise races the
+    // drawer-open reset below: the topbar gets hidden again right after opening, but the drawer's
+    // own top offset assumes it's visible, leaving a blank gap where the topbar should be.
+    if (this.drawerOpen()) {
+      this.lastScrollTop = scrollTop;
+      return;
+    }
     if (window.innerWidth >= MOBILE_BREAKPOINT_PX || scrollTop <= 0) {
       this.topbarHideOffset.set(0);
     } else {

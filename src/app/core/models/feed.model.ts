@@ -72,3 +72,8 @@ export interface Post {
   likeCount: number;
   likedByMe: boolean;
 }
+
+// Mirrors court_reports' own list (see COURT_REPORT_REASONS) — kept as a TypeScript union against
+// a `text` column with a check constraint, the same choice 0001 made for every other fixed set.
+export const POST_REPORT_REASONS = ['spam', 'inappropriate', 'harassment', 'not_tennis', 'other'] as const;
+export type PostReportReason = (typeof POST_REPORT_REASONS)[number];

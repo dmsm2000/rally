@@ -1,0 +1,77 @@
+<div
+  class="no-scrollbar h-dvh overflow-y-auto bg-background px-5 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-10 sm:pt-[calc(4rem+env(safe-area-inset-top))] sm:pb-16"
+>
+  <div class="mx-auto max-w-md">
+    <a
+      routerLink="/"
+      class="mb-8 inline-flex items-center gap-2 text-foreground"
+      [attr.aria-label]="'nav.rallyHome' | translate"
+    >
+      <img src="assets/rally-logo-white.svg" alt="" class="size-7" />
+      <span class="text-display text-xl leading-none">RALLY</span>
+    </a>
+
+    @if (auth.currentUserId()) {
+      <!-- Above the post, not below: a signed-in visitor already has a feed to return to, so this
+           reads as navigation, not as a next step after reading — same reasoning as the public CTA
+           below the post only ever appearing for someone who doesn't have that feed. -->
+      <a
+        routerLink="/"
+        class="mb-6 flex w-fit items-center gap-2 text-xs font-extrabold tracking-wide text-muted-foreground uppercase hover:text-foreground"
+      >
+        <ui-icon name="arrow-left" className="size-4" />
+        {{ 'feed.backToFeed' | translate }}
+      </a>
+    }
+
+    @if (loading()) {
+      <article class="animate-pulse">
+        <div class="flex items-center gap-3 py-3.5">
+          <div class="size-9 shrink-0 rounded-full bg-muted"></div>
+          <div class="min-w-0 flex-1 space-y-2">
+            <div class="h-3 w-28 rounded-full bg-muted"></div>
+            <div class="h-2.5 w-16 rounded-full bg-muted"></div>
+          </div>
+        </div>
+        <div class="-mx-5 aspect-4/5 bg-muted sm:mx-0"></div>
+      </article>
+    } @else if (post(); as p) {
+      <!-- The same card the feed renders, so a shared post looks like what the sender saw. Its
+           own auth gates key off a real uid, so a logged-out visitor gets the read-only version. -->
+      <rally-feed-card [post]="p" [player]="author()" (reported)="report(p, $event)" (deleted)="deletePost(p)" />
+
+      @if (!auth.currentUserId()) {
+        <!-- The reason this page is public at all: someone arrived from a link with no account. -->
+        <section class="mt-8 rounded-3xl border border-border bg-card p-6 text-center">
+          <p class="text-display text-2xl">{{ 'feed.publicCtaTitle' | translate }}</p>
+          <p class="mt-2 text-sm text-muted-foreground">{{ 'feed.publicCtaBody' | translate }}</p>
+          <div class="mt-5 flex flex-wrap justify-center gap-3">
+            <a
+              routerLink="/register"
+              class="inline-flex items-center gap-2 rounded-full bg-lime px-5 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5"
+            >
+              {{ 'feed.publicCtaCreate' | translate }} →
+            </a>
+            <a
+              routerLink="/login"
+              class="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
+            >
+              {{ 'feed.publicCtaLogin' | translate }}
+            </a>
+          </div>
+        </section>
+      }
+    } @else {
+      <div class="rounded-3xl border border-border bg-card p-8 text-center">
+        <p class="text-display text-2xl">{{ 'feed.postNotFoundTitle' | translate }}</p>
+        <p class="mt-2 text-sm text-muted-foreground">{{ 'feed.postNotFoundBody' | translate }}</p>
+        <a
+          routerLink="/"
+          class="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
+        >
+          {{ 'feed.postNotFoundAction' | translate }}
+        </a>
+      </div>
+    }
+  </div>
+</div>

@@ -34,15 +34,26 @@ export class DialogComponent implements OnDestroy {
   readonly scrollable = input(true);
   /** The header row (eyebrow + close button) disappears entirely once both are unused. */
   readonly showClose = input(true);
+  /** Opts out of the bottom-sheet-on-mobile default for a short, action-list body (e.g. a
+   *  post's "..." menu) that reads as a floating card, not a composer, on every screen size. */
+  readonly centered = input(false);
   readonly closed = output<void>();
 
   protected readonly closing = signal(false);
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
 
+  protected readonly backdropClasses = computed(() =>
+    this.centered()
+      ? 'fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 p-4 transition-opacity duration-[180ms] ease-in'
+      : 'fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 transition-opacity duration-[180ms] ease-in sm:items-center sm:p-4'
+  );
+
   protected readonly panelClasses = computed(
     () =>
       (this.closing() ? 'animate-tennis-pop-out' : 'animate-tennis-pop') +
-      ' w-full max-w-lg rounded-t-3xl border border-border bg-card p-5 shadow-xl sm:rounded-3xl sm:p-6 ' +
+      (this.centered()
+        ? ' w-full max-w-lg rounded-3xl border border-border bg-card p-5 shadow-xl sm:p-6 '
+        : ' w-full max-w-lg rounded-t-3xl border border-border bg-card p-5 shadow-xl sm:rounded-3xl sm:p-6 ') +
       (this.scrollable() ? 'no-scrollbar max-h-[90vh] overflow-y-auto' : '')
   );
 

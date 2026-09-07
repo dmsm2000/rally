@@ -1,0 +1,46 @@
+<p class="text-xs text-muted-foreground">{{ 'feed.cropHint' | translate }}</p>
+
+<!-- The frame keeps a 4:5 shape (maintainAspectRatio) but stays resizable by its corners or a
+     pinch — that resize IS the zoom, which is why there's no separate zoom control. Its size is
+     bounded by this container, not by the picked photo's own pixel dimensions, so a large camera
+     photo can never blow up the dialog around it. -->
+<!-- The box's height follows the photo's own ratio (clamped — see onImageLoaded), because the
+     cropper only ever scales the photo to the box's *width*: at a fixed height a landscape shot sat
+     in a half-empty box. items-center keeps whatever slack is left as even letterboxing rather than
+     a dead gap above the buttons. -->
+<div
+  #box
+  class="mt-2 flex items-center overflow-hidden rounded-xl bg-ink transition-[height] duration-200"
+  [style.height.px]="boxHeight()"
+>
+  <image-cropper
+    [imageFile]="imageFile()"
+    [maintainAspectRatio]="true"
+    [aspectRatio]="4 / 5"
+    [cropperMinWidth]="minFrameWidth"
+    output="blob"
+    format="jpeg"
+    [imageQuality]="90"
+    backgroundColor="#000000"
+    (imageLoaded)="onImageLoaded($event)"
+    (imageCropped)="onImageCropped($event)"
+  />
+</div>
+
+<div class="mt-4 flex items-center justify-between gap-3">
+  <button
+    type="button"
+    (click)="cancelled.emit()"
+    class="cursor-pointer rounded-full border border-border px-6 py-2.5 text-xs font-extrabold tracking-wide uppercase hover:bg-muted"
+  >
+    {{ 'common.cancel' | translate }}
+  </button>
+  <button
+    type="button"
+    [disabled]="!canConfirm()"
+    (click)="confirm()"
+    class="cursor-pointer rounded-full bg-lime px-6 py-2.5 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40"
+  >
+    {{ 'feed.cropConfirm' | translate }}
+  </button>
+</div>

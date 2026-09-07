@@ -3,9 +3,13 @@ import { Component, OnDestroy, computed, inject, input, output, signal } from '@
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { CountryDataService } from '../../../core/data/country-data.service';
-import { Player, Post } from '../../../core/models';
+import { TranslationService } from '../../../core/i18n/translation.service';
+import { POST_REPORT_REASONS, Player, Post, PostReportReason } from '../../../core/models';
+import { ShareService } from '../../../core/services/share.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { MessagesService } from '../../../features/messages/messages.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
-import { AvatarComponent, ChipComponent, IconComponent } from '../../ui';
+import { AvatarComponent, ChipComponent, DialogComponent, IconComponent } from '../../ui';
 
 // Mirrors MatchesService.DOUBLES_CAPACITY — kept local since this component doesn't otherwise
 // depend on the matches feature (the parent resolves participant Players via the `participants` input).
@@ -22,13 +26,20 @@ const LIKE_BURST_MS = 450;
 
 @Component({
   selector: 'rally-feed-card',
-  imports: [AvatarComponent, ChipComponent, IconComponent, RouterLink, TranslatePipe, DatePipe],
+  imports: [AvatarComponent, ChipComponent, DialogComponent, IconComponent, RouterLink, TranslatePipe, DatePipe],
   templateUrl: './feed-card.component.html',
   styleUrl: './feed-card.component.scss',
 })
 export class FeedCardComponent implements OnDestroy {
   protected readonly auth = inject(AuthService);
   private readonly countryData = inject(CountryDataService);
+  // Injected rather than raised as an output: the share target is derivable from the post alone,
+  // and this card has two hosts now (the feed and the public post page) that would otherwise both
+  // have to thread the same handler through.
+  private readonly shareService = inject(ShareService);
+  private readonly translation = inject(TranslationService);
+  private readonly messages = inject(MessagesService);
+  private readonly toast = inject(ToastService);
 
   private burstTimer: ReturnType<typeof setTimeout> | null = null;
   private lastTapAt = 0;
@@ -44,17 +55,34 @@ export class FeedCardComponent implements OnDestroy {
   readonly player = input<Player | undefined>();
   /** Doubles roster Players, resolved by the parent — see FeedService.doublesParticipantsFor(). */
   readonly participants = input<(Player | undefined)[]>([]);
-  readonly canDelete = input(false);
-  readonly deleting = input(false);
   readonly volunteering = input(false);
   readonly joining = input(false);
   readonly leaving = input(false);
 
   readonly liked = output<void>();
-  readonly deleted = output<void>();
   readonly volunteered = output<void>();
   readonly joined = output<void>();
   readonly left = output<void>();
+  /** Filing the report is the host's job — this card sits in shared/ and must not reach into a feature repository. */
+  readonly reported = output<PostReportReason>();
+  /** Same reasoning as reported — the confirm dialog and the actual delete both belong to the host. */
+  readonly deleted = output<void>();
+
+  protected readonly reportReasons = POST_REPORT_REASONS;
+  protected readonly menuOpen = signal(false);
+  // The menu's other views. Kept as flags on the same dialog rather than separate ones, so going
+  // back doesn't animate the whole sheet out and in again.
+  protected readonly menuReporting = signal(false);
+  protected readonly menuSharing = signal(false);
+  protected readonly shareSearch = signal('');
+
+  // Recent DM partners, Instagram-share-sheet style — sending to someone you've never messaged
+  // isn't offered here, the same way Instagram's own dialog only lists people you already follow.
+  protected readonly shareCandidates = computed(() => {
+    const q = this.shareSearch().trim().toLowerCase();
+    const rows = this.messages.conversations();
+    return q ? rows.filter(row => row.player.name.toLowerCase().includes(q)) : rows;
+  });
 
   // Own posts route to the own-profile page (there's no /players/:id entry for yourself). Compares
   // against post().authorId, not player()?.id — the mock-bridged "me" player keeps a permanent fake
@@ -63,34 +91,55 @@ export class FeedCardComponent implements OnDestroy {
     this.post().authorId === this.auth.currentUserId() ? '/profile' : `/players/${this.post().authorId}`
   );
 
-  // Deliberately independent of canDelete() (which the parent forces false for trip posts, since
-  // those are only ever deleted by deleting the trip) — this still needs to say "yes, mine" so the
-  // like button stays blocked on your own trip announcement the same as on any other own post.
+  // Gates hosting/joining your own trip or match announcement below.
   protected readonly isOwnPost = computed(() => this.post().authorId === this.auth.currentUserId());
 
   // Match/trip/venue posts are system-generated announcements, not authored content — no reaction
   // feature on them at all, for anyone (see canLike below).
   protected readonly isAutomaticPost = computed(() => !!(this.post().match || this.post().trip || this.post().venue));
 
-  // Same eligibility the like button already gated on inline — pulled out so the media
-  // double-tap gesture can check it too without duplicating the conditions.
-  protected readonly canLike = computed(() => !this.auth.isObserver() && !this.isOwnPost() && !this.isAutomaticPost());
+  // Whether the like button is actually clickable right now — the button itself is always shown
+  // (see the template), including to observers and on your own post, so this only gates
+  // interactivity. Same eligibility the media double-tap gesture checks, pulled out so it doesn't
+  // duplicate the condition.
+  //
+  // Every gate in this component tests a truthy uid rather than !isObserver(), because this card
+  // also renders on the public post page, where the viewer is neither signed in *nor* an observer
+  // — !isObserver() is true for them, which would have offered actions that RLS then refuses. For
+  // a signed-in viewer the two are equivalent, so nothing changes inside the app.
+  protected readonly canLike = computed(() => !!this.auth.currentUserId() && !this.isAutomaticPost());
+
+  // Hover always previews the state a click would land on — lime to like, back to neutral to
+  // unlike — so an already-liked post reacts to the pointer the same way an unliked one does.
+  // cursor-pointer rides along for the same reason: both states are clickable.
+  protected readonly likeButtonClass = computed(() => {
+    const liked = this.post().likedByMe;
+    if (!this.canLike()) {
+      return liked ? 'text-lime' : 'text-muted-foreground';
+    }
+    return liked ? 'cursor-pointer text-lime hover:text-foreground' : 'cursor-pointer text-foreground hover:text-lime';
+  });
 
   // Only shown to players who could realistically host — same country-level match as the World
   // page's own "host requests for my country" list, not the stricter exact-city match.
   protected readonly canHost = computed(
-    () => !this.auth.isObserver() && !this.isOwnPost() && this.auth.currentPlayer().country === this.post().trip?.destinationCountry
+    () => !!this.auth.currentUserId() && !this.isOwnPost() && this.auth.currentPlayer().country === this.post().trip?.destinationCountry
   );
 
   protected readonly tripFlag = computed(
     () => this.countryData.countries().find(c => c.name === this.post().trip?.destinationCountry)?.flag ?? '🌍'
   );
 
+  // Mirrors tripFlag() — MatchPost only carries a country name, no flag of its own.
+  protected readonly matchFlag = computed(
+    () => this.countryData.countries().find(c => c.name === this.post().match?.country)?.flag ?? '🌍'
+  );
+
   // Only shown to players who could realistically join — same location-level match as the
   // Matches page's own "open near me" list, not restricted to the exact same city.
   protected readonly canJoin = computed(
     () =>
-      !this.auth.isObserver() &&
+      !!this.auth.currentUserId() &&
       !this.isOwnPost() &&
       this.post().match?.status === 'open' &&
       this.post().match?.format !== 'Doubles' &&
@@ -103,7 +152,7 @@ export class FeedCardComponent implements OnDestroy {
   // 'open' doubles post is never full — no separate "roster full" state to gate on here.
   protected readonly canJoinDoubles = computed(
     () =>
-      !this.auth.isObserver() &&
+      !!this.auth.currentUserId() &&
       !this.isOwnPost() &&
       this.post().match?.status === 'open' &&
       this.post().match?.format === 'Doubles' &&
@@ -116,12 +165,20 @@ export class FeedCardComponent implements OnDestroy {
   // itself (cancelMatch, from /matches) rather than "leave" their own announcement.
   protected readonly canLeaveDoubles = computed(
     () =>
-      !this.auth.isObserver() &&
+      !!this.auth.currentUserId() &&
       !this.isOwnPost() &&
       this.post().match?.status === 'open' &&
       this.post().match?.format === 'Doubles' &&
       this.hasJoinedDoubles()
   );
+
+  // Reporting your own post is meaningless, and a logged-out reader has no identity to file one
+  // with (post_reports' insert policy is `to authenticated`), so the option is simply absent.
+  protected readonly canReport = computed(() => !!this.auth.currentUserId() && !this.isOwnPost());
+
+  // Trip/match/venue posts are deleted by deleting the thing they announce, not directly (mirrors
+  // the old canDelete input the parent used to compute: `authorId === me && !trip && !match && !venue`).
+  protected readonly canDelete = computed(() => this.isOwnPost() && !this.isAutomaticPost());
 
   protected readonly doublesEmptySlots = computed(() =>
     Array.from({ length: Math.max(0, DOUBLES_CAPACITY - this.participants().length) }, (_, i) => i)
@@ -179,6 +236,73 @@ export class FeedCardComponent implements OnDestroy {
       this.liked.emit();
     }
     this.playLikeBurst();
+  }
+
+  protected openMenu(): void {
+    this.menuReporting.set(false);
+    this.menuSharing.set(false);
+    this.menuOpen.set(true);
+  }
+
+  protected closeMenu(): void {
+    this.menuOpen.set(false);
+    this.menuReporting.set(false);
+    this.menuSharing.set(false);
+    this.shareSearch.set('');
+  }
+
+  // Also the standalone share button's own handler now (not just the "Partilhar…" row inside an
+  // already-open menu), so both entry points land on the same dialog instead of one of them
+  // skipping straight to the native share sheet.
+  protected openShareStep(): void {
+    this.menuReporting.set(false);
+    this.menuSharing.set(true);
+    this.menuOpen.set(true);
+  }
+
+  protected copyLink(): void {
+    // Copy first, close after: closeMenu() tears down the dialog (including the button that was
+    // just clicked), and starting the clipboard write only once that's already happened risks
+    // losing the transient user activation Clipboard/Web Share need — some browsers then reject
+    // it outright, with nothing visible to show for it.
+    void this.shareService.copyLink(`posts/${this.post().id}`);
+    this.closeMenu();
+  }
+
+  protected submitReport(reason: PostReportReason): void {
+    this.closeMenu();
+    this.reported.emit(reason);
+  }
+
+  protected submitDelete(): void {
+    this.closeMenu();
+    this.deleted.emit();
+  }
+
+  protected onShareSearchInput(event: Event): void {
+    this.shareSearch.set((event.target as HTMLInputElement).value);
+  }
+
+  // A plain text DM, not a rich embed — ChatMessage has no attachment concept (see message.model.ts),
+  // and the messages widget renders `m.text` as plain interpolated text, not a linkified anchor. The
+  // recipient gets a readable URL to tap-select and open, not a clickable card.
+  protected sendToPlayer(row: { conversation: { id: string }; player: Player }): void {
+    this.closeMenu();
+    this.messages.send(row.conversation.id, this.shareService.urlFor(`posts/${this.post().id}`));
+    this.toast.success(this.translation.t('feed.sharedToPlayer', { name: row.player.name }));
+  }
+
+  /**
+   * The native share sheet / clipboard fallback — what "Mais opções" in the share step routes to.
+   * See copyLink() for why this runs before closeMenu(), not after.
+   */
+  protected share(): void {
+    const author = this.player()?.name;
+    void this.shareService.share(
+      `posts/${this.post().id}`,
+      author ? this.translation.t('feed.shareTitle', { name: author }) : this.translation.t('feed.shareTitleFallback')
+    );
+    this.closeMenu();
   }
 
   protected onLikeButtonClick(): void {

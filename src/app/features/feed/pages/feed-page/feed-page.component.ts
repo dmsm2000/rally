@@ -7,6 +7,7 @@ import { TopbarMetricsService } from '../../../../core/services/topbar-metrics.s
 import { FeedCardComponent } from '../../../../shared/components';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { ChipComponent, DialogComponent, EmptyStateComponent, FabComponent, IconComponent } from '../../../../shared/ui';
+import { FeedImageCropComponent } from '../../components/feed-image-crop/feed-image-crop.component';
 import { FeedScope } from '../../data/posts.repository';
 import { FeedService } from '../../feed.service';
 
@@ -44,6 +45,7 @@ const TAB_SWIPE_MIN_DISTANCE_PX = 60;
     EmptyStateComponent,
     FabComponent,
     FeedCardComponent,
+    FeedImageCropComponent,
     TranslatePipe
   ],
   templateUrl: './feed-page.component.html',
@@ -68,12 +70,20 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
     spot: '📍',
     other: '✨'
   };
-  // Placeholder rows shown in place of the empty state while the first page of a scope is loading.
-  protected readonly skeletonRows = [0, 1, 2];
+  // Placeholder rows shown in place of the empty state while the first page of a scope is loading —
+  // enough to fill a full viewport (media rows are tall) rather than leaving blank space below them.
+  protected readonly skeletonRows = [0, 1, 2, 3, 4];
 
   // Dismissal only needs to last for this browser tab session, not forever — reappears next visit.
   protected readonly welcomeDismissed = signal(sessionStorage.getItem(WELCOME_DISMISSED_KEY) === '1');
   protected readonly tabsHideOffset = signal(0);
+
+  // The welcome card is this scope's empty state, not a permanent header: it only stands in when
+  // the scope has nothing of its own to show, which is also why the plain ui-empty-state defers to
+  // it (see the template's @empty branch). Observers never get it — they can't post anyway.
+  protected readonly showWelcomeHero = computed(
+    () => !this.auth.isObserver() && !this.welcomeDismissed() && !this.feed.loading() && this.feed.posts().length === 0
+  );
 
   private readonly hostRef = inject(ElementRef<HTMLElement>);
   private mainEl: HTMLElement | null = null;
@@ -124,7 +134,7 @@ export class FeedPageComponent implements AfterViewInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
-      this.feed.attachMedia(file);
+      this.feed.selectMedia(file);
     }
     input.value = '';
   }
