@@ -247,7 +247,32 @@ The Google provider only works once configured by hand — no code handles this:
 2. **Supabase Dashboard** → Authentication → Providers → Google → paste the Client ID and Client
    Secret generated in step 1, enable the provider.
 3. **Supabase Dashboard** → Authentication → URL Configuration → make sure "Redirect URLs" includes
-   `http://localhost:4200/auth/callback` (dev) and the equivalent in production — without this the
-   `redirectTo` sent by `AuthService.loginWithGoogle()` is rejected.
+   `http://localhost:4200/auth/callback` (dev), the equivalent in production, and — as of the
+   2026-09-10 native fix below — `rally://auth/callback` for iOS/Android. Without the entry a given
+   platform needs, the `redirectTo` sent by `AuthService.loginWithGoogle()` is rejected and Supabase
+   falls back to whatever "Site URL" is configured, silently landing the user there instead — which
+   is exactly what native looked like before this was diagnosed (redirected out to the production
+   GitHub Pages URL instead of back into the app).
 
 Until this is done, the "Continuar com Google" button always shows Flow 14 (error).
+
+**Native (iOS/Android) needed real code, not just this dashboard config.** A plain page redirect
+(what `loginWithGoogle()` does on web) can't work in a Capacitor app: there's no browser location to
+return to, and — separately — Google's own policy refuses to complete sign-in inside an embedded
+WebView at all (it detects the user agent and blocks it), so even the redirect itself would never
+have worked. `loginWithGoogle()` special-cases `Capacitor.isNativePlatform()`: it asks Supabase for
+the auth URL without navigating (`skipBrowserRedirect: true`) and opens it in the system browser via
+`@capacitor/browser` — a real browser context Google accepts — with `redirectTo` set to the
+`rally://auth/callback` custom scheme registered in `Info.plist`/`AndroidManifest.xml`. The return
+trip is caught by `AppComponent`'s `appUrlOpen` listener (`@capacitor/app`), which calls
+`AuthService.completeNativeOAuthRedirect()`. First shipped assuming a PKCE `?code=...` to exchange;
+a live Logcat trace showed the actual redirect carries `#access_token=...&refresh_token=...` in the
+URL fragment instead — this project's client runs the implicit flow, so there is no code, and the
+fix was to parse the fragment by hand and call `supabase.auth.setSession()` with those tokens
+directly. Supabase's own `detectSessionInUrl` auto-parse (what makes the web flow work with no extra
+code) never fires here, since the deep link arrives as a native event and never touches
+`window.location`. `completeNativeOAuthRedirect()` then makes the same "does a `profiles` row exist
+yet?" decision `AuthCallbackPageComponent` makes on web, duplicated rather than shared since the
+native path can't route through that component's own `ActivatedRoute`-based logic. `AppComponent`
+also dedupes on the last redirect URL it handled, since `@capacitor/app` is known to fire
+`appUrlOpen` twice for one deep link on some Android versions.

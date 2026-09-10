@@ -18,6 +18,16 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Lets Android route "rally://..." back to this app — how Google sign-in returns from
+                 the system browser (see AuthService.loginWithGoogle()/AppComponent's appUrlOpen
+                 handler). android:launchMode="singleTask" above is required for this to land on the
+                 already-running activity instead of a fresh one. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="rally" />
+            </intent-filter>
         </activity>
 
         <provider
