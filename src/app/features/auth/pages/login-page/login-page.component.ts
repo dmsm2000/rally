@@ -89,8 +89,8 @@ export class LoginPageComponent {
     this.router.navigateByUrl('/');
   }
 
-  protected enterAsObserver(): void {
-    this.auth.loginAsObserver();
+  protected async enterAsObserver(): Promise<void> {
+    await this.auth.loginAsObserver();
     this.router.navigateByUrl('/');
   }
 

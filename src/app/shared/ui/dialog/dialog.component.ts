@@ -48,12 +48,17 @@ export class DialogComponent implements OnDestroy {
       : 'fixed inset-0 z-[110] flex items-end justify-center bg-ink/60 transition-opacity duration-[180ms] ease-in sm:items-center sm:p-4'
   );
 
+  // p-5/p-6 decomposed into px/pt/pb rather than left as the shorthand, so pb can add
+  // env(safe-area-inset-bottom) on top of the same 1.25rem/1.5rem — mirrors the auth pages' own
+  // pt-[calc(2.5rem+env(safe-area-inset-top))] pairing. Missing here is what let a bottom-sheet
+  // composer's last row (e.g. the feed composer's Cancelar/Publicar) sit flush against Android's
+  // 3-button nav bar — bottom-nav/fab/messages-widget/nav-drawer already had this, this didn't.
   protected readonly panelClasses = computed(
     () =>
       (this.closing() ? 'animate-tennis-pop-out' : 'animate-tennis-pop') +
       (this.centered()
-        ? ' w-full max-w-lg rounded-3xl border border-border bg-card p-5 shadow-xl sm:p-6 '
-        : ' w-full max-w-lg rounded-t-3xl border border-border bg-card p-5 shadow-xl sm:rounded-3xl sm:p-6 ') +
+        ? ' w-full max-w-lg rounded-3xl border border-border bg-card px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-xl sm:px-6 sm:pt-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))] '
+        : ' w-full max-w-lg rounded-t-3xl border border-border bg-card px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-xl sm:rounded-3xl sm:px-6 sm:pt-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))] ') +
       (this.scrollable() ? 'no-scrollbar max-h-[90vh] overflow-y-auto' : '')
   );
 

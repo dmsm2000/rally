@@ -346,8 +346,21 @@ export class AuthService {
     return this.updatePassword(newPassword);
   }
 
-  /** Read-only guest session — no sign-up required, no write actions allowed. */
-  loginAsObserver(): void {
+  /**
+   * Read-only guest session — no sign-up required, no write actions allowed. Also discards a
+   * lingering real-but-incomplete session first (e.g. a Google sign-in abandoned before finishing
+   * registration): leaving one alive alongside isObserver()=true meant authGuard's own
+   * currentUserId()-truthy check still found that abandoned uid and force-redirected a brand-new
+   * observer into finishing someone else's half-done sign-up the moment they opened the shell.
+   * `_session` is cleared directly rather than only via the onAuthStateChange side effect of
+   * signOut(), so there's no window where a caller reading currentUserId() right after this
+   * resolves could still see the old uid.
+   */
+  async loginAsObserver(): Promise<void> {
+    if (this._session()) {
+      await supabase.auth.signOut();
+      this._session.set(null);
+    }
     this._isObserver.set(true);
   }
 
