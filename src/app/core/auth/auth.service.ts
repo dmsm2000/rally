@@ -1,20 +1,10 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Browser } from '@capacitor/browser';
-import { Capacitor } from '@capacitor/core';
 import { Session } from '@supabase/supabase-js';
 import { ProfileRepositoryService } from '../data/profile-repository.service';
 import { RallyDataService } from '../data/rally-data.service';
 import { Player } from '../models';
 import { authErrorKey } from './auth-errors';
 import { supabase } from './supabase.client';
-
-/**
- * Custom URL scheme Google's redirect returns to on iOS/Android (registered in Info.plist /
- * AndroidManifest.xml) — a real page redirect back to `document.baseURI` doesn't exist on native,
- * since the OAuth round trip happens in the system browser, not the app's own WebView (see
- * loginWithGoogle()). Must match a Redirect URL allow-listed in the Supabase dashboard.
- */
-const NATIVE_OAUTH_REDIRECT_URL = 'rally://auth/callback';
 
 export interface AuthResult {
   success: boolean;
@@ -155,34 +145,13 @@ export class AuthService {
   }
 
   /**
-   * Web: redirects the whole page to Google, then back to `/auth/callback` once Supabase has a
-   * session — there's no in-page promise to await beyond a synchronous setup error (e.g. the
-   * provider isn't enabled yet), since a successful call navigates away before anything else in
-   * this tab runs.
-   *
-   * Native (iOS/Android): a plain page redirect can't work — there's no browser location to return
-   * to, and Google's own policy refuses to complete sign-in inside an embedded WebView in the first
-   * place (it detects the user agent and blocks it). So on native this instead asks Supabase for
-   * the auth URL without navigating (`skipBrowserRedirect`) and opens it in the system browser via
-   * `@capacitor/browser` — a real browser context Google accepts. `redirectTo` becomes the
-   * `rally://` custom scheme registered in Info.plist/AndroidManifest.xml; the return trip is
-   * caught by `AppComponent`'s `appUrlOpen` listener, which calls completeNativeOAuthRedirect()
-   * below.
+   * Redirects the whole page to Google, then back to `/auth/callback` once Supabase has a session
+   * — there's no in-page promise to await beyond a synchronous setup error (e.g. the provider
+   * isn't enabled yet), since a successful call navigates away before anything else in this tab
+   * runs. `redirectTo` is resolved against `document.baseURI`, not `location.origin`, because the
+   * GitHub Pages deploy is served from a sub-path (`/rally/`), not the domain root.
    */
   async loginWithGoogle(): Promise<AuthResult> {
-    if (Capacitor.isNativePlatform()) {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: NATIVE_OAUTH_REDIRECT_URL, skipBrowserRedirect: true }
-      });
-      if (error || !data.url) {
-        return { success: false, error: error?.message ?? 'auth.errorGeneric' };
-      }
-      await Browser.open({ url: data.url });
-      this._isObserver.set(false);
-      return { success: true };
-    }
-
     const redirectTo = new URL('auth/callback', document.baseURI).toString();
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
     if (error) {
@@ -190,40 +159,6 @@ export class AuthService {
     }
     this._isObserver.set(false);
     return { success: true };
-  }
-
-  /**
-   * Native counterpart of AuthCallbackPageComponent: Supabase's client can't auto-detect a session
-   * from `window.location` here (see loginWithGoogle()) — the `rally://auth/callback` deep link
-   * arrives as a native event, never touching the browser location bar. This project's client runs
-   * the implicit flow (confirmed live: the redirect carries `#access_token=...&refresh_token=...`
-   * in the fragment, not a `?code=...` in the query string — no PKCE exchange involved), so the
-   * session is established directly from those tokens via `setSession()`. Returns the new session's
-   * uid on success so the caller (see AppComponent) can make the same "has a profile yet?" decision
-   * AuthCallbackPageComponent makes on web, without waiting on the `currentUserId()` signal's own
-   * update timing.
-   */
-  async completeNativeOAuthRedirect(url: string): Promise<AuthResult & { userId?: string }> {
-    const parsed = new URL(url);
-    const query = parsed.searchParams;
-    // The error case (denied consent, provider misconfigured) is a query param on Supabase's own
-    // redirect — only a successful exchange puts anything in the fragment.
-    const fragment = new URLSearchParams(parsed.hash.replace(/^#/, ''));
-    const oauthError = query.get('error_description') ?? query.get('error') ?? fragment.get('error_description') ?? fragment.get('error');
-    if (oauthError) {
-      return { success: false, error: oauthError };
-    }
-    const accessToken = fragment.get('access_token');
-    const refreshToken = fragment.get('refresh_token');
-    if (!accessToken || !refreshToken) {
-      return { success: false, error: 'auth.errorGeneric' };
-    }
-    const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-    if (error || !data.session) {
-      return { success: false, error: error?.message ?? 'auth.errorGeneric' };
-    }
-    this._isObserver.set(false);
-    return { success: true, userId: data.session.user.id };
   }
 
   /** Whether the signed-in user already has a `profiles` row — false right after a first Google sign-in. */
