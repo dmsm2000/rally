@@ -7,7 +7,7 @@ export const es = {
     back: 'Atrás',
     dismiss: 'Descartar',
     linkCopied: 'Enlace copiado',
-    shareFailed: 'No se pudo compartir el enlace.'
+    shareFailed: 'No se pudo copiar el enlace.'
   },
   nav: {
     rallyHome: 'Inicio de RALLY',
@@ -455,14 +455,8 @@ export const es = {
     composerAddMedia: 'Foto / clip',
     cropHint: 'Arrastra para mover; tira de las esquinas o pellizca para acercar',
     cropConfirm: 'Aplicar recorte',
-    share: 'Compartir publicación',
     menuLabel: 'Más opciones',
     goToPost: 'Ir a la publicación',
-    shareTo: 'Compartir…',
-    shareSearchPlaceholder: 'Buscar...',
-    shareNoContacts: 'Todavía no tienes conversaciones con nadie.',
-    shareMore: 'Más opciones',
-    sharedToPlayer: 'Compartido con {name}.',
     copyLink: 'Copiar enlace',
     report: 'Denunciar',
     reportTitle: 'Denunciar publicación',
@@ -477,8 +471,6 @@ export const es = {
       not_tennis: 'No tiene nada que ver con el tenis',
       other: 'Otra cosa'
     },
-    shareTitle: 'Publicación de {name} en RALLY',
-    shareTitleFallback: 'Publicación en RALLY',
     backToFeed: 'Volver al feed',
     publicCtaTitle: 'Esto es RALLY',
     publicCtaBody: 'La red de quienes juegan al tenis: encuentra compañeros, descubre pistas y registra tus partidos.',

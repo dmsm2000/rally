@@ -7,7 +7,7 @@ export const pt = {
     back: 'Voltar',
     dismiss: 'Dispensar',
     linkCopied: 'Link copiado',
-    shareFailed: 'Não foi possível partilhar o link.'
+    shareFailed: 'Não foi possível copiar o link.'
   },
   nav: {
     rallyHome: 'Página inicial da RALLY',
@@ -455,14 +455,8 @@ export const pt = {
     composerAddMedia: 'Foto / clip',
     cropHint: 'Arrasta para mover; puxa os cantos ou belisca para aproximar',
     cropConfirm: 'Aplicar corte',
-    share: 'Partilhar publicação',
     menuLabel: 'Mais opções',
     goToPost: 'Ir para a publicação',
-    shareTo: 'Partilhar…',
-    shareSearchPlaceholder: 'Procurar...',
-    shareNoContacts: 'Ainda não tens conversas com ninguém.',
-    shareMore: 'Mais opções',
-    sharedToPlayer: 'Partilhado com {name}.',
     copyLink: 'Copiar link',
     report: 'Denunciar',
     reportTitle: 'Denunciar publicação',
@@ -477,8 +471,6 @@ export const pt = {
       not_tennis: 'Não tem nada a ver com ténis',
       other: 'Outra coisa'
     },
-    shareTitle: 'Publicação de {name} na RALLY',
-    shareTitleFallback: 'Publicação na RALLY',
     backToFeed: 'Voltar ao feed',
     publicCtaTitle: 'Isto é a RALLY',
     publicCtaBody: 'A rede de quem joga ténis: encontra parceiros, descobre campos e regista as tuas partidas.',

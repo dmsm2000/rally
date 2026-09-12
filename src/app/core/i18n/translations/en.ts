@@ -6,7 +6,7 @@ export const en = {
     back: 'Back',
     dismiss: 'Dismiss',
     linkCopied: 'Link copied',
-    shareFailed: "Couldn't share the link."
+    shareFailed: "Couldn't copy the link."
   },
   nav: {
     rallyHome: 'RALLY home',
@@ -462,14 +462,8 @@ export const en = {
     composerAddMedia: 'Photo / clip',
     cropHint: 'Drag to reposition; pull the corners or pinch to zoom',
     cropConfirm: 'Apply crop',
-    share: 'Share post',
     menuLabel: 'More options',
     goToPost: 'Go to post',
-    shareTo: 'Share to…',
-    shareSearchPlaceholder: 'Search...',
-    shareNoContacts: "You don't have any conversations yet.",
-    shareMore: 'More options',
-    sharedToPlayer: 'Shared with {name}.',
     copyLink: 'Copy link',
     report: 'Report',
     reportTitle: 'Report post',
@@ -484,8 +478,6 @@ export const en = {
       not_tennis: 'Nothing to do with tennis',
       other: 'Something else'
     },
-    shareTitle: "{name}'s post on RALLY",
-    shareTitleFallback: 'A post on RALLY',
     backToFeed: 'Back to the feed',
     publicCtaTitle: 'This is RALLY',
     publicCtaBody: 'The network for people who play tennis: find partners, discover courts and log your matches.',

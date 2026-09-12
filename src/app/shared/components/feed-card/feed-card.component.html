@@ -280,14 +280,15 @@
       </button>
     }
     <!-- Available to everyone, signed in or not: the link it produces is public (see the post
-         page's route), so there's nothing to gate. -->
+         page's route), so there's nothing to gate. Copies straight to the clipboard — see
+         copyLink() for why this is the only sharing action left. -->
     <button
       type="button"
-      (click)="openShareStep()"
-      [attr.aria-label]="'feed.share' | translate"
+      (click)="copyLink()"
+      [attr.aria-label]="'feed.copyLink' | translate"
       class="flex cursor-pointer items-center text-foreground transition-colors hover:text-lime"
     >
-      <ui-icon name="share" className="size-6" />
+      <ui-icon name="copy" className="size-6" />
     </button>
     <!-- ml-auto pushes just this one to the far edge, leaving like and share grouped on the left. -->
     <button
@@ -300,10 +301,12 @@
     </button>
   </div>
 
-  <!-- Its own element rather than a border-b on the <article>, so it can carry the media's exact
-       bleed (-mx-5 on a phone, column width from sm up) — a rule that stopped 20px short of the
-       photo above it was what read as misaligned before. -->
-  <div class="-mx-5 border-b border-border sm:mx-0"></div>
+  @if (showDivider()) {
+    <!-- Its own element rather than a border-b on the <article>, so it can carry the media's exact
+         bleed (-mx-5 on a phone, column width from sm up) — a rule that stopped 20px short of the
+         photo above it was what read as misaligned before. -->
+    <div class="-mx-5 border-b border-border sm:mx-0"></div>
+  }
 </article>
 
 <!-- A sibling of <article>, not nested inside it — animate-slide-in's animation-fill-mode: both
@@ -334,57 +337,6 @@
       >
         {{ 'common.back' | translate }}
       </button>
-    } @else if (menuSharing()) {
-      <p class="text-eyebrow text-muted-foreground">{{ 'feed.shareTo' | translate }}</p>
-      <input
-        type="search"
-        [value]="shareSearch()"
-        (input)="onShareSearchInput($event)"
-        [placeholder]="'feed.shareSearchPlaceholder' | translate"
-        class="mt-3 w-full rounded-full border border-border bg-background px-4 py-2 text-sm outline-none focus:border-lime-deep"
-      />
-      <!-- -mx-5 sm:-mx-6 cancels ui-dialog's own panel padding so the hover background can still
-           run edge to edge, while px-5 sm:px-6 puts that same padding back on the row's content —
-           lining the avatar up with the search input's px-4 text inset above it instead of the
-           panel's bare edge. -->
-      <div class="no-scrollbar -mx-5 mt-3 max-h-72 overflow-y-auto sm:-mx-6">
-        @for (row of shareCandidates(); track row.conversation.id) {
-          <button
-            type="button"
-            (click)="sendToPlayer(row)"
-            class="flex w-full cursor-pointer items-center gap-3 border-b border-border px-5 py-2.5 text-left hover:bg-muted sm:px-6"
-          >
-            <ui-avatar
-              [initials]="row.player.initials"
-              [accent]="row.player.accent"
-              [seed]="row.player.avatarSeed"
-              [avatarStyle]="row.player.avatarStyle"
-              size="sm"
-            />
-            <span class="min-w-0 flex-1 truncate text-sm font-semibold">{{ row.player.name }}</span>
-          </button>
-        } @empty {
-          <p class="py-6 text-center text-sm text-muted-foreground">{{ 'feed.shareNoContacts' | translate }}</p>
-        }
-      </div>
-      <div class="mt-4 flex items-center justify-between gap-3">
-        <button
-          type="button"
-          (click)="menuSharing.set(false)"
-          class="cursor-pointer text-xs font-extrabold tracking-wide text-muted-foreground uppercase hover:text-foreground"
-        >
-          {{ 'common.back' | translate }}
-        </button>
-        <!-- The escape hatch for anyone not already in the list above: hands off to the native
-             share sheet (WhatsApp, Facebook, ...) or the clipboard — see ShareService. -->
-        <button
-          type="button"
-          (click)="share()"
-          class="cursor-pointer text-xs font-extrabold tracking-wide text-foreground uppercase hover:text-lime"
-        >
-          {{ 'feed.shareMore' | translate }}
-        </button>
-      </div>
     } @else {
       <div class="flex flex-col">
         @if (canDelete()) {
@@ -411,13 +363,6 @@
         >
           {{ 'feed.goToPost' | translate }}
         </a>
-        <button
-          type="button"
-          (click)="openShareStep()"
-          class="cursor-pointer border-b border-border py-3.5 text-left text-sm font-semibold hover:text-lime"
-        >
-          {{ 'feed.shareTo' | translate }}
-        </button>
         <button
           type="button"
           (click)="copyLink()"

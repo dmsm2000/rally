@@ -37,8 +37,16 @@
       </article>
     } @else if (post(); as p) {
       <!-- The same card the feed renders, so a shared post looks like what the sender saw. Its
-           own auth gates key off a real uid, so a logged-out visitor gets the read-only version. -->
-      <rally-feed-card [post]="p" [player]="author()" (reported)="report(p, $event)" (deleted)="deletePost(p)" />
+           own auth gates key off a real uid, so a logged-out visitor gets the read-only version.
+           showDivider is off: that line separates one post from the next in the feed's own stack,
+           and this page only ever shows the one. -->
+      <rally-feed-card
+        [post]="p"
+        [player]="author()"
+        [showDivider]="false"
+        (reported)="report(p, $event)"
+        (deleted)="deletePost(p)"
+      />
 
       @if (!auth.currentUserId()) {
         <!-- The reason this page is public at all: someone arrived from a link with no account. -->

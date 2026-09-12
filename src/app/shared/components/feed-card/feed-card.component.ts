@@ -7,7 +7,6 @@ import { TranslationService } from '../../../core/i18n/translation.service';
 import { POST_REPORT_REASONS, Player, Post, PostReportReason } from '../../../core/models';
 import { ShareService } from '../../../core/services/share.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { MessagesService } from '../../../features/messages/messages.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AvatarComponent, ChipComponent, DialogComponent, IconComponent } from '../../ui';
 
@@ -38,7 +37,6 @@ export class FeedCardComponent implements OnDestroy {
   // have to thread the same handler through.
   private readonly shareService = inject(ShareService);
   private readonly translation = inject(TranslationService);
-  private readonly messages = inject(MessagesService);
   private readonly toast = inject(ToastService);
 
   private burstTimer: ReturnType<typeof setTimeout> | null = null;
@@ -58,6 +56,10 @@ export class FeedCardComponent implements OnDestroy {
   readonly volunteering = input(false);
   readonly joining = input(false);
   readonly leaving = input(false);
+  /** The bottom border separates one post from the next in the feed's own scrolling stack — the
+   *  public /posts/:id page renders exactly one card with nothing stacked directly under it, where
+   *  that same line just reads as a stray rule with nothing to explain it. */
+  readonly showDivider = input(true);
 
   readonly liked = output<void>();
   readonly volunteered = output<void>();
@@ -70,19 +72,9 @@ export class FeedCardComponent implements OnDestroy {
 
   protected readonly reportReasons = POST_REPORT_REASONS;
   protected readonly menuOpen = signal(false);
-  // The menu's other views. Kept as flags on the same dialog rather than separate ones, so going
-  // back doesn't animate the whole sheet out and in again.
+  // The menu's other view (reporting). Kept as a flag on the same dialog rather than a separate
+  // one, so going back doesn't animate the whole sheet out and in again.
   protected readonly menuReporting = signal(false);
-  protected readonly menuSharing = signal(false);
-  protected readonly shareSearch = signal('');
-
-  // Recent DM partners, Instagram-share-sheet style — sending to someone you've never messaged
-  // isn't offered here, the same way Instagram's own dialog only lists people you already follow.
-  protected readonly shareCandidates = computed(() => {
-    const q = this.shareSearch().trim().toLowerCase();
-    const rows = this.messages.conversations();
-    return q ? rows.filter(row => row.player.name.toLowerCase().includes(q)) : rows;
-  });
 
   // Own posts route to the own-profile page (there's no /players/:id entry for yourself). Compares
   // against post().authorId, not player()?.id — the mock-bridged "me" player keeps a permanent fake
@@ -240,33 +232,31 @@ export class FeedCardComponent implements OnDestroy {
 
   protected openMenu(): void {
     this.menuReporting.set(false);
-    this.menuSharing.set(false);
     this.menuOpen.set(true);
   }
 
   protected closeMenu(): void {
     this.menuOpen.set(false);
     this.menuReporting.set(false);
-    this.menuSharing.set(false);
-    this.shareSearch.set('');
   }
 
-  // Also the standalone share button's own handler now (not just the "Partilhar…" row inside an
-  // already-open menu), so both entry points land on the same dialog instead of one of them
-  // skipping straight to the native share sheet.
-  protected openShareStep(): void {
-    this.menuReporting.set(false);
-    this.menuSharing.set(true);
-    this.menuOpen.set(true);
-  }
-
-  protected copyLink(): void {
-    // Copy first, close after: closeMenu() tears down the dialog (including the button that was
-    // just clicked), and starting the clipboard write only once that's already happened risks
-    // losing the transient user activation Clipboard/Web Share need — some browsers then reject
-    // it outright, with nothing visible to show for it.
-    void this.shareService.copyLink(`posts/${this.post().id}`);
+  // The only sharing action left — see git history on this file and on ShareService for the
+  // native-share-sheet/send-to-a-contact version this replaced. Both round-tripped through enough
+  // platform-specific bugs (a detached macOS share popover, a dialog that closed itself on a plain
+  // cancel) to not be worth the complexity; a plain copy always works. Shows its own result via
+  // toast — no more guessing at what happened, it awaits the actual clipboard write.
+  //
+  // Copy first, close after: shareService.copyLink() is called (starting the clipboard write)
+  // before closeMenu() tears down the dialog, including the button that was just clicked — only
+  // the *toast* waits for the result, not the close.
+  protected async copyLink(): Promise<void> {
+    const copied = this.shareService.copyLink(`posts/${this.post().id}`);
     this.closeMenu();
+    if (await copied) {
+      this.toast.success(this.translation.t('common.linkCopied'));
+    } else {
+      this.toast.error(this.translation.t('common.shareFailed'));
+    }
   }
 
   protected submitReport(reason: PostReportReason): void {
@@ -277,32 +267,6 @@ export class FeedCardComponent implements OnDestroy {
   protected submitDelete(): void {
     this.closeMenu();
     this.deleted.emit();
-  }
-
-  protected onShareSearchInput(event: Event): void {
-    this.shareSearch.set((event.target as HTMLInputElement).value);
-  }
-
-  // A plain text DM, not a rich embed — ChatMessage has no attachment concept (see message.model.ts),
-  // and the messages widget renders `m.text` as plain interpolated text, not a linkified anchor. The
-  // recipient gets a readable URL to tap-select and open, not a clickable card.
-  protected sendToPlayer(row: { conversation: { id: string }; player: Player }): void {
-    this.closeMenu();
-    this.messages.send(row.conversation.id, this.shareService.urlFor(`posts/${this.post().id}`));
-    this.toast.success(this.translation.t('feed.sharedToPlayer', { name: row.player.name }));
-  }
-
-  /**
-   * The native share sheet / clipboard fallback — what "Mais opções" in the share step routes to.
-   * See copyLink() for why this runs before closeMenu(), not after.
-   */
-  protected share(): void {
-    const author = this.player()?.name;
-    void this.shareService.share(
-      `posts/${this.post().id}`,
-      author ? this.translation.t('feed.shareTitle', { name: author }) : this.translation.t('feed.shareTitleFallback')
-    );
-    this.closeMenu();
   }
 
   protected onLikeButtonClick(): void {

@@ -1,16 +1,15 @@
-import { Injectable, inject } from '@angular/core';
-import { TranslationService } from '../i18n/translation.service';
-import { ToastService } from './toast.service';
+import { Injectable } from '@angular/core';
 
 /**
- * Sharing a link to somewhere in the app: the browser's own share sheet where it has one (mobile
- * browsers, which is where sharing actually happens), the clipboard everywhere else.
+ * Sharing a link to somewhere in the app — currently just "copy it to the clipboard", which is the
+ * one thing that reliably works everywhere. An earlier version also offered the Web Share API
+ * (handing off to the OS's own share sheet) and an in-app "send to a contact" list; both were
+ * pulled after round-tripping through enough platform-specific bugs (a macOS share popover left
+ * floating detached from anything, a dialog that closed itself on a plain cancel) to not be worth
+ * the complexity — see this file's git history if that's ever worth revisiting.
  */
 @Injectable({ providedIn: 'root' })
 export class ShareService {
-  private readonly toast = inject(ToastService);
-  private readonly translation = inject(TranslationService);
-
   /**
    * Absolute URL for an in-app path. Resolved against `document.baseURI`, not `location.origin`:
    * the GitHub Pages deploy is served from a sub-path (`--base-href /rally/`), so dropping the
@@ -21,33 +20,17 @@ export class ShareService {
   }
 
   /**
-   * Offers the Web Share API where the browser has it (mobile Safari/Chrome hand this to the OS
-   * share sheet), and falls back to the clipboard everywhere else — including desktop browsers,
-   * which mostly don't implement it at all.
+   * Copies the absolute URL for `path` to the clipboard. Returns whether it actually worked, so
+   * the caller can show accurate success/failure feedback instead of assuming one or the other.
    */
-  async share(path: string, title: string): Promise<void> {
-    const url = this.urlFor(path);
+  async copyLink(path: string): Promise<boolean> {
     try {
-      if (!navigator.share) {
-        throw new Error('No share target available');
-      }
-      await navigator.share({ title, url });
-      return;
+      await navigator.clipboard.writeText(this.urlFor(path));
+      return true;
     } catch {
-      // Deliberately falls through to the clipboard on *any* rejection, including AbortError.
-      // That name is supposed to mean "the user dismissed the sheet", but some browser/OS
-      // combinations also reject with it when there's simply no registered share target — with
-      // nothing else to distinguish the two, treating every AbortError as "leave it alone" made
-      // the button silently do nothing on those, with no console error to explain why. Copying
-      // the link after a genuine cancel is mildly redundant; never producing any feedback at all
-      // is worse.
+      // The Clipboard API needs a secure context and permission; there's nothing left to try.
+      return false;
     }
-    await this.copyToClipboard(url);
-  }
-
-  /** Copy without offering the share sheet first — the explicit "copy link" menu action. */
-  async copyLink(path: string): Promise<void> {
-    await this.copyToClipboard(this.urlFor(path));
   }
 
   /**
@@ -62,16 +45,6 @@ export class ShareService {
       return match ? match[1] : null;
     } catch {
       return null;
-    }
-  }
-
-  private async copyToClipboard(url: string): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(url);
-      this.toast.success(this.translation.t('common.linkCopied'));
-    } catch {
-      // The Clipboard API needs a secure context and permission; there's nothing left to try.
-      this.toast.error(this.translation.t('common.shareFailed'));
     }
   }
 }
