@@ -1,9 +1,11 @@
 <ui-back-link label="players.backToPlayers" fallback="/world" />
 @if (player(); as p) {
-  <section class="mb-10 overflow-hidden rounded-3xl border border-border bg-card">
-    <div class="h-28 bg-muted sm:h-36"></div>
-    <div class="-mt-12 px-6 pb-6 sm:px-8">
-      <div class="flex flex-wrap items-end gap-5">
+  <!-- Always dark, like every other hero in the app (`bg-ink text-bone`), so the court-grid lines
+       and the accent wash read the same in both themes. -->
+  <section class="relative mb-10 overflow-hidden rounded-3xl border border-border bg-ink text-bone">
+    <div class="hero-wash pointer-events-none absolute inset-0" aria-hidden="true"></div>
+    <div class="relative flex flex-col gap-7 px-6 py-7 sm:px-8 sm:py-9 lg:flex-row lg:items-center lg:gap-10">
+      <div class="flex flex-1 items-center gap-5">
         <ui-avatar
           [initials]="p.initials"
           [accent]="p.accent"
@@ -15,60 +17,178 @@
           size="xl"
           [ring]="true"
         />
-        <div class="flex-1">
-          <h1 class="text-display text-3xl sm:text-5xl">{{ p.name }}</h1>
-          <p class="mt-1 text-sm text-muted-foreground">
+        <div class="min-w-0 flex-1">
+          <h1 class="text-display text-3xl sm:text-4xl lg:text-5xl">{{ p.name }}</h1>
+          <p class="mt-2 text-sm text-bone/80">
             {{ p.flag }} {{ p.city }}, {{ p.country }} · {{ 'profile.yearsPlaying' | translate: { years: p.years } }}
           </p>
+          @if (p.memberNumber; as memberNumber) {
+            <p class="text-eyebrow mt-1.5 text-bone/45">{{ memberNumber }}</p>
+          }
+          @if (p.bio) {
+            <p class="mt-4 max-w-md text-sm text-bone/70">{{ p.bio }}</p>
+          }
         </div>
-        @if (!auth.isObserver()) {
-          <div class="flex items-center gap-3">
-            <ui-match-score [value]="p.matchScore" [size]="64" />
-            <div>
-              <p class="text-eyebrow">{{ 'players.matchScore' | translate }}</p>
-              <p class="max-w-40 text-xs text-muted-foreground">{{ p.matchReason }}</p>
+      </div>
+
+      @if (!auth.isObserver()) {
+        <div
+          class="flex shrink-0 flex-col gap-5 border-t border-bone/15 pt-6 lg:items-end lg:border-t-0 lg:pt-0"
+        >
+          <div class="flex items-center gap-3 lg:flex-row-reverse lg:text-right">
+            <ui-match-score [value]="p.matchScore" [size]="60" />
+            <div class="min-w-0">
+              <p class="text-eyebrow text-lime">{{ 'players.matchScore' | translate }}</p>
+              <p class="mt-1 max-w-56 text-xs font-semibold text-bone/85">
+                @for (key of p.matchReasonKeys; track key; let last = $last) {
+                  {{ key | translate }}{{ last ? '' : ' · ' }}
+                }
+              </p>
             </div>
           </div>
-        }
-      </div>
-
-      <p class="mt-5 max-w-2xl text-sm text-muted-foreground">{{ p.bio }}</p>
-
-      <div class="mt-7 flex flex-wrap gap-3">
-        @if (!auth.isObserver()) {
-          <button
-            type="button"
-            (click)="invite(p.id)"
-            class="cursor-pointer rounded-full bg-foreground px-6 py-3 text-xs font-extrabold tracking-wide text-background uppercase"
-          >
-            {{ 'players.inviteToMatch' | translate }}
-          </button>
-          <button
-            type="button"
-            (click)="message(p.id)"
-            class="cursor-pointer rounded-full border border-border px-6 py-3 text-xs font-extrabold tracking-wide uppercase hover:border-foreground"
-          >
-            {{ 'players.message' | translate }}
-          </button>
-        }
-      </div>
+          <div class="flex gap-3">
+            <button
+              type="button"
+              (click)="invite(p.id)"
+              class="flex-1 cursor-pointer rounded-full bg-lime px-6 py-3 text-xs font-extrabold tracking-wide text-ink uppercase transition-transform hover:-translate-y-0.5 lg:flex-none"
+            >
+              <!-- The full label wraps to three lines next to "Mensagem" on a phone. -->
+              <span class="sm:hidden">{{ 'players.invite' | translate }}</span>
+              <span class="hidden sm:inline">{{ 'players.inviteToMatch' | translate }}</span>
+            </button>
+            <button
+              type="button"
+              (click)="message(p.id)"
+              class="flex-1 cursor-pointer rounded-full border border-bone/25 px-6 py-3 text-xs font-extrabold tracking-wide text-bone uppercase hover:border-bone lg:flex-none"
+            >
+              {{ 'players.message' | translate }}
+            </button>
+          </div>
+        </div>
+      }
     </div>
   </section>
 
   <div class="grid gap-12 lg:grid-cols-[1fr_340px]">
-    <div class="space-y-12">
+    <div>
+      <p class="text-eyebrow mb-1.5 text-lime-deep">{{ 'players.aboutPlayerEyebrow' | translate }}</p>
+      <h2 class="text-display mb-5 text-2xl">{{ 'players.preferencesTitle' | translate }}</h2>
+
+      <!-- The dot carries the category (lime = level, cobalt = where/how the match is played,
+           clay = how this player plays), so each chip stays a single short value. -->
+      <div class="flex flex-wrap gap-2.5">
+        <span [class]="specChip">
+          <span class="size-1.5 shrink-0 rounded-full bg-lime"></span>
+          <span>{{ 'enums.level.' + p.level | translate }}</span>
+        </span>
+        <span [class]="specChip">
+          <span class="size-1.5 shrink-0 rounded-full bg-cobalt"></span>
+          <span>{{ 'enums.format.' + p.format | translate }}</span>
+        </span>
+        <span [class]="specChip">
+          <span class="size-1.5 shrink-0 rounded-full bg-cobalt"></span>
+          <span>{{ 'enums.surface.' + p.surface | translate }}</span>
+        </span>
+        @if (p.courtPref) {
+          <span [class]="specChip">
+            <span class="size-1.5 shrink-0 rounded-full bg-cobalt"></span>
+            <span>{{ preferenceKey(p.courtPref) | translate }}</span>
+          </span>
+        }
+        @if (p.dominantHand) {
+          <span [class]="specChip">
+            <span class="size-1.5 shrink-0 rounded-full bg-clay"></span>
+            <span>{{ preferenceKey(p.dominantHand) | translate }}</span>
+          </span>
+        }
+        @if (p.backhand) {
+          <span [class]="specChip">
+            <span class="size-1.5 shrink-0 rounded-full bg-clay"></span>
+            <span>{{ preferenceKey(p.backhand) | translate }}</span>
+          </span>
+        }
+        @if (p.playStyle) {
+          <span [class]="specChip">
+            <span class="size-1.5 shrink-0 rounded-full bg-clay"></span>
+            <span>{{ preferenceKey(p.playStyle) | translate }}</span>
+          </span>
+        }
+      </div>
+
+      @if (p.timesOfDay?.length) {
+        <div class="mt-7 mb-3 flex items-center gap-3">
+          <span class="text-eyebrow shrink-0 text-muted-foreground">{{ 'players.preferredTimes' | translate }}</span>
+          <span class="h-px flex-1 bg-border"></span>
+        </div>
+        <div class="flex flex-wrap gap-2.5">
+          @for (time of p.timesOfDay; track time) {
+            <span [class]="softChip">{{ preferenceKey(time) | translate }}</span>
+          }
+        </div>
+      }
+      @if (p.availability.length) {
+        <div class="mt-7 mb-3 flex items-center gap-3">
+          <span class="text-eyebrow shrink-0 text-muted-foreground">{{ 'players.availability' | translate }}</span>
+          <span class="h-px flex-1 bg-border"></span>
+        </div>
+        <div class="flex flex-wrap gap-2.5">
+          @for (slot of p.availability; track slot) {
+            <span [class]="softChip">{{ preferenceKey(slot) | translate }}</span>
+          }
+        </div>
+      }
+      @if (p.frequency || p.coached !== undefined) {
+        <div class="mt-7 mb-3 flex items-center gap-3">
+          <span class="text-eyebrow shrink-0 text-muted-foreground">{{ 'players.training' | translate }}</span>
+          <span class="h-px flex-1 bg-border"></span>
+        </div>
+        <div class="flex flex-wrap gap-2.5">
+          @if (p.frequency) {
+            <span [class]="specChip">
+              <span class="size-1.5 shrink-0 rounded-full bg-lime"></span>
+              <span>{{ preferenceKey(p.frequency) | translate }}</span>
+            </span>
+          }
+          @if (p.coached !== undefined) {
+            <span [class]="specChip">
+              <span class="size-1.5 shrink-0 rounded-full bg-lime"></span>
+              <span>{{ (p.coached ? 'auth.coachedYes' : 'auth.coachedNo') | translate }}</span>
+            </span>
+            @if (p.coachedFrequency) {
+              <span [class]="softChip">{{ preferenceKey(p.coachedFrequency) | translate }}</span>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <aside class="space-y-10">
       <section>
-        <ui-section-header
-          [eyebrow]="'players.matchHistoryEyebrow' | translate"
-          [title]="'players.matches' | translate"
-        />
-        <div class="mb-5 flex gap-2 border-b border-border">
+        <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'players.passport' | translate }}</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-2xl border border-border bg-card p-4">
+            <p class="text-stat text-3xl text-lime">0</p>
+            <p class="text-eyebrow mt-1.5 text-muted-foreground">{{ 'stats.countries' | translate }}</p>
+          </div>
+          <div class="rounded-2xl border border-border bg-card p-4">
+            <p class="text-stat text-3xl text-cobalt">0</p>
+            <p class="text-eyebrow mt-1.5 text-muted-foreground">{{ 'stats.courts' | translate }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <p class="text-eyebrow mb-1 text-muted-foreground">{{ 'players.matchHistoryEyebrow' | translate }}</p>
+        <h2 class="text-display mb-4 text-lg">{{ 'players.matches' | translate }}</h2>
+        <div class="mb-4 flex gap-4 border-b border-border">
           <button
             type="button"
             (click)="matchTab.set('upcoming')"
             [class.border-foreground]="matchTab() === 'upcoming'"
             [class.text-foreground]="matchTab() === 'upcoming'"
-            class="cursor-pointer border-b-2 border-transparent px-1 pb-3 text-xs font-extrabold tracking-wide text-muted-foreground uppercase"
+            [class.border-transparent]="matchTab() !== 'upcoming'"
+            [class.text-muted-foreground]="matchTab() !== 'upcoming'"
+            class="cursor-pointer border-b-2 pb-2.5 text-[10px] font-extrabold tracking-wide uppercase"
           >
             {{ 'players.matchesUpcoming' | translate }}
           </button>
@@ -77,7 +197,9 @@
             (click)="matchTab.set('complete')"
             [class.border-foreground]="matchTab() === 'complete'"
             [class.text-foreground]="matchTab() === 'complete'"
-            class="cursor-pointer border-b-2 border-transparent px-1 pb-3 text-xs font-extrabold tracking-wide text-muted-foreground uppercase"
+            [class.border-transparent]="matchTab() !== 'complete'"
+            [class.text-muted-foreground]="matchTab() !== 'complete'"
+            class="cursor-pointer border-b-2 pb-2.5 text-[10px] font-extrabold tracking-wide uppercase"
           >
             {{ 'players.matchesPast' | translate }}
           </button>
@@ -86,7 +208,9 @@
             (click)="matchTab.set('open')"
             [class.border-foreground]="matchTab() === 'open'"
             [class.text-foreground]="matchTab() === 'open'"
-            class="cursor-pointer border-b-2 border-transparent px-1 pb-3 text-xs font-extrabold tracking-wide text-muted-foreground uppercase"
+            [class.border-transparent]="matchTab() !== 'open'"
+            [class.text-muted-foreground]="matchTab() !== 'open'"
+            class="cursor-pointer border-b-2 pb-2.5 text-[10px] font-extrabold tracking-wide uppercase"
           >
             {{ 'players.matchesOpen' | translate }}
           </button>
@@ -105,10 +229,9 @@
             }
           </div>
         } @else {
-          @let tabMatches = matchTab() === 'upcoming' ? playerUpcoming() : matchTab() === 'complete' ? playerComplete() : playerOpen();
-          @if (tabMatches.length) {
+          @if (tabMatchesPreview().length) {
             <div class="space-y-3">
-              @for (m of tabMatches; track m.id) {
+              @for (m of tabMatchesPreview(); track m.id) {
                 <rally-match-card
                   [match]="m"
                   [playerA]="matches.playerById(m.playerA)"
@@ -117,119 +240,30 @@
                 />
               }
             </div>
+            @if (tabMatchesHiddenCount() > 0) {
+              <p class="mt-3 text-xs font-semibold text-muted-foreground">
+                {{ 'players.matchesMoreResults' | translate: { n: tabMatchesHiddenCount() } }}
+              </p>
+            }
           } @else {
-            <ui-empty-state
-              [title]="'players.matchesEmptyTitle' | translate"
-              [body]="'players.matchesEmptyBody' | translate"
-            />
+            <!-- Deliberately lighter than `ui-empty-state`: in this sidebar these two sections are
+                 secondary, and for most players they are empty every single time. -->
+            <div class="rounded-2xl border border-dashed border-border px-4 py-6 text-center">
+              <p class="text-sm font-bold text-muted-foreground">{{ 'players.matchesEmptyTitle' | translate }}</p>
+              <p class="mt-1.5 text-xs text-muted-foreground/70">{{ 'players.matchesEmptyBody' | translate }}</p>
+            </div>
           }
         }
       </section>
 
       <section>
-        <ui-section-header
-          [eyebrow]="'players.collectedEyebrow' | translate"
-          [title]="'players.courtsDiscovered' | translate"
-        />
-        <ui-empty-state
-          [title]="'players.courtsEmptyTitle' | translate"
-          [body]="'players.courtsEmptyBody' | translate"
-        />
-      </section>
-    </div>
-
-    <aside class="space-y-10">
-      <section class="rounded-2xl border border-border bg-card p-5">
-        <p class="text-eyebrow mb-3 text-muted-foreground">{{ 'players.passport' | translate }}</p>
-        <div class="grid grid-cols-2 gap-4">
-          <ui-stat [value]="0" [label]="'stats.countries' | translate" />
-          <ui-stat [value]="0" [label]="'stats.courts' | translate" />
+        <p class="text-eyebrow mb-1 text-muted-foreground">{{ 'players.collectedEyebrow' | translate }}</p>
+        <h2 class="text-display mb-4 text-lg">{{ 'players.courtsDiscovered' | translate }}</h2>
+        <div class="rounded-2xl border border-dashed border-border px-4 py-6 text-center">
+          <p class="text-sm font-bold text-muted-foreground">{{ 'players.courtsEmptyTitle' | translate }}</p>
+          <p class="mt-1.5 text-xs text-muted-foreground/70">{{ 'players.courtsEmptyBody' | translate }}</p>
         </div>
-        <p class="mt-5 text-sm text-muted-foreground">{{ 'players.passportEmptyBody' | translate }}</p>
       </section>
-      <section class="rounded-2xl border border-border bg-card p-5">
-        <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'players.playingProfile' | translate }}</p>
-        <dl class="space-y-4 text-sm">
-          <div class="flex items-start justify-between gap-4">
-            <dt class="text-muted-foreground">{{ 'players.filterLevel' | translate }}</dt>
-            <dd class="text-right font-semibold">{{ 'enums.level.' + p.level | translate }}</dd>
-          </div>
-          <div class="flex items-start justify-between gap-4">
-            <dt class="text-muted-foreground">{{ 'players.filterFormat' | translate }}</dt>
-            <dd class="text-right font-semibold">{{ 'enums.format.' + p.format | translate }}</dd>
-          </div>
-          <div class="flex items-start justify-between gap-4">
-            <dt class="text-muted-foreground">{{ 'players.filterSurface' | translate }}</dt>
-            <dd class="text-right font-semibold">{{ 'enums.surface.' + p.surface | translate }}</dd>
-          </div>
-          @if (p.dominantHand) {
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-muted-foreground">{{ 'players.dominantHand' | translate }}</dt>
-              <dd class="text-right font-semibold">{{ preferenceKey(p.dominantHand) | translate }}</dd>
-            </div>
-          }
-          @if (p.backhand) {
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-muted-foreground">{{ 'players.backhand' | translate }}</dt>
-              <dd class="text-right font-semibold">{{ preferenceKey(p.backhand) | translate }}</dd>
-            </div>
-          }
-          @if (p.playStyle) {
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-muted-foreground">{{ 'players.playStyle' | translate }}</dt>
-              <dd class="text-right font-semibold">{{ preferenceKey(p.playStyle) | translate }}</dd>
-            </div>
-          }
-          @if (p.courtPref) {
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-muted-foreground">{{ 'players.courtPreference' | translate }}</dt>
-              <dd class="text-right font-semibold">{{ preferenceKey(p.courtPref) | translate }}</dd>
-            </div>
-          }
-        </dl>
-        @if (p.timesOfDay?.length) {
-          <div class="mt-5 border-t border-border pt-4">
-            <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'players.preferredTimes' | translate }}</p>
-            <div class="flex flex-wrap gap-2">
-              @for (time of p.timesOfDay; track time) {
-                <ui-chip [subtle]="true">{{ preferenceKey(time) | translate }}</ui-chip>
-              }
-            </div>
-          </div>
-        }
-        @if (p.availability.length) {
-          <div class="mt-5 border-t border-border pt-4">
-            <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'players.availability' | translate }}</p>
-            <div class="flex flex-wrap gap-2">
-              @for (slot of p.availability; track slot) {
-                <ui-chip [subtle]="true">{{ slot }}</ui-chip>
-              }
-            </div>
-          </div>
-        }
-      </section>
-      @if (p.frequency || p.coached !== undefined) {
-        <section class="rounded-2xl border border-border bg-card p-5">
-          <p class="text-eyebrow mb-4 text-muted-foreground">{{ 'players.training' | translate }}</p>
-          @if (p.frequency) {
-            <div>
-              <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'players.gameFrequency' | translate }}</p>
-              <ui-chip [subtle]="true">{{ p.frequency }}</ui-chip>
-            </div>
-          }
-          @if (p.coached !== undefined) {
-            <div class="mt-4 border-t border-border pt-4">
-              <p class="mb-2 text-xs font-semibold text-muted-foreground">{{ 'players.coaching' | translate }}</p>
-              <div class="flex flex-wrap gap-2">
-                <ui-chip [subtle]="true">{{ (p.coached ? 'auth.coachedYes' : 'auth.coachedNo') | translate }}</ui-chip>
-                @if (p.coachedFrequency) {
-                  <ui-chip [subtle]="true">{{ p.coachedFrequency }}</ui-chip>
-                }
-              </div>
-            </div>
-          }
-        </section>
-      }
     </aside>
   </div>
 } @else {

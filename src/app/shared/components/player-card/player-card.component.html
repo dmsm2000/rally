@@ -38,9 +38,11 @@
     <ui-chip [subtle]="true">{{ 'enums.format.' + player().format | translate }}</ui-chip>
     <ui-chip [subtle]="true">{{ player().surface }}</ui-chip>
   </div>
-  @if (showMatchScore() && player().matchReason) {
+  @if (showMatchScore() && player().matchReasonKeys.length) {
     <p class="mt-3 text-sm text-muted-foreground" [class.line-clamp-2]="compact()" [class.text-xs]="compact()">
-      {{ player().matchReason }}
+      @for (key of player().matchReasonKeys; track key; let last = $last) {
+        {{ key | translate }}{{ last ? '' : ' · ' }}
+      }
     </p>
   }
 </a>

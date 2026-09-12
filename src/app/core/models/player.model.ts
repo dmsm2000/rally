@@ -26,7 +26,8 @@ export interface Player {
   availability: string[];
   distanceKm?: number;
   matchScore: number;
-  matchReason: string;
+  /** `players.matchReasons.*` translation keys, most relevant first — see match-compatibility.ts. */
+  matchReasonKeys: string[];
   bio: string;
   stats: PlayerStats;
   accent: Accent;

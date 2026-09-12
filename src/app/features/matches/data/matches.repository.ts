@@ -91,6 +91,18 @@ export class MatchesRepository {
     return data as number;
   }
 
+  /** How many matches `playerId` has completed — an RPC for the same reason as above: matches'
+   *  select policy only shows a viewer their own matches plus open ones, so another player's full
+   *  history isn't otherwise visible. Feeds Match Score's "activity" factor. */
+  async matchActivityFor(playerId: string): Promise<number> {
+    const { data, error } = await supabase.rpc('player_match_activity', { p_player_id: playerId });
+    if (error || data === null) {
+      console.error('Failed to load player match activity:', error?.message);
+      return 0;
+    }
+    return data as number;
+  }
+
   // Discovery excludes the signed-in player (see PlayersRepository), so a match where I'm
   // playerA/playerB would otherwise resolve to no player at all — fall back to the mock-bridged
   // "me" object the same way FeedService.playerById() does.

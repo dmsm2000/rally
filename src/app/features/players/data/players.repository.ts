@@ -79,7 +79,9 @@ export class PlayersRepository {
       availability: profile.availability ?? [],
       distanceKm: undefined,
       matchScore: 0,
-      matchReason: profile.bio ?? '',
+      // Overwritten by PlayersService.scoredPlayers() for every consumer that displays it — this
+      // repository only maps rows, so it never has the viewer context a real score needs.
+      matchReasonKeys: [],
       bio: profile.bio ?? '',
       stats: { wins: 0, matches: 0, courts: 0, countries: 0 },
       accent: 'lime' as Accent,

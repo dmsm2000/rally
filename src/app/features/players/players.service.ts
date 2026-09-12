@@ -1,6 +1,9 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
+import { Player } from '../../core/models';
+import { MatchesRepository } from '../matches/data/matches.repository';
 import { PlayersRepository } from './data/players.repository';
+import { computeMatchCompatibility } from './match-compatibility';
 
 export const PLAYER_FORMATS = ['Singles', 'Doubles', 'Both'] as const;
 export type PlayerSort = 'newest' | 'name' | 'city' | 'memberNumber';
@@ -9,6 +12,7 @@ export type PlayerSort = 'newest' | 'name' | 'city' | 'memberNumber';
 @Injectable({ providedIn: 'root' })
 export class PlayersService {
   private readonly repository = inject(PlayersRepository);
+  private readonly matches = inject(MatchesRepository);
   private readonly auth = inject(AuthService);
 
   readonly levels = this.repository.levels;
@@ -23,6 +27,25 @@ export class PlayersService {
   readonly filtersOpen = signal(false);
   readonly sortOpen = signal(false);
   readonly sort = signal<PlayerSort>('newest');
+
+  /** Match Score's "activity" factor needs each player's completed-match count, which isn't
+   *  visible client-side otherwise (see MatchesRepository.matchActivityFor) — fetched lazily per
+   *  id and cached here rather than upfront, since the discovery list can grow over time. */
+  private readonly activityById = signal<ReadonlyMap<string, number>>(new Map());
+  private readonly activityRequested = new Set<string>();
+
+  /** Real players with a real Match Score/reason computed against the signed-in viewer, replacing
+   *  the repository's placeholder 0/bio-as-reason — see match-compatibility.ts. */
+  private readonly scoredPlayers = computed<Player[]>(() => {
+    const viewer = this.auth.currentPlayer();
+    const others = this.repository.getAll();
+    const activity = this.activityById();
+    const viewerActivity = activity.get(viewer.id) ?? 0;
+    return others.map(other => {
+      const { score, reasonKeys } = computeMatchCompatibility(viewer, viewerActivity, other, activity.get(other.id) ?? 0);
+      return { ...other, matchScore: score, matchReasonKeys: reasonKeys };
+    });
+  });
 
   readonly countriesRepresented = computed(() => new Set(this.repository.getAll().map(p => p.country)).size);
   /** Discovery excludes the signed-in player, but the community total includes them. */
@@ -43,8 +66,7 @@ export class PlayersService {
     const sameCountryOnly = this.sameCountryOnly();
     const ownCountry = this.auth.currentPlayer().country;
 
-    const results = this.repository
-      .getAll()
+    const results = this.scoredPlayers()
       .filter(p => (query ? this.normalise(`${p.name} ${p.city} ${p.country}`).includes(query) : true))
       .filter(p => (levels.length ? levels.includes(p.level) : true))
       .filter(p => (formats.length ? formats.includes(p.format) : true))
@@ -64,6 +86,23 @@ export class PlayersService {
     }
     return results;
   });
+
+  constructor() {
+    // Loads activity counts for whichever players are actually in view (plus the viewer), rather
+    // than the whole catalogue up front. Skipped for observers: Match Score is never shown to
+    // them, and RallyDataService.me().id is a mock id for observer sessions — passing it to
+    // player_match_activity would just be a wasted, failing request.
+    effect(() => {
+      const isObserver = this.auth.isObserver();
+      const viewerId = this.auth.currentPlayer().id;
+      const otherIds = this.repository.getAll().map(p => p.id);
+      untracked(() => {
+        if (!isObserver) {
+          this.ensureActivityLoaded([viewerId, ...otherIds]);
+        }
+      });
+    });
+  }
 
   toggleLevel(level: string): void {
     this.levelsSelected.update(levels => this.toggleOption(levels, level));
@@ -94,7 +133,26 @@ export class PlayersService {
   }
 
   getById(id: string) {
-    return this.repository.getById(id);
+    return this.scoredPlayers().find(p => p.id === id);
+  }
+
+  private ensureActivityLoaded(ids: readonly (string | undefined)[]): void {
+    const missing = ids.filter((id): id is string => !!id && !this.activityRequested.has(id));
+    if (!missing.length) {
+      return;
+    }
+    missing.forEach(id => this.activityRequested.add(id));
+    void Promise.all(missing.map(async id => [id, await this.matches.matchActivityFor(id)] as const)).then(
+      entries => {
+        this.activityById.update(current => {
+          const next = new Map(current);
+          for (const [id, count] of entries) {
+            next.set(id, count);
+          }
+          return next;
+        });
+      }
+    );
   }
 
   private toggleOption(options: string[], option: string): string[] {

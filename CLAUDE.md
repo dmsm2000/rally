@@ -257,6 +257,7 @@ Apply in order on a new project:
 32. `0034_landing_waitlist_rpc.sql` replaces `landing_waitlist`'s direct-table RLS (both policies from `0033`, now dropped) with a `join_waitlist(p_email, p_name, p_country, p_city, p_locale)` `security definer` RPC — the same pattern as the Courts/Matches RPCs elsewhere in this file, used here for the same reason: plain RLS can't safely express what's needed. Confirmed by hand that `INSERT ... ON CONFLICT (email) DO UPDATE` (what `Prefer: resolution=merge-duplicates` compiles to) keeps failing RLS even with a verified, correct UPDATE policy in place — a plain INSERT and a plain PATCH both succeed under the same policies, isolating the failure to that specific statement shape, which needs read visibility into the conflicting row. Granting that would mean a `using (true)` SELECT policy — the whole waitlist readable by anyone holding the published anon key, since an anonymous submitter has no session identity to scope a narrower policy against. The RPC runs as its owner (who owns the table, so isn't subject to RLS), sidestepping the problem entirely; `anon`/`authenticated` get `EXECUTE` on the function only, no policy touches the table directly any more. `Waitlist.join()` (in `rally-landing`) calls `rpc/join_waitlist` instead of posting to the table.
 33. `0035_landing_waitlist_email_only.sql` drops `name`/`country`/`city` from `landing_waitlist` and redefines `join_waitlist` down to `(p_email, p_locale)` — the landing page's form was simplified to ask only for an email, and those columns never held real data (a couple of live tests, nothing worth preserving). Explicitly drops the old 5-arg function overload first, since changing a function's parameter list creates a second overload rather than replacing the first.
 34. `0036_post_reports.sql` adds `post_reports`, mirroring `0027_court_reports.sql` exactly and for the same reason: a mute table with no update/delete policy, one open report per reporter per post via a partial unique index, visible only to the reporter. Ships alongside the new public `/posts/:id` page (see the Feed entry above) — that's the point at which a post reaches people who never chose to follow anything, which is when the signal becomes worth collecting.
+35. `0037_player_match_activity.sql` adds `player_match_activity(p_player_id)`, a `security definer` aggregate returning one player's completed-match count. Feeds the real Match Score algorithm's "activity" factor (see the Match Score entry below) — an RPC because `matches`' select policy only shows a viewer their own matches plus open ones, so a viewer otherwise has no way to see how active a *different* player is. Returns a count only, never a row, so it leaks nothing about who played whom — same reasoning as `count_matches_this_week()` (0030).
 
 Note: migration filenames on disk don't currently match this list's numbering 1:1 (e.g. an early renumbering shifted 0009-0011) — trust the filenames in `supabase/migrations/` over the ordinal prefix here if they ever disagree.
 
@@ -270,6 +271,7 @@ Note: migration filenames on disk don't currently match this list's numbering 1:
 - Profile insert/read/update in `public.profiles`.
 - Player discovery at `/world`: `PlayersRepository` loads `ProfileRepositoryService.listDiscoverable()` via `discover_profiles()`.
 - Public player detail at `/players/:playerId` uses the real discovery record.
+- **Match Score** (the ring + reason line shown on player cards and the detail hero, hidden from observers) is a real weighted compatibility calculation as of 2026-09-12 — see `computeMatchCompatibility()` (`features/players/match-compatibility.ts`), wired in `PlayersService` (both `results()` and `getById()` route through a `scoredPlayers` computed so the two consumers can't drift). Nine factors, each 0-100 and independently nullable when the data needed for it is missing on either side (most profile fields are optional) — a missing factor is excluded and its weight redistributed across the rest, rather than guessed, so leaving an optional field blank never moves the score: availability+timesOfDay overlap (20, Jaccard), level proximity (20, ordinal), platform activity (15, completed-match-count ratio — see `0037_player_match_activity.sql` below, since another player's match history isn't otherwise visible), coaching (10, coached-match plus coachedFrequency proximity when both are coached), game frequency proximity (10, ordinal), format (8, wildcard-aware — `'Both'` matches anything), surface (7, plain equality), city/country (7), court preference (3, wildcard-aware — `'NoPreference'` matches anything). Dominant hand, backhand, coached-as-a-standalone-factor, and play style are deliberately unscored: hand/backhand don't bear on compatibility, level already captures seriousness, and it's genuinely unclear whether similar or contrasting play styles make a better match — guessing felt worse than omitting it. The shown reason line surfaces up to the top 2 factors that each clear their own 80-score bar, ranked by weight × score (`MAX_REASONS`/`REASON_THRESHOLD` in `match-compatibility.ts`), falling back to a generic `default` reason when none do — `Player.matchReasonKeys: string[]` holds the translation keys (not literal text), and both consumer templates `@for` over them joined with " · ", each piped through `| translate`.
 - Country and city dropdown data: `@countrystatecity/countries-browser`, via `CountryDataService` with lazy caching.
 - Direct messaging: the floating `rally-messages-widget` is backed by real `conversations`/`messages` tables, delivered live via Supabase Realtime (Postgres Changes for messages, Broadcast for the ephemeral typing indicator). See `MessagesRepository` (`features/messages/data/messages.repository.ts`).
 - Trip intents ("show me around") at `/world` and "My trips" on the profile page: real `trip_intents`/`trip_hosts` tables. Volunteering to host doesn't hide the trip (others may also host) — it just sends the traveller a real automatic message via `MessagesService`. See `TripsRepository` (`features/world/data/trips.repository.ts`). Publishing a trip also inserts a real, linked feed post (`posts.trip_intent_id`, see `WorldService.publishTripIntent()`), so it surfaces in the Feed too — see the Feed entry below for how that post is scoped and rendered per viewer.
@@ -290,7 +292,7 @@ Note: migration filenames on disk don't currently match this list's numbering 1:
 ### Mock today
 
 - `CommunityStats` and its mock `COMMUNITY_STATS` are **gone**: the matches hero's "matches this week" now comes from `count_matches_this_week()` (`0030`), and the world hero's courts/countries from the real catalogue (`CourtsService.communityCourts()/communityCountries()`). The mock `COURTS` dataset and `RallyDataService.createCourt()`/`courts()`/`courtById()` are **gone** — courts started green field, with no seeding, because fake courts in a real table would poison the passport.
-- Real discovery profiles map into the older rich `Player` UI contract with neutral placeholder activity values: no distance, zero stats/match score. `Player.stats` is therefore still mock **for other players**, and the signed-in player's own numbers are no longer read from it anywhere: the feed's welcome card, the profile header and the passport all derive matches from `MatchesService.completed()` and courts/countries from `CourtsService` (`myCaptureCount()`, `myCountryCount()`). One source, so those counts can never disagree between pages.
+- Real discovery profiles map into the older rich `Player` UI contract with neutral placeholder activity values: no distance. `Player.stats` is therefore still mock **for other players** (Match Score itself is real now — see the Real today entry above), and the signed-in player's own numbers are no longer read from it anywhere: the feed's welcome card, the profile header and the passport all derive matches from `MatchesService.completed()` and courts/countries from `CourtsService` (`myCaptureCount()`, `myCountryCount()`). One source, so those counts can never disagree between pages.
 - The player detail page's match-history tabs (`matchTab` on `PlayerDetailPageComponent`) are wired to `MatchesService.matchesForPlayer()` (`MatchesRepository.matchesForPlayer()`), rendering real `rally-match-card`s per tab (upcoming/complete/open) with a loading skeleton and the existing `players.matchesEmptyTitle/Body` empty state. Since `matches` select RLS (`0018_matches.sql`) only grants a signed-in viewer rows where they're also a participant, plus that player's public open-match posts, another player's tabs will typically only surface matches shared with the viewer, not that player's full private history — this is intended, not a bug. The player's own discovered courts and the passport block on their profile are still deliberately empty (courts are real, but per-player court activity isn't surfaced there yet). Do not reintroduce unrelated mock courts/achievements into a real player's profile.
 
 ### Discovery Behaviour
@@ -331,10 +333,43 @@ Own profile page:
 
 ## Player Detail Conventions
 
-- Public player hero is neutral (`bg-muted`); do not add a court-photo background unless the user revisits that design decision.
+- Public player hero has no photo (`court-grid-ink` texture on a `bg-ink` strip instead — the same non-photo hero treatment every other page's header already uses, e.g. `/courts`, `/matches`, `/world`; this page had simply never been brought in line with it). Do not add a real court-photo *background image* here — that's the thing already tried and rejected — but the grid-texture motif is exactly the established alternative, not a new departure.
 - Gender is public only for Male/Female/NonBinary, represented by `gender-male`, `gender-female`, and `gender-nonbinary` SVG badge icons. `PreferNotToSay` is omitted by SQL. The SVGs are used instead of text symbols because Safari/iOS font metrics caused optical misalignment.
 - Male gender uses cobalt/blue, Female pink, NonBinary lime. The tennis ball remains the fallback badge when no public gender is available.
-- “Preferências do jogador” includes play preferences and preferred time of day. Availability is currently included within that card as a distinct sub-block. “Treino” is separate and is split into game frequency and coached/autodidacte details.
+- **Redesigned 2026-09-12/13** (mobile and desktop), from a design canvas the user picked over the
+  first, more conservative attempt — worth knowing *why*, because the first pass reused the existing
+  primitives everywhere and the result was judged much worse than the mock:
+  - **Hero.** Full-bleed `bg-ink text-bone` card with a `hero-wash` background (`styles.css`): the
+    `court-grid-ink` lines plus a lime/cobalt diagonal wash and a lime glow in the top-right. One
+    utility rather than stacking `court-grid-ink` with a gradient class, because both set
+    `background-image` and the later declaration would simply win. The old banner-strip-with-an-
+    overlapping-avatar composition is gone; avatar, name, location, member number and bio sit inside
+    the hero, with Match Score and the invite/message buttons on its right (stacked below on mobile,
+    behind the usual `!auth.isObserver()` gate). The primary button is `bg-lime text-ink`, like every
+    other primary action in the app, and carries a short `players.invite` label below `sm` because
+    the full one wraps to three lines next to "Mensagem" on a phone.
+  - **Preferences are the page's primary content**: the wide column on desktop, the first thing after
+    the hero on mobile, ahead of match history and courts. Level/format/surface/court preference/
+    dominant hand/backhand/play style render as one flowing row of "spec chips" — neutral pill, one
+    short value, and a colour-coded dot carrying the category (lime = level, cobalt = where/how the
+    match is played, clay = how this player plays). These are deliberately **not** `ui-chip`: that
+    one tints the whole pill per `[tone]`, and seven tinted pills in a row read as a colour chart
+    rather than as a person. The two class strings live on the component (`specChip`, `softChip`),
+    following the same move the 2026-09-04 cleanup made for other long Tailwind strings. Preferred
+    times, availability and coaching use the dashed, muted `softChip`; each group is introduced by an
+    eyebrow + hairline divider rather than a full-width rule.
+  - **Everything secondary got quieter**, not just smaller: "Passaporte" is two compact tiles with a
+    lime/cobalt `text-stat` number (no `ui-stat`, which has no colour input, and no explanatory
+    paragraph — `players.passportEmptyBody` was deleted with it), and match history/courts moved to
+    the narrow sidebar with `text-lg` headings and a compact dashed empty box instead of
+    `ui-empty-state`'s `p-10` + display-size title. `ui-empty-state` stays the right choice where an
+    empty state *is* the page (`/courts`, `/matches`); here it competed with real content.
+  - `PREFERENCE_KEYS` (`player-detail-page.component.ts`) gained the `Frequency` and
+    `AvailabilityOption` value→key mappings in the same pass — both were rendering as raw
+    untranslated English (`{{ p.frequency }}`, `{{ slot }}`), a pre-existing gap noticed while
+    rewriting those exact lines, not a separate task.
+- The public member number (`p.memberNumber`, e.g. "#000014") is now shown in the hero under the location line — it was already public on the discovery grid's `player-card` (same `font-mono text-[10px] tracking-widest` treatment, copied verbatim), just missing from the full detail page.
+- Match Score moved out of the avatar/name row (where it fought for space and wrapped awkwardly on narrow screens) into its own row below the bio, right-aligned invite/message buttons alongside it, separated from the name block by a `border-t`.
 - Observers must never see Match Score, compatibility reason, invite, or message controls.
 
 ## Assets and External Data
@@ -569,6 +604,29 @@ exercise any of it without leaving the house.
 - **The catalogue can't filter by access or facilities.** Both are stored on `venues` and rendered
   on the detail page, but the filter row only offers surface/indoor/captured.
 
+**Next up, agreed 2026-09-13: run the same visual pass over the remaining screens.** The player
+profile redesign (see Player Detail Conventions) is the template for it, and the user explicitly
+asked for the rest of the app to get the same treatment. What that pass actually looks for, in the
+order the profile page needed it:
+
+1. **Is the hero doing anything?** A flat `bg-muted` block is dead space. The house treatment is a
+   dark `bg-ink text-bone` card with the court-grid lines; `hero-wash` adds the accent wash on top
+   of that where a page can carry it.
+2. **Is there any colour at all?** The profile page was pure greyscale while the rest of the app
+   uses lime/clay/cobalt. Colour should carry *meaning* (a category, a state), not decorate.
+3. **Is everything the same weight?** A stack of identical bordered cards reads as a dashboard. Real
+   content earns the confident treatment; sections that are empty for most players (and will be for
+   a while) should get visibly quieter ones — that is a hierarchy decision, not a sizing one.
+4. **On a phone, how far do you scroll before learning anything?** The most substantive content
+   belongs directly under the hero, ahead of anything usually empty. Desktop's two-column split
+   should agree with that ranking rather than contradict it.
+
+The likely candidates, roughly in order of how often they are seen: `/` (feed), `/world`,
+`/matches`, `/courts`, `/passport`, own `/profile`, and the match/court detail pages. Do them one at
+a time, and draft the direction visually before writing Angular — the first, code-first attempt at
+the profile page was rejected precisely because it hedged toward the existing primitives instead of
+committing to the design.
+
 Everything below was discussed and deliberately deferred, not forgotten. Roughly in the order that
 makes sense to build:
 
@@ -618,9 +676,10 @@ makes sense to build:
    result flow.
 6. **Rich score entry.** Per-set scores; `matches.sets jsonb` already supports it schema-wise, and
    the "Registar resultado" flow currently captures only an optional winner.
-7. **Real compatibility and distance.** Courts now carry real coordinates — the first real geo data
-   in the app — but players still have none. Distance between a player and a court is computable
-   today; player-to-player is not.
+7. **Real distance between players.** Done as of 2026-09-12 for the "compatibility" half — see
+   Match Score under Real vs Mock Data. The "distance" half is still open: courts now carry real
+   coordinates, but players still have none, so player-to-player distance can't be computed or
+   scored yet (Match Score's `location` factor compares `city`/`country` strings, not coordinates).
 8. **A real map layer**, if the abstract `rally-map` ever stops being enough. Rejected for v1 as a
    dependency that breaks the visual language, so this is a deliberate reversal, not an oversight.
 

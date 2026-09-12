@@ -130,6 +130,23 @@
   background-size: 40px 40px;
 }
 
+/* The player profile hero: the same court-grid lines as `court-grid-ink`, over a lime/cobalt wash
+   and a soft lime glow in the top-right corner. One utility rather than stacked classes because
+   both would set `background-image` and the later declaration would simply win. Meant for an
+   `bg-ink text-bone` surface, like every other hero in the app. */
+@utility hero-wash {
+  background-image:
+    linear-gradient(to right, oklch(1 0 0 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(1 0 0 / 0.06) 1px, transparent 1px),
+    radial-gradient(95% 120% at 88% -20%, oklch(0.885 0.201 124 / 0.3), transparent 62%),
+    linear-gradient(120deg, oklch(0.885 0.201 124 / 0.2), oklch(0.55 0.17 258 / 0.18) 44%, transparent 78%);
+  background-size:
+    40px 40px,
+    40px 40px,
+    auto,
+    auto;
+}
+
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar {

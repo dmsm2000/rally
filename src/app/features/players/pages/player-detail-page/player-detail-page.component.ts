@@ -15,11 +15,8 @@ import {
   BackLinkComponent,
   ChipComponent,
   DatePickerComponent,
-  EmptyStateComponent,
   IconComponent,
   MatchScoreComponent,
-  SectionHeaderComponent,
-  StatComponent,
   TimePickerComponent
 } from '../../../../shared/ui';
 import { PlayersService } from '../../players.service';
@@ -42,7 +39,19 @@ const PREFERENCE_KEYS: Record<string, string> = {
   NoPreference: 'auth.noPreference',
   Morning: 'auth.morning',
   Afternoon: 'auth.afternoon',
-  Evening: 'auth.evening'
+  Evening: 'auth.evening',
+  Daily: 'auth.freqDaily',
+  '3–4 times a week': 'auth.freq3to4',
+  'Twice a week': 'auth.freqTwice',
+  'Once a week': 'auth.freqOnce',
+  'A few times a month': 'auth.freqFewMonth',
+  'Early mornings': 'auth.availEarlyMorning',
+  'Weekday mornings': 'auth.availWeekdayMorning',
+  'Weekday evenings': 'auth.availWeekdayEvening',
+  'Late evenings': 'auth.availLateEvening',
+  Saturdays: 'auth.availSaturdays',
+  'Sunday mornings': 'auth.availSundayMorning',
+  Weekends: 'auth.availWeekends'
 };
 
 const GENDER_SYMBOLS: Record<string, string> = {
@@ -75,17 +84,30 @@ const GENDER_ICONS: Record<string, 'gender-male' | 'gender-female' | 'gender-non
     TimePickerComponent,
     AutocompleteComponent,
     IconComponent,
-    EmptyStateComponent,
     MatchCardComponent,
     MatchScoreComponent,
-    StatComponent,
-    SectionHeaderComponent,
     TranslatePipe
   ],
   templateUrl: './player-detail-page.component.html',
   styleUrl: './player-detail-page.component.scss'
 })
 export class PlayerDetailPageComponent {
+  // Another player's match history is a preview here, not the point of the page — cap it and let
+  // a short note say there's more, rather than loading/rendering an unbounded list.
+  private static readonly MATCHES_PREVIEW_LIMIT = 5;
+
+  /**
+   * The preferences area's own chip treatment: a neutral pill whose colour-coded dot carries the
+   * category. Not `ui-chip` — that one tints the whole pill per tone, which at seven chips in a row
+   * reads as a colour chart rather than as one player's profile. Kept here rather than inline
+   * because the same two strings repeat across ~10 chips in the template.
+   */
+  protected readonly specChip =
+    'inline-flex shrink-0 items-center gap-2 rounded-full border border-border px-3.5 py-2 text-[11px] font-bold tracking-wide uppercase';
+  /** The same pill, dashed and muted — for the softer "when could we play" metadata. */
+  protected readonly softChip =
+    'inline-flex shrink-0 items-center gap-2 rounded-full border border-dashed border-border px-3.5 py-2 text-[11px] font-bold tracking-wide text-muted-foreground uppercase';
+
   private readonly route = inject(ActivatedRoute);
   private readonly players = inject(PlayersService);
   protected readonly auth = inject(AuthService);
@@ -105,6 +127,17 @@ export class PlayerDetailPageComponent {
   protected readonly playerUpcoming = computed(() => this.playerMatchesRaw().filter(m => m.status === 'upcoming'));
   protected readonly playerComplete = computed(() => this.playerMatchesRaw().filter(m => m.status === 'complete'));
   protected readonly playerOpen = computed(() => this.playerMatchesRaw().filter(m => m.status === 'open'));
+
+  protected readonly tabMatches = computed(() => {
+    const tab = this.matchTab();
+    return tab === 'upcoming' ? this.playerUpcoming() : tab === 'complete' ? this.playerComplete() : this.playerOpen();
+  });
+  protected readonly tabMatchesPreview = computed(() =>
+    this.tabMatches().slice(0, PlayerDetailPageComponent.MATCHES_PREVIEW_LIMIT)
+  );
+  protected readonly tabMatchesHiddenCount = computed(() =>
+    Math.max(0, this.tabMatches().length - PlayerDetailPageComponent.MATCHES_PREVIEW_LIMIT)
+  );
 
   constructor() {
     // Reloads whenever the route's playerId changes (e.g. navigating from one profile to another
